@@ -21,9 +21,9 @@ pids
 node_modules/
 jspm_packages/
 
-# Dependency directories in both frontend and backend
-backend/node_modules/
-frontend/node_modules/
+# # Dependency directories in both frontend and backend
+# backend/node_modules/
+# frontend/node_modules/
 
 # Compiled binary addons
 build/Release
@@ -105,18 +105,18 @@ lerna-debug.log*
 public/
 
 # Ignore additional frontend output
-frontend/dist/
-frontend/.nuxt/
-frontend/.output/
+# frontend/dist/
+# frontend/.nuxt/
+# frontend/.output/
 
-# Ignore additional backend output
-backend/dist/
-backend/.output/
-backend/.next/
-backend/build/
-backend/.cache/
-backend/.parcel-cache/
+# # Ignore additional backend output
+# backend/dist/
+# backend/.output/
+# backend/.next/
+# backend/build/
+# backend/.cache/
+# backend/.parcel-cache/
 
-# Ignore database files
-backend/data/*.db
-backend/data/*.sqlite
+# # Ignore database files
+# backend/data/*.db
+# backend/data/*.sqlite

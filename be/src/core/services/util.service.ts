@@ -1,0 +1,70 @@
+import { HttpStatus, Injectable } from "@nestjs/common";
+import { Response } from "express";
+import * as bcrypt from "bcrypt";
+import { ResponseService } from "./response.service";
+import { randomBytes } from "crypto";
+import { AxiosError } from "axios";
+
+@Injectable()
+export class UtilityService {
+  static hashPassword = async (password: string) => {
+    const SALT_ROUNDS = 10;
+    const salt = await bcrypt.genSalt(SALT_ROUNDS);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    return hashedPassword;
+  };
+
+  static verifyPassword = async (password: string, hashedPassword: string) => {
+    const isMatch = await bcrypt.compare(password, hashedPassword);
+    return isMatch;
+  };
+
+  static generateRandomHex(length: number): string {
+    return randomBytes(length).toString("hex").slice(0, length);
+  }
+
+  static async handleRequest(
+    res: Response,
+    successMessage: string,
+    service: any,
+    method: string,
+    httpStatusCode: number = HttpStatus.OK,
+    ...params: any[]
+  ) {
+    try {
+      const result = await service[method](...params);
+      const data = result?.metadata || result?.meta ? result.data : result;
+      const metadata = result?.metadata || result?.meta || undefined;
+
+      return ResponseService.json(
+        res,
+        httpStatusCode,
+        successMessage,
+        data,
+        metadata
+      );
+    } catch (error) {
+      let errorMessage: string;
+      const statusCode = error.statusCode || HttpStatus.BAD_REQUEST;
+
+      if (error.isAxiosError) {
+        const { response, message, code } = error as AxiosError;
+        errorMessage =
+          (response?.data as any)?.message || message || "Something went wrong";
+        console.error(`Axios error occurred: ${errorMessage} (${code})`);
+      } else {
+        errorMessage = error.message || "Something went wrong";
+        console.error(`An error occurred: ${error.message}`, error.stack);
+      }
+
+      return ResponseService.json(
+        res,
+        statusCode,
+        errorMessage,
+        undefined,
+        undefined,
+        statusCode
+      );
+    }
+  }
+}

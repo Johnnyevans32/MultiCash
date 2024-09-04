@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#c9fe00" />
+    <style>
+        @font-face {
+            font-family: "PowerGroteskTrial-Bold ";
+            src: local("PowerGroteskTrial "), url("./PowerGroteskTrial-Bold.ttf ") format("truetype ");
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: white;
+            font-family: "PowerGroteskTrial-Bold ";
+            font-size: 2vh;
+            animation: fadeIn 3s ease forwards;
+        }
+        
+        .companyName {
+            animation: fadeInUp 2s ease forwards;
+        }
+        
+        p {
+            animation: fadeInUp 2s ease forwards;
+        }
+        
+        .h-full {
+            height: 100vh;
+        }
+        
+        .w-full {
+            width: 100vw;
+        }
+        
+        .logo {
+            animation: fadeIn 2s ease forwards;
+        }
+        
+        .flex {
+            display: flex;
+            align-items: end;
+        }
+        
+        .flex-col {
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        .items-center {
+            align-items: center;
+        }
+        
+        .justify-center {
+            justify-content: center;
+        }
+        
+        .rounded-xl {
+            border-radius: 0.5rem;
+        }
+        /* Keyframe animations */
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Curtain-down transition */
+        
+        .fade-out {
+            animation: pulse 2s infinite alternate;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="loading" class="h-full w-full flex flex-col items-center justify-center">
+        <div class="flex">
+            <img src="https://i.ibb.co/2jP2Qjb/logo.png" width="80px" height="auto" class="rounded-xl logo" />
+            <img class="companyName" src="https://i.ibb.co/t8H5Xgd/name.png" alt=" MultiCash " width="200px " height="auto " />
+        </div>
+
+        <img src="https://i.ibb.co/ysjfknF/slogan.png" alt="Slogan " width="300px " height="auto " />
+    </div>
+
+    <script>
+        // Simulate leaving the loading page after 3 seconds
+        setTimeout(() => {
+            document.getElementById("loading ").classList.add("fade-out ");
+        }, 4000);
+    </script>
+</body>
+
+</html>

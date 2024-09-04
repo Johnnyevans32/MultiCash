@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+  :root {
+    --bg-bgbase: 244, 244, 244;
+    --bg-base: 169, 173, 179;
+    --bg-lightbase: 219, 223, 229;
+    --bg-hoverlightbase: 209, 213, 219;
+    --text-base: 31, 41, 55;
+    --text-lightbase: 209, 213, 219;
+    --border-base: 189, 193, 199;
+    --border-lightbase: 209, 213, 219;
+  }
+  .cherry {
+    --bg-bgbase: 255, 255, 255;
+    --bg-base: 255, 0, 0;
+    --bg-lightbase: 255, 160, 122;
+    --bg-hoverlightbase: 255, 160, 122;
+    --text-base: 255, 0, 0;
+    --text-lightbase: 255, 160, 122;
+    --border-base: 255, 0, 0;
+    --border-lightbase: 255, 160, 122;
+  }
+  .coffee {
+    --bg-bgbase: 255, 255, 255;
+    --bg-base: 120, 53, 15;
+    --bg-lightbase: 251, 191, 36;
+    --bg-hoverlightbase: 251, 191, 36;
+    --text-base: 120, 53, 15;
+    --text-lightbase: 251, 191, 36;
+    --border-base: 120, 53, 15;
+    --border-lightbase: 251, 191, 36;
+  }
+  .dark {
+    --bg-bgbase: 0, 0, 0;
+    --bg-base: 50, 50, 50;
+    --bg-lightbase: 38, 38, 38;
+    --bg-hoverlightbase: 31, 31, 31;
+    --text-base: 255, 255, 255;
+    --text-lightbase: 100, 100, 100;
+    --border-base: 70, 70, 70;
+    --border-lightbase: 169, 169, 169;
+  }
+  .white {
+    --bg-bgbase: 255, 255, 255;
+    --bg-base: 255, 255, 255;
+    --bg-lightbase: 255, 255, 255;
+    --bg-hoverlightbase: 209, 213, 219;
+    --text-base: 0, 0, 0;
+    --text-lightbase: 209, 213, 219;
+    --border-base: 209, 213, 219;
+    --border-lightbase: 169, 169, 169;
+  }
+  .ocean {
+    --bg-bgbase: 255, 255, 255;
+    --bg-base: 41, 128, 185;
+    --bg-lightbase: 173, 216, 230;
+    --bg-hoverlightbase: 135, 206, 250;
+    --text-base: 41, 128, 185;
+    --text-lightbase: 173, 216, 230;
+    --border-base: 41, 128, 185;
+    --border-lightbase: 173, 216, 230;
+  }
+  .forest {
+    --bg-bgbase: 255, 255, 255;
+    --bg-base: 34, 139, 34;
+    --bg-lightbase: 144, 238, 144;
+    --bg-hoverlightbase: 152, 251, 152;
+    --text-base: 34, 139, 34;
+    --text-lightbase: 144, 238, 144;
+    --border-base: 34, 139, 34;
+    --border-lightbase: 144, 238, 144;
+  }
+  .midnight {
+    --bg-bgbase: 0, 0, 0;
+    --bg-base: 25, 25, 112;
+    --bg-lightbase: 0, 0, 128;
+    --bg-hoverlightbase: 0, 0, 139;
+    --text-base: 255, 255, 255;
+    --text-lightbase: 100, 100, 100;
+    --border-base: 70, 130, 180;
+    --border-lightbase: 100, 149, 237;
+  }
+  .sunflower {
+    --bg-bgbase: 255, 255, 255;
+    --bg-base: 255, 195, 18;
+    --bg-lightbase: 255, 235, 59;
+    --bg-hoverlightbase: 255, 241, 118;
+    --text-base: 255, 195, 18;
+    --text-lightbase: 255, 235, 59;
+    --border-base: 255, 195, 18;
+    --border-lightbase: 255, 235, 59;
+  }
+  .ocean-breeze {
+    --bg-bgbase: 255, 255, 255;
+    --bg-base: 70, 130, 180;
+    --bg-lightbase: 135, 206, 250;
+    --bg-hoverlightbase: 135, 206, 250;
+    --text-base: 70, 130, 180;
+    --text-lightbase: 135, 206, 250;
+    --border-base: 70, 130, 180;
+    --border-lightbase: 135, 206, 250;
+  }
+  .royal-purple {
+    --bg-bgbase: 255, 255, 255;
+    --bg-base: 75, 0, 130;
+    --bg-lightbase: 138, 43, 226;
+    --bg-hoverlightbase: 138, 43, 226;
+    --text-base: 75, 0, 130;
+    --text-lightbase: 138, 43, 226;
+    --border-base: 75, 0, 130;
+    --border-lightbase: 138, 43, 226;
+  }
+  .lavender-dream {
+    --bg-bgbase: 255, 255, 255;
+    --bg-base: 230, 230, 250;
+    --bg-lightbase: 230, 230, 250;
+    --bg-hoverlightbase: 221, 160, 221;
+    --text-base: 128, 0, 128;
+    --text-lightbase: 147, 112, 219;
+    --border-base: 128, 0, 128;
+    --border-lightbase: 147, 112, 219;
+  }
+  .lemon {
+    --bg-bgbase: 255, 255, 255;
+    --bg-base: 141, 194, 0;
+    --bg-lightbase: 201, 254, 0;
+    --bg-hoverlightbase: 201, 254, 0;
+    --text-base: 31, 41, 55;
+    --text-lightbase: 181, 234, 30;
+    --border-base: 31, 41, 55;
+    --border-lightbase: 201, 254, 0;
+  }
+}

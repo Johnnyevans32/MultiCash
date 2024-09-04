@@ -1,0 +1,29 @@
+import { applyDecorators } from "@nestjs/common";
+import { Prop, Schema, SchemaFactory, SchemaOptions } from "@nestjs/mongoose";
+import { HydratedDocument, SchemaTypes } from "mongoose";
+
+export const BaseSchemaDecorator = (options?: SchemaOptions): any =>
+  applyDecorators(
+    Schema({
+      timestamps: true,
+      toJSON: {
+        virtuals: true,
+        transform: (_doc: any, ret: any, _options: any): void => {
+          ret.id = ret._id;
+          delete ret._id;
+          delete ret.__v;
+          delete ret.isDeleted;
+        },
+      },
+      ...options,
+    })
+  );
+
+@Schema()
+export class BaseSchema {
+  @Prop({ type: SchemaTypes.Boolean, default: false })
+  isDeleted: boolean;
+
+  @Prop({ type: SchemaTypes.Date })
+  deletedAt?: Date;
+}

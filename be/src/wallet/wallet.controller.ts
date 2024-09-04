@@ -1,0 +1,124 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Query,
+  Res,
+} from "@nestjs/common";
+import { Response } from "express";
+
+import { WalletService } from "@/wallet/services/wallet.service";
+import { UserDocument } from "@/user/schemas/user.schema";
+import { CurrentUser } from "@/auth/decorators/user.decorator";
+import { UtilityService } from "@/core/services/util.service";
+import { HttpStatusCode } from "axios";
+import { PaginateDTO } from "@/core/services/response.service";
+import {
+  CreateWalletAccountDTO,
+  WithdrawFromWalletDTO,
+} from "./dtos/wallet.dto";
+
+@Controller("wallets")
+export class WalletController {
+  constructor(private walletService: WalletService) {}
+
+  @Get("")
+  async fetchWallets(@Res() res: Response, @CurrentUser() user: UserDocument) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.walletService,
+      "fetchWallets",
+      HttpStatusCode.Ok,
+      user
+    );
+  }
+
+  @Get(":id/transactions")
+  async fetchWalletTransactions(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument,
+    @Param("id") walletId: string,
+    @Query() query: PaginateDTO
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.walletService,
+      "fetchWalletTransactions",
+      HttpStatusCode.Ok,
+      user,
+      walletId,
+      query
+    );
+  }
+
+  @Post("withdraw")
+  async withdraw(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument,
+    @Body() payload: WithdrawFromWalletDTO
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.walletService,
+      "withdraw",
+      HttpStatusCode.Ok,
+      user,
+      payload
+    );
+  }
+
+  @Post("accounts")
+  async createWalletAccount(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument,
+    @Body() payload: CreateWalletAccountDTO
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.walletService,
+      "createWalletAccount",
+      HttpStatusCode.Created,
+      user,
+      payload
+    );
+  }
+
+  @Get("accounts")
+  async fetchWalletAccounts(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.walletService,
+      "fetchWalletAccounts",
+      HttpStatusCode.Ok,
+      user
+    );
+  }
+
+  @Delete("accounts/:id")
+  async deleteWalletAccount(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument,
+    @Param("id") walletAccountId: string
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.walletService,
+      "deleteWalletAccount",
+      HttpStatusCode.Ok,
+      user,
+      walletAccountId
+    );
+  }
+}

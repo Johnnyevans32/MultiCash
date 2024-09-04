@@ -9,6 +9,7 @@
       title="Enter your email"
       placeholder="email"
       @keyup.enter="forgotPassword"
+      :loading="loading"
     />
     <CommonButton
       text="Request reset"
@@ -38,11 +39,15 @@ export default defineComponent({
     const { $api } = useNuxtApp();
     const email = ref("");
 
+    const { loading, withLoading } = useLoading();
+
     const forgotPassword = async () => {
-      await $api.authService.forgotPassword(email.value);
-      notify({
-        type: "success",
-        title: `reset password code sent to your email if it exists on ${config.public.appName}`,
+      await withLoading(async () => {
+        await $api.authService.forgotPassword(email.value);
+        notify({
+          type: "success",
+          title: `reset password code sent to your email if it exists on ${config.public.appName}`,
+        });
       });
     };
 
@@ -50,6 +55,7 @@ export default defineComponent({
       config,
       email,
       forgotPassword,
+      loading,
     };
   },
 });

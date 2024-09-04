@@ -54,13 +54,15 @@ export class UserService {
 
   async forgotPassword(payload: ForgotPasswordDTO) {
     const user = await this.findUser({ email: payload.email });
-    const resetToken = randomBytes(32).toString("hex");
-    user.resetPasswordToken = createHash("sha256")
-      .update(resetToken)
-      .digest("hex");
-    user.resetPasswordTokenExpires = moment().add(10, "minutes").toDate();
-    this.emailService.sendResetPasswordLink(user, resetToken);
-    await user.save();
+    if (user) {
+      const resetToken = randomBytes(32).toString("hex");
+      user.resetPasswordToken = createHash("sha256")
+        .update(resetToken)
+        .digest("hex");
+      user.resetPasswordTokenExpires = moment().add(10, "minutes").toDate();
+      this.emailService.sendResetPasswordLink(user, resetToken);
+      await user.save();
+    }
   }
 
   async resetPassword(payload: ResetPasswordDTO) {

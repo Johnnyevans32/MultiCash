@@ -14,6 +14,7 @@
       text="Reset password"
       @btn-action="resetPassword"
       custom-css="!bg-blue-400 w-full text-black"
+      :loading="loading"
     />
     <NuxtLink class="text-blue-600 text-sm" to="/signin"
       >Remember password? Sign In</NuxtLink
@@ -39,12 +40,16 @@ export default defineComponent({
     const { $api } = useNuxtApp();
     const resetPasswordCode = ref(null);
 
+    const { withLoading, loading } = useLoading();
+
     const resetPassword = async () => {
-      await $api.authService.resetPassword({
-        newPassword: password.value,
-        token: resetToken,
+      await withLoading(async () => {
+        await $api.authService.resetPassword({
+          newPassword: password.value,
+          token: resetToken,
+        });
+        await navigateTo("/signin");
       });
-      await navigateTo("/signin");
     };
 
     return {
@@ -52,6 +57,7 @@ export default defineComponent({
       password,
       resetPassword,
       resetPasswordCode,
+      loading,
     };
   },
 });

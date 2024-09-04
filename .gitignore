@@ -21,9 +21,6 @@ pids
 node_modules/
 jspm_packages/
 
-# # Dependency directories in both frontend and backend
-# backend/node_modules/
-# frontend/node_modules/
 
 # Compiled binary addons
 build/Release
@@ -102,21 +99,5 @@ bower_components
 lerna-debug.log*
 
 # Ignore public files from Next.js or Nuxt.js
-public/
 
-# Ignore additional frontend output
-# frontend/dist/
-# frontend/.nuxt/
-# frontend/.output/
 
-# # Ignore additional backend output
-# backend/dist/
-# backend/.output/
-# backend/.next/
-# backend/build/
-# backend/.cache/
-# backend/.parcel-cache/
-
-# # Ignore database files
-# backend/data/*.db
-# backend/data/*.sqlite

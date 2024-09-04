@@ -9,13 +9,12 @@ import { ConfigService } from "@nestjs/config";
 import { AppModule } from "@/app.module";
 import { HttpExceptionFilter } from "@/core/middlewares/exception";
 import { corsConfig } from "@/cors.config";
-import configuration, { Configuration } from "./core/services/configuration";
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
-    { cors: corsConfig }
+    { cors: true }
   );
   app.setGlobalPrefix("api");
   app.useGlobalPipes(

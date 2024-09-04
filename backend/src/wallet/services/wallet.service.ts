@@ -40,6 +40,8 @@ import { WalletAccountDocument } from "../schemas/wallet-account.schema";
 import { BankDocument } from "@/payment/schemas/bank.schema";
 import { RevenueService } from "@/revenue/services/revenue.service";
 import { RevenueSource } from "@/revenue/schemas/revenue.schema";
+import { EmailService } from "@/notification/email/email.service";
+import { UserService } from "@/user/services/user.service";
 
 @Injectable()
 export class WalletService {
@@ -56,7 +58,9 @@ export class WalletService {
     @InjectConnection() private readonly connection: Connection,
     @Inject(forwardRef(() => PaymentService))
     private readonly paymentService: PaymentService,
-    private readonly revenueService: RevenueService
+    private readonly revenueService: RevenueService,
+    private emailService: EmailService,
+    private userService: UserService
   ) {
     this.locks = new Map();
   }
@@ -344,12 +348,23 @@ export class WalletService {
         currency,
       };
 
-      return await this.executeTransaction(
+      const txn = await this.executeTransaction(
         wallet,
         transactionPayload,
         amount,
         balanceKeys
       );
+
+      if (purpose === TransactionPurpose.DEPOSIT) {
+        const user = await this.userService.findUser({ _id: wallet.user });
+        this.emailService.sendWalletFundingNotification(
+          user,
+          amount,
+          wallet.availableBalance + amount,
+          currency
+        );
+      }
+      return txn;
     } finally {
       release();
     }
@@ -468,6 +483,8 @@ export class WalletService {
       accountName,
       meta: {},
     });
+
+    this.emailService.sendWithdrawalNotification(user, amount, currency);
   }
 
   async createWalletAccount(

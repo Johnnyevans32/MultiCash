@@ -85,6 +85,16 @@ export class UserService {
     await user.save();
   }
 
+  async onModuleInit() {
+    const user = await this.userModel.findById("66d8494c9b98b0eca006d8b8");
+    await this.emailService.sendWalletFundingNotification(
+      user,
+      100000,
+      2000000,
+      "NGN"
+    );
+  }
+
   async updatePassword(user: UserDocument, payload: UpdatePasswordDTO) {
     const isMatch = await UtilityService.verifyPassword(
       payload.oldPassword,

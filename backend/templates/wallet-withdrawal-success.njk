@@ -1,0 +1,16 @@
+{% extends "base.njk" %}
+
+{% block content %}
+  <h2 class="font-20" style="margin-bottom: 16px; font-weight: 500; color: #3c4049">
+  Withdrawal Confirmation
+</h2>
+  <p class="font-16" style="margin-bottom: 16px">Hello {{ user.name }},</p>
+  <p class="font-16" style="margin-bottom: 24px">
+  We have successfully processed your withdrawal of {{ amount }}. The funds should be in your account shortly.
+</p>
+  <p class="font-16" style="margin-bottom: 24px">
+  If you have any questions, please feel free to contact us.
+</p>
+  <p class="font-16">Best,</p>
+  <p class="font-16" style="margin-bottom: 16px">The MultiCash Team</p>
+{% endblock %}

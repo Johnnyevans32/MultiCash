@@ -2,9 +2,9 @@
   <TabGroup>
     <TabList class="flex rounded-xl w-full bg-lightbase p-2">
       <Tab
-        v-for="menu in tabMenu"
+        v-for="tab in tabs"
         as="template"
-        :key="menu.title"
+        :key="tab.title"
         v-slot="{ selected }"
       >
         <div
@@ -13,13 +13,13 @@
             selected && 'bg-base shadow',
           ]"
         >
-          {{ menu.title }}
+          {{ tab.title }}
         </div>
       </Tab>
     </TabList>
     <TabPanels class="mt-4">
-      <TabPanel v-for="menu in tabMenu" :key="menu.title">
-        <component :is="menu.content" />
+      <TabPanel v-for="tab in tabs" :key="tab.title">
+        <component :is="tab.content" />
       </TabPanel>
     </TabPanels>
   </TabGroup>
@@ -37,7 +37,7 @@ export default defineComponent({
     TabPanel,
   },
   props: {
-    tabMenu: {
+    tabs: {
       type: Array<{ title: string; content: any }>,
       default: [],
     },

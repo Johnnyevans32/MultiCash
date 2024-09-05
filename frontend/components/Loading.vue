@@ -1,6 +1,6 @@
 <template>
   <div
-    v-show="loadingScreenEnabled"
+    v-if="loadingScreenEnabled"
     class="backdrop-blur-xl absolute h-full w-full flex items-center justify-center z-20"
   >
     <div class="text-center">

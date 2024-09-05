@@ -11,7 +11,7 @@
     </div>
   </div>
   <v-idle
-    v-show="autoLogoutEnabled"
+    v-if="autoLogoutEnabled"
     @idle="onidle"
     @remind="onremind"
     :loop="true"

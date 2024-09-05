@@ -1,43 +1,27 @@
 <template>
-  <div class="flex items-center justify-between">
-    <h1 class="md:block hidden text-xl font-bold">Exchanges</h1>
+  <div class="border-b-[1px] border-base text-left py-5">
+    <CommonPageBar mainPage="Exchange" />
   </div>
-
-  <div>
-    <font-awesome-icon class="text-7xl mb-5" icon="sack-xmark" />
-    <p>Nothing to see here</p>
-    <p>your currency exchanges will appear here once they arrive.</p>
-  </div>
+  <CommonTabSwitch :tabs="tabs" />
 </template>
 
 <script lang="ts">
-import { useWalletStore } from "~/store/wallet";
-
+import ExchangeHistory from "~/components/exchange/ExchangeHistory.vue";
+import ExchangeTable from "~/components/exchange/ExchangeTable.vue";
 export default defineComponent({
   async setup() {
-    const { $api } = useNuxtApp();
-    const { wallets } = storeToRefs(useWalletStore());
-    const { setWallets } = useWalletStore();
-    const { withLoadingPromise } = useLoading();
+    const tabs = ref([
+      {
+        title: "Exchange Currency",
+        content: ExchangeTable,
+      },
+      {
+        title: "Exchange History",
+        content: ExchangeHistory,
+      },
+    ]);
 
-    onBeforeMount(async () => {
-      await fetchWallets();
-    });
-
-    const walletCurrencies = computed(() =>
-      wallets.value.map((i: { currency: string }) => i.currency)
-    );
-
-    const isLoadingWallets = ref(false);
-    const fetchWallets = async () => {
-      await withLoadingPromise(
-        $api.walletService.fetchWallets().then((walletsResponse: any) => {
-          setWallets(walletsResponse);
-        }),
-        isLoadingWallets
-      );
-    };
-    return {};
+    return { tabs };
   },
 });
 </script>

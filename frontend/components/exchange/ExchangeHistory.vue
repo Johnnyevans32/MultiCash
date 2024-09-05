@@ -1,7 +1,8 @@
 <template>
-  <div class="flex items-end justify-self-center">
-    <img :src="`./logo.png`" alt="logo" class="w-14 h-14" />
-    <img :src="`./name.png`" alt="logo name" class="h-8" />
+  <div>
+    <font-awesome-icon class="text-7xl mb-5" icon="sack-xmark" />
+    <p>Nothing to see here</p>
+    <p>your currency exchanges will appear here once they arrive.</p>
   </div>
 </template>
 <script lang="ts">

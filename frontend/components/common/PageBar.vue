@@ -8,7 +8,7 @@
       <p :class="currentPage && 'text-lightbase'">
         {{ mainPage }}
       </p>
-      <p v-show="currentPage">
+      <p v-if="currentPage">
         /
         {{ currentPage }}
       </p>

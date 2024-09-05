@@ -1,6 +1,6 @@
 <template>
   <div class="text-left">
-    <span v-show="title" class="text-sm"> {{ title }}:</span>
+    <span v-if="title" class="text-sm"> {{ title }}:</span>
     <div :class="customCss" class="flex justify-end items-center">
       <select
         v-model="selectedOption"

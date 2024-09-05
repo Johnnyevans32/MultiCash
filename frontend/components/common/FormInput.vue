@@ -1,6 +1,6 @@
 <template>
   <div class="text-left">
-    <span v-show="title" class="text-sm"> {{ title }}:</span>
+    <span v-if="title" class="text-sm"> {{ title }}:</span>
     <input
       :type="inputType"
       :value="modelValue"
@@ -13,7 +13,7 @@
       :max="max"
     />
     <span
-      v-show="validationMessage"
+      v-if="validationMessage"
       :class="isErrorMessage ? `text-red-600` : `text-green-600`"
     >
       {{ validationMessage }}

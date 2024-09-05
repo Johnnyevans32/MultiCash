@@ -56,13 +56,18 @@ export default defineComponent({
       },
       {
         name: "Send",
-        icon: "fa-solid fa-bank",
+        icon: "fa-solid fa-paper-plane",
         href: "/send",
       },
       {
         name: "Exchange",
         icon: "fa-solid fa-exchange",
         href: "/exchange",
+      },
+      {
+        name: "Card",
+        icon: "fa-solid fa-credit-card",
+        href: "/card",
       },
       {
         name: "Settings",

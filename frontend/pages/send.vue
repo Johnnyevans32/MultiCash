@@ -1,9 +1,12 @@
 <template>
+  <div class="border-b-[1px] border-base text-left py-2">
+    <CommonPageBar mainPage="Send" />
+  </div>
   <div class="flex items-center justify-between">
-    <h1 class="md:block hidden text-xl font-bold">Bank Accounts</h1>
+    <h1 class="text-xl font-bold">Benefiaries</h1>
     <CommonButton
       v-if="!isFetchWalletLoading"
-      text="Add Account"
+      text="Add Benefiary"
       imageType="icon"
       image="fa-solid fa-plus"
       @btn-action="addAccountModal = true"
@@ -37,18 +40,20 @@
     <div
       v-for="account in walletAccounts"
       :key="account.id"
-      class="cursor-pointer p-5 flex items-center h-16 justify-between rounded-xl bg-lightbase"
+      class="cursor-pointer py-5 md:px-5 px-2 flex items-center h-16 justify-between rounded-xl bg-lightbase"
       @click="openWithdrawalModal(account)"
     >
       <div class="flex space-x-3 items-center">
         <CommonImage :image="account.bank.logo" :alt="account.bank.name" />
 
         <div class="flex flex-col text-left">
-          <span class="capitalize font-bold">{{ account.accountName }}</span>
-          <span>{{ account.accountNumber }} ({{ account.bank.name }})</span>
+          <span class="md:text-sm text-xs">{{ account.accountName }}</span>
+          <span class="md:text-sm text-xs"
+            >{{ account.accountNumber }} ({{ account.bank.name }})</span
+          >
         </div>
       </div>
-      <span class="capitalize text-sm">{{ account.bank.currency }}</span>
+      <span class="text-sm">{{ account.bank.currency }}</span>
     </div>
   </div>
   <CommonModal
@@ -111,11 +116,25 @@
   >
     <template v-slot:content>
       <div class="flex flex-col gap-4">
-        <p>Send money to:</p>
         <div>
-          <p>{{ selectedWalletAccount?.accountName }}</p>
-          <p>{{ selectedWalletAccount?.accountNumber }}</p>
-          <p>{{ selectedWalletAccount?.bank.name }}</p>
+          <span class="text-sm">Benefiary Account Name:</span>
+          <p class="md:text-sm text-xs">
+            {{ selectedWalletAccount?.accountName }}
+          </p>
+        </div>
+
+        <div>
+          <span class="text-sm">Benefiary Account Number:</span>
+          <p class="md:text-sm text-xs">
+            {{ selectedWalletAccount?.accountNumber }}
+          </p>
+        </div>
+
+        <div>
+          <span class="text-sm">Benefiary Bank Name:</span>
+          <p class="md:text-sm text-xs">
+            {{ selectedWalletAccount?.bank.name }}
+          </p>
         </div>
 
         <CommonAmountInput
@@ -128,7 +147,7 @@
           v-model="note"
           placeholder="What is it for?"
           title="What is it for?"
-          input-type="text"
+          inputType="text"
         />
         <CommonFormInput
           inputType="password"

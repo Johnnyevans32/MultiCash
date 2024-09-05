@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span v-show="title" class="text-sm"> {{ title }}:</span>
+    <span v-if="title" class="text-sm"> {{ title }}:</span>
     <div class="flex items-center">
       <span
         class="bg-lightbase rounded-lg pl-5 pr-2 py-2 border-[1px] border-r-0 border-base rounded-r-none"

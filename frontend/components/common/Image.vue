@@ -9,6 +9,7 @@
   <img
     v-else-if="type === 'image' && image"
     :src="image"
+    :class="customCss"
     class="w-10 h-10 rounded-xl justify-self-center"
     :alt="`${alt} logo`"
   />
@@ -23,6 +24,7 @@
 <script lang="ts">
 export default defineComponent({
   props: {
+    customCss: { type: String },
     type: {
       type: String,
       default: "image",

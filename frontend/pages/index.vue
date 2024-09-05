@@ -7,30 +7,25 @@
       @btn-action="handleFundWalletBtnClick"
       customCss="justify-self-end"
     />
-    <div class="flex gap-2 items-center md:w-fit w-full">
-      <CommonFormSelect
-        v-if="!isLoadingWallets"
-        :selected="selectedCurrency"
-        :options="walletCurrencies"
-        @change-option="handleCurrencyChange"
-      />
-    </div>
+    <CommonFormSelect
+      v-if="!isLoadingWallets"
+      :selected="selectedCurrency"
+      :options="walletCurrencies"
+      @change-option="handleCurrencyChange"
+    />
   </div>
   <div
-    class="flex justify-between p-5 font-bold rounded-xl border-[1px] bg-lightbase border-base text-left md:text-3xl text-2xl"
+    class="flex justify-between p-5 font-bold rounded-xl border-[1px] bg-lightbase border-base md:text-3xl text-xl"
   >
-    <p>Main Balance</p>
-    <p v-show="!isLoadingWallets">
+    <p class="text-left">Main Balance</p>
+    <p v-if="!isLoadingWallets" class="text-right">
       {{ selectedWallet?.currency }}
       {{ formatMoney(selectedWallet?.availableBalance) }}
     </p>
-    <div
-      v-show="isLoadingWallets"
-      class="h-10 w-28 bg-base rounded animate-pulse"
-    ></div>
+    <div v-else class="h-10 w-28 bg-base rounded animate-pulse"></div>
   </div>
   <div
-    v-show="!isLoadingWalletTransactions"
+    v-if="!isLoadingWalletTransactions"
     class="flex items-center justify-between"
   >
     <h1 class="md:block hidden text-xl font-bold">Transactions</h1>
@@ -46,7 +41,7 @@
     </div>
   </div>
 
-  <div v-show="isLoadingWalletTransactions">
+  <div v-if="isLoadingWalletTransactions">
     <div v-for="i in 2" :key="i">
       <div class="h-2 w-20 bg-base rounded mb-2"></div>
       <div
@@ -70,13 +65,13 @@
     </div>
   </div>
 
-  <div v-show="!isLoadingWalletTransactions && !walletTransactions.length">
+  <div v-if="!isLoadingWalletTransactions && !walletTransactions.length">
     <font-awesome-icon class="text-7xl mb-5" icon="magnifying-glass-dollar" />
     <p>No transactions yet</p>
     <p>Your transactions will appear here once they arrive.</p>
   </div>
 
-  <div v-show="!isLoadingWalletTransactions && walletTransactions.length">
+  <div v-if="!isLoadingWalletTransactions && walletTransactions.length">
     <div
       v-for="(transactions, date) in formatedWalletTransactions"
       :key="date"
@@ -86,9 +81,9 @@
       <div
         v-for="txn in transactions"
         :key="txn.id"
-        class="cursor-pointer p-5 flex mb-2 items-center h-16 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base"
+        class="cursor-pointer py-5 md:px-5 px-2 flex mb-2 items-center h-16 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base"
       >
-        <div class="flex space-x-2 items-center">
+        <div class="flex md:space-x-2 space-x-1 items-center">
           <div class="text-sm transform translate-y-0">
             <CommonImage
               type="icon"
@@ -114,7 +109,7 @@
           </div>
 
           <div class="flex flex-col text-left">
-            <span class="capitalize font-extrabold">{{ txn.description }}</span>
+            <span class="truncate">{{ txn.description }}</span>
             <span class="text-xs">{{
               txn?.purpose?.replaceAll("_", " ")
             }}</span>
@@ -122,12 +117,12 @@
         </div>
         <div class="flex flex-col text-right">
           <span
-            class="font-bold"
+            class="md:text-tbase text-sm"
             :class="txn?.type === 'credit' ? 'text-green-600' : 'text-red-600'"
             >{{ txn.currency || txn.walletStateAfter.currency }}
             {{ formatMoney(txn.amount) }}
           </span>
-          <span class="text-sm"
+          <span class="md:text-sm text-tiny"
             >{{ txn.currency || txn.walletStateAfter.currency }}
             {{ formatMoney(txn.walletStateAfter.availableBalance) }}</span
           >
@@ -135,7 +130,7 @@
       </div>
     </div>
     <CommonPaginationBar
-      v-show="walletTransactions.length"
+      v-if="walletTransactions.length"
       :currentPage="walletTransactionsMetadata?.page"
       :totalItems="walletTransactionsMetadata?.totalDocs"
       @change-option="handlePageChange"
@@ -288,9 +283,9 @@ export default defineComponent({
               currency: selectedCurrency.value,
               onSuccess: (transaction: any) => {
                 console.log(transaction);
+                fundWalletModal.value = false;
                 fetchWallets();
                 fetchWalletTransactions();
-                fundWalletModal.value = false;
                 resolve();
               },
               onLoad: (response: any) => {

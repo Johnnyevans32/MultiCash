@@ -28,7 +28,7 @@
         </div>
         <div class="flex flex-col text-left">
           <span class="font-bold">{{ setting.action }}</span>
-          <span class="text-sm">{{ setting.value }}</span>
+          <span class="text-sm line-clamp-1">{{ setting.value }}</span>
         </div>
       </div>
       <font-awesome-icon icon="arrow-right" />

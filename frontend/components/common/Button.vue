@@ -7,20 +7,20 @@
     class="rounded-xl justify-between flex items-center gap-2 py-2 px-4 border-[1px] border-base bg-lightbase"
   >
     <img
-      v-show="image && imageType === 'image'"
+      v-if="image && imageType === 'image'"
       :src="`/${image}`"
       :alt="alt"
       loading="lazy"
       width="30"
     />
     <font-awesome-icon
-      v-show="image && imageType === 'icon'"
+      v-else-if="image && imageType === 'icon'"
       class="text-xl"
       :icon="image"
     />
     <div class="mx-auto flex items-center">
       <svg
-        v-show="loading"
+        v-if="loading"
         aria-hidden="true"
         role="status"
         class="inline mr-2 w-6 h-6 text-gray-300 animate-spin dark:text-gray-600"
@@ -37,7 +37,7 @@
           fill="#1F2937"
         ></path>
       </svg>
-      <div v-show="!loading">{{ text }}</div>
+      <div v-else>{{ text }}</div>
     </div>
   </button>
 </template>

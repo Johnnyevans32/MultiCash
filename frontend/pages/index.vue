@@ -277,6 +277,10 @@ import { useUserStore } from "~/store/user";
 
 export default defineComponent({
   async setup() {
+    useSeoMeta({
+      title: "Wallet",
+      ogTitle: "Wallet",
+    });
     const config = useRuntimeConfig();
     const { user } = storeToRefs(useUserStore());
     const { setWallets } = useWalletStore();

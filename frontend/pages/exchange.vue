@@ -10,6 +10,10 @@ import ExchangeHistory from "~/components/exchange/ExchangeHistory.vue";
 import ExchangeTable from "~/components/exchange/ExchangeTable.vue";
 export default defineComponent({
   async setup() {
+    useSeoMeta({
+      title: "Exchange",
+      ogTitle: "Exchange",
+    });
     const tabs = ref([
       {
         title: "Exchange Currency",

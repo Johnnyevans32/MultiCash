@@ -9,6 +9,10 @@
 <script lang="ts">
 export default defineComponent({
   async setup() {
+    useSeoMeta({
+      title: "Card",
+      ogTitle: "Card",
+    });
     return {};
   },
 });

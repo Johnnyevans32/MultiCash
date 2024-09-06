@@ -180,6 +180,10 @@ import type { IWallet, IWalletAccount } from "~/types/wallet";
 
 export default defineComponent({
   async setup() {
+    useSeoMeta({
+      title: "Send",
+      ogTitle: "Send",
+    });
     onBeforeMount(async () => {
       await Promise.all([fetchBanks(), fetchWallets(), fetchWalletAccounts()]);
     });

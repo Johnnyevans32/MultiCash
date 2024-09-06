@@ -11,13 +11,12 @@
           <div class="bg-base h-10 w-10 rounded-xl"></div>
 
           <div class="flex flex-col gap-2">
+            <div class="h-2 w-32 bg-base rounded"></div>
             <div class="h-2 w-20 bg-base rounded"></div>
-            <div class="h-2 w-28 bg-base rounded"></div>
           </div>
         </div>
         <div class="flex flex-col gap-2">
           <div class="h-2 w-28 bg-base rounded"></div>
-          <div class="h-2 w-20 bg-base rounded self-end"></div>
         </div>
       </div>
     </div>
@@ -30,16 +29,41 @@
       class="text-left"
     >
       <span>{{ date }}</span>
+
       <div
         v-for="exchange in exchanges"
         :key="exchange.id"
         class="cursor-pointer py-5 md:px-5 px-2 flex mb-2 items-center h-16 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base"
       >
         <div class="flex md:space-x-2 space-x-1 items-center">
+          <CommonImage type="icon" image="fa-solid fa-exchange" />
+
           <div class="flex flex-col text-left">
-            <span class="truncate">{{ exchange.id }}</span>
-            <span class="text-xs">{{ exchange.status }}</span>
+            <span class="truncate">
+              {{ formatMoney(exchange.payinAmount) }}
+              {{ exchange.payinCurrency }}
+              <font-awesome-icon icon="fas fa-arrow-right " class="mx-1" />
+              {{ formatMoney(exchange.payoutAmount) }}
+              {{ exchange.payoutCurrency }}
+            </span>
+            <span class="text-xs"
+              >Fee: {{ exchange.totalFee }} {{ exchange.payinCurrency }}</span
+            >
           </div>
+        </div>
+
+        <div class="flex flex-col text-right">
+          <span
+            class="md:text-tbase text-sm"
+            :class="
+              exchange?.status === 'completed'
+                ? 'text-green-600'
+                : exchange?.status === 'failed'
+                ? 'text-red-600'
+                : 'text-yellow-600'
+            "
+            >{{ exchange.status }}</span
+          >
         </div>
       </div>
     </div>

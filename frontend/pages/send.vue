@@ -28,7 +28,7 @@
           <div class="h-2 w-28 bg-base rounded"></div>
         </div>
       </div>
-      <div class="h-2 w-28 bg-base rounded"></div>
+      <div class="h-2 w-12 bg-base rounded"></div>
     </div>
   </div>
   <div v-else-if="!walletAccounts.length">

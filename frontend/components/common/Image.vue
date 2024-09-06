@@ -11,7 +11,7 @@
     :src="image"
     :class="customCss"
     class="w-10 h-10 rounded-xl justify-self-center"
-    :alt="`${alt} logo`"
+    :alt="alt"
   />
 
   <div

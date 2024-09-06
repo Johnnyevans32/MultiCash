@@ -11,13 +11,13 @@
       <CommonButton
         text="Confirm"
         @btn-action="handleBtnClickAction"
-        custom-css="bg-red-400 w-full text-black"
+        custom-css="bg-red-600 w-full text-white"
         :loading="loading"
       />
       <CommonButton
         text="Cancel"
         @btn-action="changeModalStatus(false)"
-        custom-css="!bg-green-400 w-full text-black"
+        custom-css="!bg-green-600 w-full text-white"
       />
     </template>
   </CommonModal>

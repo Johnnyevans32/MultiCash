@@ -17,15 +17,18 @@
   <div
     class="flex justify-between p-5 font-bold rounded-xl border-[1px] bg-lightbase border-base md:text-3xl text-xl"
   >
-    <p class="text-left">Main Balance</p>
-    <p v-if="!isLoadingWallets" class="text-right">
+    <p class="text-left">Balance</p>
+    <p v-show="!isLoadingWallets" class="text-right">
       {{ selectedWallet?.currency }}
       {{ formatMoney(selectedWallet?.availableBalance) }}
     </p>
-    <div v-else class="h-10 w-28 bg-base rounded animate-pulse"></div>
+    <div
+      v-show="isLoadingWallets"
+      class="h-10 w-28 bg-base rounded animate-pulse"
+    ></div>
   </div>
   <div
-    v-if="!isLoadingWalletTransactions"
+    v-show="!isLoadingWalletTransactions"
     class="flex items-center justify-between"
   >
     <h1 class="md:block hidden text-xl font-bold">Transactions</h1>
@@ -41,7 +44,7 @@
     </div>
   </div>
 
-  <div v-if="isLoadingWalletTransactions">
+  <div v-show="isLoadingWalletTransactions">
     <div v-for="i in 2" :key="i">
       <div class="h-2 w-20 bg-base rounded mb-2"></div>
       <div
@@ -65,13 +68,13 @@
     </div>
   </div>
 
-  <div v-if="!isLoadingWalletTransactions && !walletTransactions.length">
+  <div v-show="!isLoadingWalletTransactions && !walletTransactions.length">
     <font-awesome-icon class="text-7xl mb-5" icon="magnifying-glass-dollar" />
     <p>No transactions yet</p>
     <p>Your transactions will appear here once they arrive.</p>
   </div>
 
-  <div v-if="!isLoadingWalletTransactions && walletTransactions.length">
+  <div v-show="!isLoadingWalletTransactions && walletTransactions.length">
     <div
       v-for="(transactions, date) in formatedWalletTransactions"
       :key="date"
@@ -95,13 +98,13 @@
             />
 
             <font-awesome-icon
-              v-if="txn?.type === 'debit'"
+              v-show="txn?.type === 'debit'"
               icon="fa-solid fa-circle-right"
               :style="{ transform: 'rotate(315deg)' }"
               class="text-red-600 rounded-xl bg-white absolute -bottom-[1px] -right-[1px] border-[1px] border-white"
             />
             <font-awesome-icon
-              v-else
+              v-show="txn?.type === 'credit'"
               icon="fa-solid fa-circle-right"
               :style="{ transform: 'rotate(135deg)' }"
               class="text-green-600 rounded-xl bg-white absolute -bottom-[1px] -right-[1px] border-[1px] border-white"
@@ -130,7 +133,7 @@
       </div>
     </div>
     <CommonPaginationBar
-      v-if="walletTransactions.length"
+      v-show="walletTransactions.length"
       :currentPage="walletTransactionsMetadata?.page"
       :totalItems="walletTransactionsMetadata?.totalDocs"
       @change-option="handlePageChange"
@@ -158,12 +161,12 @@
         <CommonButton
           text="Cancel"
           @btn-action="fundWalletModal = false"
-          custom-css="bg-red-400 w-full text-black"
+          custom-css="bg-red-600 w-full text-white"
         />
         <CommonButton
           text="Fund"
           @btn-action="fundWallet"
-          custom-css="!bg-blue-400 w-full text-black"
+          custom-css="!bg-blue-600 w-full text-white"
           :loading="isLoadingFundingWallet"
         />
       </template>
@@ -292,11 +295,18 @@ export default defineComponent({
                 console.log("onLoad: ", response);
               },
               onCancel: () => {
-                console.log("onCancel");
+                notify({
+                  type: "error",
+                  title: "transaction cancelled",
+                });
                 reject(new Error("Transaction cancelled"));
               },
               onError: (error: { message: any }) => {
                 console.log("Error: ", error.message);
+                notify({
+                  type: "error",
+                  title: error.message,
+                });
                 reject(error);
               },
             });

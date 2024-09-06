@@ -13,7 +13,7 @@
     <CommonButton
       text="Reset password"
       @btn-action="resetPassword"
-      custom-css="!bg-blue-400 w-full text-black"
+      custom-css="!bg-blue-600 w-full text-white"
       :loading="loading"
     />
     <NuxtLink class="text-blue-600 text-sm" to="/signin"

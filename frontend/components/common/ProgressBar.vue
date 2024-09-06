@@ -26,7 +26,7 @@ export default defineComponent({
       } else if (props.percentage >= 40 && props.percentage < 70) {
         return "bg-[#feed01]";
       } else {
-        return "bg-green-400";
+        return "bg-green-600";
       }
     });
 

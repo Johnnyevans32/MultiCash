@@ -1,9 +1,16 @@
+import type { IExchange, IMatchedOffering, IPfi } from "~/types/exchange";
+import type { IResponse } from "~/types/user";
+
 export class ExchangeService {
   async fetchPfis() {
     const { useCustomFetch } = useAppVueUtils();
-    return useCustomFetch(`/api/exchanges/pfis`, {
-      method: "get",
-    });
+    const { data } = await useCustomFetch<IResponse<IPfi[]>>(
+      `/api/exchanges/pfis`,
+      {
+        method: "get",
+      }
+    );
+    return data;
   }
 
   async getOfferings(payinCurrency: string, payoutCurrency: string) {
@@ -12,9 +19,13 @@ export class ExchangeService {
       payoutCurrency,
     }).toString();
     const { useCustomFetch } = useAppVueUtils();
-    return useCustomFetch(`/api/exchanges/offerings?${query}`, {
-      method: "get",
-    });
+    const { data } = await useCustomFetch<IResponse<IMatchedOffering[]>>(
+      `/api/exchanges/offerings?${query}`,
+      {
+        method: "get",
+      }
+    );
+    return data;
   }
 
   async createExchange(payload: { offerings: string[]; payinAmount: number }) {
@@ -30,9 +41,13 @@ export class ExchangeService {
       page: page.toString(),
     }).toString();
     const { useCustomFetch } = useAppVueUtils();
-    return useCustomFetch(`/api/exchanges?${query}`, {
-      method: "get",
-    });
+    const { data, metadata } = await useCustomFetch<IResponse<IExchange[]>>(
+      `/api/exchanges?${query}`,
+      {
+        method: "get",
+      }
+    );
+    return { data, metadata };
   }
 
   async ratingExchange(exchangeId: string, rating: number) {

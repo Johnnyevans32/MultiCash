@@ -8,7 +8,7 @@
     <CommonButton
       text="Save changes"
       @btn-action="updateUser"
-      custom-css="!bg-blue-400 w-full text-black"
+      custom-css="!bg-blue-600 w-full text-white"
       :loading="loading"
     />
   </div>

@@ -29,7 +29,7 @@
     <CommonButton
       text="Save changes"
       @btn-action="saveInactivityTimeout"
-      custom-css="!bg-blue-400 w-full text-black"
+      custom-css="!bg-blue-600 w-full text-white"
     />
   </div>
 </template>

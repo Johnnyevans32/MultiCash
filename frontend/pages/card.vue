@@ -3,7 +3,7 @@
     <CommonPageBar mainPage="Card" />
   </div>
   <CommonImage image="./card.png" alt="card" custom-css="w-96 h-56" />
-  <p>Coming soon</p>
+  <h1 class="text-2xl">Coming Soon</h1>
 </template>
 
 <script lang="ts">

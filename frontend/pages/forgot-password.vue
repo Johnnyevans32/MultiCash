@@ -14,7 +14,7 @@
     <CommonButton
       text="Request reset"
       @btn-action="forgotPassword"
-      custom-css="!bg-blue-400 w-full text-black"
+      custom-css="!bg-blue-600 w-full text-white"
     />
     <NuxtLink class="text-blue-600 text-sm" to="/signin"
       >Remember Password? Sign In</NuxtLink

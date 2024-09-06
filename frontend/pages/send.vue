@@ -94,12 +94,12 @@
       <CommonButton
         text="Cancel"
         @btn-action="addAccountModal = false"
-        custom-css="bg-red-400 w-full text-black"
+        custom-css="bg-red-600 w-full text-white"
       />
       <CommonButton
         text="Add account"
         @btn-action="createWalletAccount"
-        custom-css="!bg-blue-400 w-full text-black"
+        custom-css="!bg-blue-600 w-full text-white"
         :loading="isCreateWalletLoading"
       />
     </template>
@@ -161,12 +161,12 @@
       <CommonButton
         text="Cancel"
         @btn-action="withdrawalModal = false"
-        custom-css="bg-red-400 w-full text-black"
+        custom-css="bg-red-600 w-full text-white"
       />
       <CommonButton
         text="Send"
         @btn-action="withdraw"
-        custom-css="!bg-blue-400 w-full text-black"
+        custom-css="!bg-blue-600 w-full text-white"
         :loading="isWithdrawLoading"
       />
     </template>

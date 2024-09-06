@@ -49,7 +49,6 @@ export default defineComponent({
     const selectedOption = ref(props.selected);
 
     watch(selectedOption, (newVal) => {
-      console.log(newVal);
       ctx.emit("changeOption", newVal);
     });
 

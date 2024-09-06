@@ -19,7 +19,7 @@
       text="Sign in"
       @btn-action="signin"
       :loading="loading"
-      custom-css="!bg-blue-400 w-full text-black"
+      custom-css="!bg-blue-600 w-full text-white"
     />
     <NuxtLink class="text-blue-600 text-sm" to="/signup"
       >Don't have an account? Register</NuxtLink

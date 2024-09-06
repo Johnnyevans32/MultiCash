@@ -25,7 +25,7 @@
       text="Create Account"
       @btn-action="signup"
       :loading="loading"
-      custom-css="!bg-blue-400 w-full text-black"
+      custom-css="!bg-blue-600 w-full text-white"
     />
     <NuxtLink class="text-blue-600 text-sm" to="/signin"
       >Already have an account? Signin In</NuxtLink

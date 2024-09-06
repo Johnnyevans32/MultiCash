@@ -1,9 +1,9 @@
 import moment from "moment";
 
-export const formatMoney = (value?: number) =>
+export const formatMoney = (value?: number, maxFractionDigits = 2) =>
   value?.toLocaleString(undefined, {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    maximumFractionDigits: maxFractionDigits,
   });
 
 export const formatDate = (date: string, format = "MMM Do YY") =>

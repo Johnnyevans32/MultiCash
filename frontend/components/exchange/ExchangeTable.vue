@@ -37,11 +37,17 @@
       :loading="isLoadingOfferings"
       custom-css="!bg-blue-600 w-full text-white"
     />
+
+    <ExchangeMatchedOfferings
+      v-if="matchedOfferings.length"
+      :matchedOfferings="matchedOfferings"
+    />
   </div>
 </template>
 
 <script lang="ts">
 import { useWalletStore } from "~/store/wallet";
+import type { IMatchedOffering } from "~/types/exchange";
 
 export default defineComponent({
   setup() {
@@ -71,21 +77,21 @@ export default defineComponent({
     const isLoadingWallets = ref(false);
     const fetchWallets = async () => {
       await withLoadingPromise(
-        $api.walletService.fetchWallets().then((walletsResponse: any) => {
+        $api.walletService.fetchWallets().then((walletsResponse) => {
           setWallets(walletsResponse);
         }),
         isLoadingWallets
       );
     };
 
-    const offerings = ref([]);
+    const matchedOfferings = ref<IMatchedOffering[]>([]);
     const isLoadingOfferings = ref(false);
     const getOfferings = async () => {
       await withLoadingPromise(
         $api.exchangeService
           .getOfferings(payinCurrency.value, payoutCurrency.value)
-          .then((resp: any) => {
-            offerings.value = resp;
+          .then((resp) => {
+            matchedOfferings.value = resp;
           }),
         isLoadingOfferings
       );
@@ -106,6 +112,7 @@ export default defineComponent({
       getOfferings,
       isLoadingOfferings,
       switchCurrencies,
+      matchedOfferings,
     };
   },
 });

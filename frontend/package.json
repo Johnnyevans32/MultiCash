@@ -27,6 +27,7 @@
     "@paystack/inline-js": "^2.20.3",
     "@pinia-plugin-persistedstate/nuxt": "^1.2.0",
     "@pinia/nuxt": "^0.5.1",
+    "@vite-pwa/nuxt": "^0.10.5",
     "axios": "^1.6.7",
     "moment": "^2.29.4",
     "node-fetch-native": "^1.6.4",

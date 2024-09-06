@@ -146,6 +146,8 @@ export class ExchangeService extends RequestService {
       offerings: OfferingDTO[];
       cumulativePayoutUnitsPerPayinUnit: number;
       cumulativeFee: number;
+      payinCurrency: SupportedCurrencyEnum;
+      payoutCurrency: SupportedCurrencyEnum;
     }[] = [];
     const queue: {
       chain: OfferingDTO[];
@@ -183,6 +185,8 @@ export class ExchangeService extends RequestService {
           offerings: chain,
           cumulativePayoutUnitsPerPayinUnit,
           cumulativeFee,
+          payinCurrency,
+          payoutCurrency,
         });
         continue;
       }

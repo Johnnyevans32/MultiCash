@@ -1,3 +1,6 @@
+// nuxt.config.ts
+import { defineNuxtConfig } from "nuxt/config";
+
 export default defineNuxtConfig({
   app: {
     head: {
@@ -21,7 +24,7 @@ export default defineNuxtConfig({
       ],
     },
   },
-
+  pwa: {},
   typescript: {
     shim: false,
     strict: true,
@@ -40,7 +43,11 @@ export default defineNuxtConfig({
   },
   telemetry: false,
   ssr: false,
-  modules: ["@pinia/nuxt", "@pinia-plugin-persistedstate/nuxt"],
+  modules: [
+    "@pinia/nuxt",
+    "@pinia-plugin-persistedstate/nuxt",
+    "@vite-pwa/nuxt",
+  ],
 
   pinia: {
     storesDirs: ["./stores/**", "./custom-folder/stores/**"],

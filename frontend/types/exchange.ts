@@ -10,12 +10,15 @@ export interface IOffering {
   status: string;
   pfiFee: number;
   pfi: IPfi;
+  pfiOfferingId: string;
 }
 
 export interface IMatchedOffering {
   offerings: IOffering[];
   cumulativePayoutUnitsPerPayinUnit: number;
   cumulativeFee: number;
+  payinCurrency: string;
+  payoutCurrency: string;
 }
 
 export interface IExchange {

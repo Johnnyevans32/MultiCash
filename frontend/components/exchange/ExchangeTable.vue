@@ -38,10 +38,22 @@
       custom-css="!bg-blue-600 w-full text-white"
     />
 
+    <div v-if="isLoadingOfferings">
+      <div class="h-2 w-28 bg-base rounded mb-2"></div>
+      <div
+        v-for="i in 2"
+        :key="i"
+        class="cursor-progress p-5 flex mb-2 items-center h-32 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base animate-pulse"
+      ></div>
+    </div>
     <ExchangeMatchedOfferings
-      v-if="matchedOfferings.length"
+      v-else-if="!isLoadingOfferings && matchedOfferings.length"
       :matchedOfferings="matchedOfferings"
     />
+    <div v-else>
+      <font-awesome-icon class="text-7xl mb-5" icon="box-open" />
+      <p>No matched offerings found as of now</p>
+    </div>
   </div>
 </template>
 

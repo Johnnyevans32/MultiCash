@@ -3,7 +3,7 @@ interface WalletCurrency {
   fundingEnabled: boolean;
   transferFee: number;
   exchangePercentageFee: number;
-  maxExchangeFee: string;
+  maxExchangeFee: number;
   currency: string;
   logo: string;
   name: string;

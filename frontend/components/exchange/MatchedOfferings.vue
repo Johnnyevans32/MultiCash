@@ -16,14 +16,12 @@
           >
         </div>
 
-        <!-- Offerings Chain (from pay-in to pay-out) -->
         <div class="flex items-center gap-4">
           <div
             v-for="(offering, offeringIndex) in matchedOffering.offerings"
             :key="offering.id"
             class="flex items-center"
           >
-            <!-- Offering Info -->
             <div class="flex flex-col items-start">
               <span class="font-bold">{{ offering.pfiName }}</span>
               <span class="text-sm"
@@ -37,7 +35,6 @@
               >
             </div>
 
-            <!-- Arrow Between Offerings -->
             <div v-if="offeringIndex < matchedOffering.offerings.length - 1">
               <span class="text-gray-400">→</span>
             </div>
@@ -45,9 +42,8 @@
         </div>
       </div>
 
-      <!-- Cumulative Payout -->
       <div class="text-right text-green-600 font-bold">
-        Route Rate: 1
+        Exchange Rate: 1
         {{ matchedOffering.payinCurrency }} =
         {{ formatMoney(matchedOffering.cumulativePayoutUnitsPerPayinUnit, 5) }}
         {{ matchedOffering.payoutCurrency }}
@@ -58,7 +54,7 @@
   <CommonModal
     v-if="selectedOffering"
     :open="exchangeModal"
-    title="Swap Summary"
+    title="Exchange Summary"
     @change-modal-status="
       (val) => {
         exchangeModal = val;
@@ -66,17 +62,16 @@
     "
   >
     <template v-slot:content>
-      <div class="flex flex-col gap-4">
-        <!-- Selected Offering Chain -->
+      <div class="flex flex-col gap-4 text-base">
         <div class="flex flex-col gap-2">
           <span class="font-bold">Selected Exchange Route:</span>
           <div class="flex items-center gap-4">
             <div
               v-for="(offering, index) in selectedOffering.offerings"
               :key="offering.id"
-              class="flex items-center"
+              class="flex items-center gap-2"
             >
-              <div class="flex flex-col items-center">
+              <div class="flex flex-col items-start">
                 <span class="font-bold">{{ offering.pfiName }}</span>
                 <span class="text-sm"
                   >{{ offering.payinCurrency }} →
@@ -84,43 +79,53 @@
                 >
               </div>
               <div v-if="index < selectedOffering.offerings.length - 1">
-                <span class="text-gray-400">→</span>
+                <span> → </span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Input for Amount -->
         <div class="flex flex-col">
-          <label for="amount"
-            >Enter Amount ({{
-              selectedOffering.offerings[0].payinCurrency
-            }}):</label
-          >
-          <input
+          <CommonAmountInput
             v-model="payinAmount"
-            type="number"
-            min="0"
-            id="amount"
-            class="p-2 border-[1px] border-base rounded-lg"
+            placeholder="Enter amount"
+            title="Enter amount"
+            :currency="selectedOffering.payinCurrency"
           />
         </div>
 
-        <!-- Swap Summary -->
         <div class="flex flex-col">
           <span>Summary:</span>
+
           <div class="flex justify-between">
-            <span>You will receive:</span>
+            <span>Platform Fee:</span>
             <span class="font-bold"
-              >{{ calculatedPayoutAmount }}
-              {{ selectedOffering.payoutCurrency }}</span
+              >{{ (walletCurrency?.exchangePercentageFee || 0) * 100 }}%
+            </span>
+          </div>
+          <div class="flex justify-between">
+            <span>Pfi(s) Fee:</span>
+            <span class="font-bold"
+              >{{ formatMoney(selectedOffering.cumulativeFee) }}
+              {{ selectedOffering.payinCurrency }}</span
             >
           </div>
           <div class="flex justify-between text-sm">
             <span>Total Fees:</span>
             <span
-              >{{ formatMoney(selectedOffering.cumulativeFee) }}
+              >{{
+                formatMoney(
+                  selectedOffering.cumulativeFee + calculatedPlatformFeeAmount
+                )
+              }}
               {{ selectedOffering.payinCurrency }}</span
+            >
+          </div>
+          <div class="flex justify-between">
+            <span>You will receive:</span>
+            <span class="font-bold"
+              >{{ formatMoney(calculatedPayoutAmount) }}
+              {{ selectedOffering.payoutCurrency }}</span
             >
           </div>
         </div>
@@ -129,15 +134,15 @@
 
     <template v-slot:footer>
       <CommonButton
-        text="Proceed"
-        @btn-action="createExchange"
-        custom-css="bg-green-500 w-full text-white"
-        :loading="isLoadingCreateExchange"
-      />
-      <CommonButton
         text="Cancel"
         @btn-action="exchangeModal = false"
-        custom-css="bg-red-400 w-full text-black"
+        custom-css="bg-red-600 w-full text-white"
+      />
+      <CommonButton
+        text="Proceed"
+        @btn-action="createExchange"
+        custom-css="!bg-green-600 w-full text-white"
+        :loading="isLoadingCreateExchange"
       />
     </template>
   </CommonModal>
@@ -146,7 +151,7 @@
 <script lang="ts">
 import { notify } from "@kyvg/vue3-notification";
 import type { IMatchedOffering } from "~/types/exchange";
-
+import { useWalletStore } from "~/store/wallet";
 export default defineComponent({
   props: {
     matchedOfferings: {
@@ -159,15 +164,32 @@ export default defineComponent({
     const exchangeModal = ref(false);
     const { $api } = useNuxtApp();
     const payinAmount = ref<number>();
+    const { wallets } = storeToRefs(useWalletStore());
 
     const selectOffering = (offering: IMatchedOffering) => {
       selectedOffering.value = offering;
       exchangeModal.value = true;
     };
 
-    const calculatedPayoutAmount = () =>
-      payinAmount.value ||
-      0 * (selectedOffering.value?.cumulativePayoutUnitsPerPayinUnit || 0);
+    const walletCurrency = computed(() => {
+      const wallet = wallets.value.find(
+        (w) => w.currency === selectedOffering.value?.payinCurrency
+      );
+      return wallet?.walletCurrency;
+    });
+
+    const calculatedPlatformFeeAmount = computed(() =>
+      Math.min(
+        (payinAmount.value || 0) *
+          (walletCurrency.value?.exchangePercentageFee || 0),
+        walletCurrency.value?.maxExchangeFee || 0
+      )
+    );
+    const calculatedPayoutAmount = computed(
+      () =>
+        ((payinAmount.value || 0) - (calculatedPlatformFeeAmount.value || 0)) *
+        (selectedOffering.value?.cumulativePayoutUnitsPerPayinUnit || 0)
+    );
 
     const { withLoadingPromise } = useLoading();
 
@@ -183,6 +205,7 @@ export default defineComponent({
               ),
             })
             .then(() => {
+              exchangeModal.value = false;
               notify({
                 type: "success",
                 title: `exchange is being processed`,
@@ -200,6 +223,8 @@ export default defineComponent({
       selectOffering,
       createExchange,
       calculatedPayoutAmount,
+      walletCurrency,
+      calculatedPlatformFeeAmount,
     };
   },
 });

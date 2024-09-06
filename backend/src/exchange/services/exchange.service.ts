@@ -369,7 +369,7 @@ export class ExchangeService extends RequestService {
   }
 
   async fetchExchanges(user: UserDocument, query: PaginateDTO) {
-    const { page = 1, limit = 2, all = false } = query;
+    const { page = 1, limit = 10, all = false } = query;
     const { docs: data, ...metadata } = await this.exchangeModel.paginate(
       {
         isDeleted: false,

@@ -85,6 +85,7 @@
         v-for="txn in transactions"
         :key="txn.id"
         class="cursor-pointer py-5 md:px-5 px-2 flex mb-2 items-center h-16 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base"
+        @click="openTransactionDetailModal(txn)"
       >
         <div class="flex md:space-x-2 space-x-1 items-center">
           <div class="text-sm transform translate-y-0">
@@ -172,6 +173,98 @@
       </template>
     </CommonModal>
   </div>
+
+  <CommonModal
+    v-if="modalTransaction"
+    :open="transactionDetailsModal"
+    title="Transaction Details"
+    @change-modal-status="
+      (newVal) => {
+        transactionDetailsModal = newVal;
+      }
+    "
+  >
+    <template v-slot:content>
+      <div class="flex flex-col gap-2">
+        <div class="flex flex-col">
+          <span
+            >You were
+            {{
+              modalTransaction?.type === "debit" ? "debited" : "credited"
+            }}:</span
+          >
+          <span class="font-bold">
+            {{ modalTransaction?.currency }}
+            {{ formatMoney(modalTransaction?.amount || 0) }}
+          </span>
+        </div>
+
+        <div class="flex flex-col">
+          <span>Description:</span>
+          <span class="font-bold">{{ modalTransaction?.description }}</span>
+        </div>
+
+        <div class="flex flex-col">
+          <span>Purpose:</span>
+          <span class="font-bold">{{
+            modalTransaction?.purpose?.replaceAll("_", " ")
+          }}</span>
+        </div>
+
+        <div class="flex flex-col">
+          <span>Balance before transaction:</span>
+          <span class="font-bold">
+            {{ modalTransaction?.currency }}
+            {{
+              formatMoney(
+                modalTransaction?.walletStateBefore?.availableBalance || 0
+              )
+            }}
+          </span>
+        </div>
+
+        <div class="flex flex-col">
+          <span>Balance after transaction:</span>
+          <span class="font-bold">
+            {{ modalTransaction?.currency }}
+            {{
+              formatMoney(
+                modalTransaction?.walletStateAfter?.availableBalance || 0
+              )
+            }}
+          </span>
+        </div>
+
+        <div class="flex flex-col">
+          <span>Date:</span>
+          <span class="font-bold">
+            {{
+              modalTransaction?.createdAt &&
+              formatDate(
+                modalTransaction.createdAt,
+                "ddd, MMM Do YYYY, h:mm:ss a"
+              )
+            }}
+          </span>
+        </div>
+
+        <div class="flex flex-col">
+          <span>Transaction Type:</span>
+          <span class="font-bold">
+            {{ modalTransaction?.type === "debit" ? "Debit" : "Credit" }}
+          </span>
+        </div>
+      </div>
+    </template>
+
+    <template v-slot:footer>
+      <CommonButton
+        text="Close"
+        @btn-action="transactionDetailsModal = false"
+        custom-css="bg-gray-400 w-full text-black"
+      />
+    </template>
+  </CommonModal>
 </template>
 
 <script lang="ts">
@@ -323,6 +416,13 @@ export default defineComponent({
       fetchWalletTransactions();
     };
 
+    const transactionDetailsModal = ref(false);
+    const modalTransaction = ref<IWalletTransaction>();
+    const openTransactionDetailModal = (transaction: any) => {
+      modalTransaction.value = transaction;
+      transactionDetailsModal.value = true;
+    };
+
     return {
       walletCurrencies,
       selectedCurrency,
@@ -341,6 +441,9 @@ export default defineComponent({
       handleFundWalletBtnClick,
       searchQuery,
       searchTransactions,
+      transactionDetailsModal,
+      openTransactionDetailModal,
+      modalTransaction,
     };
   },
 });

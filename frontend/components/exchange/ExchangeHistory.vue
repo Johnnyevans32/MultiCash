@@ -94,7 +94,6 @@
   >
     <template v-slot:content>
       <div class="flex flex-col gap-2">
-        <!-- Payin Amount -->
         <div class="flex flex-col">
           <span
             >You
@@ -110,7 +109,6 @@
           </span>
         </div>
 
-        <!-- Payout Amount -->
         <div class="flex flex-col">
           <span>For:</span>
           <span class="font-bold">
@@ -119,7 +117,6 @@
           </span>
         </div>
 
-        <!-- Exchange Rate -->
         <div class="flex flex-col">
           <span>Exchange Rate:</span>
           <span class="font-bold">
@@ -129,7 +126,6 @@
           </span>
         </div>
 
-        <!-- Fees -->
         <div class="flex flex-col">
           <span>Fees:</span>
           <span class="font-bold"
@@ -138,7 +134,6 @@
           >
         </div>
 
-        <!-- Status -->
         <div class="flex flex-col">
           <span>Status:</span>
           <span
@@ -172,7 +167,7 @@
               class="border-b border-gray-300 py-2"
             >
               <div class="flex justify-between">
-                <span>PFI: {{ offering.pfi.name }}</span>
+                <span>PFI: {{ offering.pfi?.name }}</span>
                 <span
                   >Status:
                   <span
@@ -205,7 +200,6 @@
     </template>
 
     <template v-slot:footer>
-      <!-- Close Modal -->
       <CommonButton
         text="Close"
         @btn-action="updateExchangeModal = false"

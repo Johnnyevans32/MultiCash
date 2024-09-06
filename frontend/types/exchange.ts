@@ -1,4 +1,5 @@
 export interface IOffering {
+  id: string;
   pfiName: string;
   pfiDid: string;
   description: string;
@@ -7,6 +8,8 @@ export interface IOffering {
   payoutCurrency: string;
   fee: number;
   status: string;
+  pfiFee: number;
+  pfi: IPfi;
 }
 
 export interface IMatchedOffering {

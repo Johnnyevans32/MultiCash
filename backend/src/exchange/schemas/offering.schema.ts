@@ -78,7 +78,7 @@ export class Offering extends BaseSchema {
   pfiExchangeId?: string;
 
   @Prop({ type: SchemaTypes.Number })
-  pfiQuoteFee?: number;
+  pfiFee?: number;
   @Prop({ type: SchemaTypes.Date })
   pfiQuoteExpiresAt?: Date;
 

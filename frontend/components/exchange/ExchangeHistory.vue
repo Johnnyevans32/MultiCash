@@ -34,6 +34,7 @@
         v-for="exchange in exchanges"
         :key="exchange.id"
         class="cursor-pointer py-5 md:px-5 px-2 flex mb-2 items-center h-16 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base"
+        @click="openExchangeModal(exchange)"
       >
         <div class="flex md:space-x-2 space-x-1 items-center">
           <CommonImage type="icon" image="fa-solid fa-exchange" />
@@ -47,7 +48,8 @@
               {{ exchange.payoutCurrency }}
             </span>
             <span class="text-xs"
-              >Fee: {{ exchange.totalFee }} {{ exchange.payinCurrency }}</span
+              >Fee: {{ formatMoney(exchange.totalFee) }}
+              {{ exchange.payinCurrency }}</span
             >
           </div>
         </div>
@@ -80,6 +82,137 @@
     :totalItems="exchangesMetadata?.totalDocs"
     @change-option="handlePageChange"
   />
+  <CommonModal
+    v-if="modalExchange"
+    :open="updateExchangeModal"
+    title="Exchange Details"
+    @change-modal-status="
+      (newVal) => {
+        updateExchangeModal = newVal;
+      }
+    "
+  >
+    <template v-slot:content>
+      <div class="flex flex-col gap-2">
+        <!-- Payin Amount -->
+        <div class="flex flex-col">
+          <span
+            >You
+            {{
+              modalExchange?.status === "completed"
+                ? "exchanged"
+                : "are exchanging"
+            }}:</span
+          >
+          <span class="font-bold">
+            {{ modalExchange?.payinCurrency }}
+            {{ formatMoney(modalExchange?.payinAmount || 0) }}
+          </span>
+        </div>
+
+        <!-- Payout Amount -->
+        <div class="flex flex-col">
+          <span>For:</span>
+          <span class="font-bold">
+            {{ modalExchange?.payoutCurrency }}
+            {{ formatMoney(modalExchange?.payoutAmount || 0) }}
+          </span>
+        </div>
+
+        <!-- Exchange Rate -->
+        <div class="flex flex-col">
+          <span>Exchange Rate:</span>
+          <span class="font-bold">
+            1 {{ modalExchange?.payinCurrency }} =
+            {{ modalExchange?.payoutUnitsPerPayinUnit }}
+            {{ modalExchange?.payoutCurrency }}
+          </span>
+        </div>
+
+        <!-- Fees -->
+        <div class="flex flex-col">
+          <span>Fees:</span>
+          <span class="font-bold"
+            >{{ modalExchange?.payinCurrency }}
+            {{ formatMoney(modalExchange?.totalFee || 0) }}</span
+          >
+        </div>
+
+        <!-- Status -->
+        <div class="flex flex-col">
+          <span>Status:</span>
+          <span
+            class="font-bold"
+            :class="{
+              'text-green-600': modalExchange?.status === 'completed',
+              'text-red-600': modalExchange?.status === 'failed',
+              'text-yellow-600': modalExchange?.status === 'pending',
+            }"
+          >
+            {{ modalExchange?.status }}
+          </span>
+        </div>
+
+        <div class="flex flex-col">
+          <span>Date:</span>
+          <span class="font-bold">
+            {{
+              modalExchange?.createdAt &&
+              formatDate(modalExchange.createdAt, "ddd, MMM Do YYYY, h:mm:ss a")
+            }}
+          </span>
+        </div>
+
+        <div v-if="modalExchange?.offerings?.length" class="flex flex-col">
+          <span>Exchange Chain:</span>
+          <ul class="font-bold flex flex-col gap-4">
+            <li
+              v-for="offering in modalExchange.offerings"
+              :key="offering.id"
+              class="border-b border-gray-300 py-2"
+            >
+              <div class="flex justify-between">
+                <span>PFI: {{ offering.pfi.name }}</span>
+                <span
+                  >Status:
+                  <span
+                    :class="{
+                      'text-green-600': offering.status === 'completed',
+                      'text-red-600': offering.status === 'failed',
+                      'text-yellow-600': offering.status === 'pending',
+                    }"
+                  >
+                    {{ offering.status }}
+                  </span>
+                </span>
+              </div>
+              <div class="flex flex-col">
+                <span>Description: {{ offering.description }}</span>
+                <span
+                  >1 {{ offering.payinCurrency }} =
+                  {{ offering.payoutUnitsPerPayinUnit }}
+                  {{ offering.payoutCurrency }}</span
+                >
+                <span
+                  >PFI Fee: {{ offering.payinCurrency }}
+                  {{ formatMoney(offering.pfiFee || 0) }}</span
+                >
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </template>
+
+    <template v-slot:footer>
+      <!-- Close Modal -->
+      <CommonButton
+        text="Close"
+        @btn-action="updateExchangeModal = false"
+        custom-css="bg-gray-400 w-full text-black"
+      />
+    </template>
+  </CommonModal>
 </template>
 <script lang="ts">
 import type { IExchange } from "~/types/exchange";
@@ -121,6 +254,13 @@ export default defineComponent({
       );
     };
 
+    const updateExchangeModal = ref(false);
+    const modalExchange = ref<IExchange>();
+    const openExchangeModal = (exchange: any) => {
+      modalExchange.value = exchange;
+      updateExchangeModal.value = true;
+    };
+
     return {
       config,
       exchanges,
@@ -128,6 +268,9 @@ export default defineComponent({
       isLoadingExchanges,
       handlePageChange,
       formatedExchanges,
+      updateExchangeModal,
+      openExchangeModal,
+      modalExchange,
     };
   },
 });

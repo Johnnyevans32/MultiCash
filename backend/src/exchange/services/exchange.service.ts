@@ -380,7 +380,9 @@ export class ExchangeService extends RequestService {
           "payinAmount payoutAmount payinCurrency payoutCurrency payoutUnitsPerPayinUnit totalFee status createdAt",
         populate: {
           path: "offerings",
-          select: "status payinCurrency payoutCurrency",
+          select:
+            "status payinCurrency payoutCurrency description payoutUnitsPerPayinUnit pfiFee",
+          populate: { path: "pfi", select: "name" },
         },
       }
     );
@@ -555,7 +557,7 @@ export class ExchangeService extends RequestService {
                   (lastMessage.data as any).expiresAt
                 ).toDate();
                 offering.status = OfferingStatus.AwaitingOrder;
-                offering.pfiQuoteFee = Number(
+                offering.pfiFee = Number(
                   (lastMessage.data as any).payin.fee || 0
                 );
                 this.createOrder([offering.id]);

@@ -92,6 +92,7 @@
             placeholder="Enter amount"
             title="Enter amount"
             :currency="selectedOffering.payinCurrency"
+            :balance="wallet?.availableBalance"
           />
         </div>
 
@@ -172,12 +173,12 @@ export default defineComponent({
       exchangeModal.value = true;
     };
 
-    const walletCurrency = computed(() => {
-      const wallet = wallets.value.find(
+    const wallet = computed(() =>
+      wallets.value.find(
         (w) => w.currency === selectedOffering.value?.payinCurrency
-      );
-      return wallet?.walletCurrency;
-    });
+      )
+    );
+    const walletCurrency = computed(() => wallet.value?.walletCurrency);
 
     const calculatedPlatformFeeAmount = computed(() =>
       Math.min(
@@ -226,6 +227,7 @@ export default defineComponent({
       calculatedPayoutAmount,
       walletCurrency,
       calculatedPlatformFeeAmount,
+      wallet,
     };
   },
 });

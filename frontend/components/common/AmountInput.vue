@@ -14,6 +14,10 @@
         :placeholder="placeholder"
       />
     </div>
+
+    <span v-if="balance" class="text-tiny text-red-600"
+      >Wallet Balance: {{ currency }} {{ formatMoney(balance) }}</span
+    >
   </div>
 </template>
 
@@ -24,6 +28,7 @@ export default defineComponent({
     modelValue: {},
     placeholder: { type: String, required: false },
     currency: { type: String },
+    balance: { type: Number },
   },
   emits: ["update:modelValue"],
   setup(props: any, ctx: any) {

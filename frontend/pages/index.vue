@@ -153,7 +153,7 @@
           <CommonAmountInput
             v-model="amount"
             placeholder="Enter amount"
-            title="Enter amount"
+            title="Enter amount to fund"
             :currency="selectedCurrency"
           />
         </div>

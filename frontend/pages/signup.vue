@@ -10,7 +10,7 @@
       placeholder="name"
     />
     <CommonFormSelect
-      title="Select bank"
+      title="Select your country"
       :selected="country"
       :options="SupportedCountries"
       @change-option="

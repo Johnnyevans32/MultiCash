@@ -142,6 +142,7 @@
           placeholder="Enter amount"
           title="Enter amount"
           :currency="selectedWalletAccount?.bank.currency"
+          :balance="wallet?.availableBalance"
         />
         <CommonFormInput
           v-model="note"
@@ -201,10 +202,15 @@ export default defineComponent({
     );
     const withdrawableCurrencies = computed(() =>
       wallets.value
-        .filter((w: IWallet) => w.walletCurrency.withdrawalEnabled)
-        .map((i: { currency: string }) => i.currency)
+        .filter((w) => w.walletCurrency.withdrawalEnabled)
+        .map((i) => i.currency)
     );
+
     const selectedCurrency = ref("");
+
+    const wallet = computed(() =>
+      wallets.value.find((w) => w.currency === selectedCurrency.value)
+    );
 
     const isFetchWalletLoading = ref(false);
     const fetchWallets = async () => {
@@ -323,6 +329,7 @@ export default defineComponent({
       isWithdrawLoading,
       withdraw,
       openWithdrawalModal,
+      wallet,
     };
   },
 });

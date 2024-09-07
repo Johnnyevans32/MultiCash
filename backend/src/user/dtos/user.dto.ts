@@ -1,5 +1,12 @@
 import { Transform } from "class-transformer";
-import { IsOptional, IsString, IsEmail } from "class-validator";
+import {
+  IsOptional,
+  IsString,
+  IsEmail,
+  MinLength,
+  MaxLength,
+  Matches,
+} from "class-validator";
 
 export class CreateUserDTO {
   @IsOptional()
@@ -16,6 +23,17 @@ export class CreateUserDTO {
 
   @IsString()
   @Transform(({ value }) => value.trim().toLowerCase())
+  @MinLength(5, { message: "Password must be at least 5 characters long" })
+  @MaxLength(32, { message: "Password cannot exceed 32 characters" })
+  @Matches(/(?=.*[A-Z])/, {
+    message: "Password must contain at least one uppercase letter",
+  })
+  @Matches(/(?=.*[a-z])/, {
+    message: "Password must contain at least one lowercase letter",
+  })
+  @Matches(/(?=.*[0-9])/, {
+    message: "Password must contain at least one number",
+  })
   readonly password: string;
 }
 
@@ -24,6 +42,18 @@ export class ResetPasswordDTO {
   readonly token: string;
 
   @IsString()
+  @Transform(({ value }) => value.trim().toLowerCase())
+  @MinLength(5, { message: "Password must be at least 5 characters long" })
+  @MaxLength(32, { message: "Password cannot exceed 32 characters" })
+  @Matches(/(?=.*[A-Z])/, {
+    message: "Password must contain at least one uppercase letter",
+  })
+  @Matches(/(?=.*[a-z])/, {
+    message: "Password must contain at least one lowercase letter",
+  })
+  @Matches(/(?=.*[0-9])/, {
+    message: "Password must contain at least one number",
+  })
   readonly newPassword: string;
 }
 
@@ -32,6 +62,18 @@ export class UpdatePasswordDTO {
   readonly oldPassword: string;
 
   @IsString()
+  @Transform(({ value }) => value.trim().toLowerCase())
+  @MinLength(5, { message: "Password must be at least 5 characters long" })
+  @MaxLength(32, { message: "Password cannot exceed 32 characters" })
+  @Matches(/(?=.*[A-Z])/, {
+    message: "Password must contain at least one uppercase letter",
+  })
+  @Matches(/(?=.*[a-z])/, {
+    message: "Password must contain at least one lowercase letter",
+  })
+  @Matches(/(?=.*[0-9])/, {
+    message: "Password must contain at least one number",
+  })
   readonly newPassword: string;
 }
 

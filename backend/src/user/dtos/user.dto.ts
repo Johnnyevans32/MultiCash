@@ -22,7 +22,7 @@ export class CreateUserDTO {
   readonly email: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim().toLowerCase())
+  @Transform(({ value }) => value.trim())
   @MinLength(5, { message: "Password must be at least 5 characters long" })
   @MaxLength(32, { message: "Password cannot exceed 32 characters" })
   @Matches(/(?=.*[A-Z])/, {
@@ -42,7 +42,7 @@ export class ResetPasswordDTO {
   readonly token: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim().toLowerCase())
+  @Transform(({ value }) => value.trim())
   @MinLength(5, { message: "Password must be at least 5 characters long" })
   @MaxLength(32, { message: "Password cannot exceed 32 characters" })
   @Matches(/(?=.*[A-Z])/, {
@@ -62,7 +62,7 @@ export class UpdatePasswordDTO {
   readonly oldPassword: string;
 
   @IsString()
-  @Transform(({ value }) => value.trim().toLowerCase())
+  @Transform(({ value }) => value.trim())
   @MinLength(5, { message: "Password must be at least 5 characters long" })
   @MaxLength(32, { message: "Password cannot exceed 32 characters" })
   @Matches(/(?=.*[A-Z])/, {

@@ -10,12 +10,12 @@ import {
 import { WalletCurrencyDocument } from "./wallet-currency.schema";
 
 export enum SupportedCurrencyEnum {
-  USD = "USD",
-  GBP = "GBP",
-  EUR = "EUR",
   NGN = "NGN",
   GHS = "GHS",
   KES = "KES",
+  USD = "USD",
+  GBP = "GBP",
+  EUR = "EUR",
   USDC = "USDC",
   BTC = "BTC",
   AUD = "AUD",

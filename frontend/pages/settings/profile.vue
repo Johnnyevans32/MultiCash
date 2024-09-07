@@ -3,17 +3,17 @@
     <CommonPageBar mainPage="Settings" currentPage="Profile" />
   </div>
   <div class="flex flex-col gap-4 text-left">
-    <CommonFormInput inputType="text" v-model="name" title="Name" />
-    <CommonFormInput inputType="text" v-model="did" title="DID" />
+    <CommonFormInput inputType="text" v-model="name" title="Your Name" />
+    <CommonFormInput inputType="text" v-model="did" title="Your DID" />
     <CommonFormInput
       inputType="text"
       v-model="email"
       :disabled="true"
-      title="Email"
+      title="Your Email"
     />
 
     <CommonFormSelect
-      title="Country"
+      title="Your Country"
       :selected="country"
       :options="SupportedCountries"
       labelKey="name"

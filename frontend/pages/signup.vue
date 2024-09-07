@@ -20,6 +20,7 @@
       v-model="password"
       title="Enter your password"
       placeholder="password"
+      @keyup.enter="signup"
     />
     <CommonButton
       text="Create Account"

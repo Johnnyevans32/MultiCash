@@ -36,6 +36,7 @@ import { ExchangeDocument, ExchangeStatus } from "../schemas/exchange.schema";
 import { PaginateDTO } from "@/core/services/response.service";
 import { RevenueService } from "@/revenue/services/revenue.service";
 import { RevenueSource } from "@/revenue/schemas/revenue.schema";
+import { EmailService } from "@/notification/email/email.service";
 
 @Injectable()
 export class ExchangeService extends RequestService {
@@ -65,7 +66,8 @@ export class ExchangeService extends RequestService {
     @Inject(CACHE_MANAGER)
     private cacheManager: Cache,
     private walletService: WalletService,
-    private revenueService: RevenueService
+    private revenueService: RevenueService,
+    private emailService: EmailService
   ) {
     super();
   }
@@ -431,6 +433,15 @@ export class ExchangeService extends RequestService {
         reference: `rev_${exchange.id}`,
         meta: { exchangeId: exchange.id },
       });
+      await exchange.populate("user");
+      const user = exchange.user as UserDocument;
+      this.emailService.sendCompletedExchangeNotification(
+        user,
+        exchange.payinAmount,
+        exchange.payinCurrency,
+        exchange.payoutAmount,
+        exchange.payoutCurrency
+      );
       return;
     }
     if (offering.status === OfferingStatus.Processing) {

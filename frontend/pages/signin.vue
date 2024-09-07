@@ -14,6 +14,7 @@
       v-model="password"
       title="Enter your password"
       placeholder="password"
+      @keyup.enter="signin"
     />
     <CommonButton
       text="Sign in"

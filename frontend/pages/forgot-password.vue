@@ -9,12 +9,12 @@
       title="Enter your email"
       placeholder="email"
       @keyup.enter="forgotPassword"
-      :loading="loading"
     />
     <CommonButton
       text="Request reset"
       @btn-action="forgotPassword"
       custom-css="!bg-blue-600 w-full text-white"
+      :loading="loading"
     />
     <NuxtLink class="text-blue-600 text-sm" to="/signin"
       >Remember Password? Sign In</NuxtLink

@@ -95,6 +95,36 @@ export class EmailService {
     });
   }
 
+  async sendCompletedExchangeNotification(
+    user: UserDocument,
+    fromAmount: number,
+    fromCurrency: string,
+    toAmount: number,
+    toCurrency: string
+  ) {
+    const mail = new Mail();
+
+    const to = new Address(user.email, user.name);
+    mail.to = [to];
+
+    mail.subject = "Currency Exchange Completed";
+
+    const body = this.engine.render("exchange-completed.njk", {
+      fromAmount: this.formatMoney(fromAmount, fromCurrency),
+      toAmount: this.formatMoney(toAmount, toCurrency),
+      user,
+      subject: mail.subject,
+      year: moment().format("YYYY"),
+    });
+    mail.body = body;
+
+    await this.mailerService.sendMail({
+      to: mail.to.map(({ email, name }) => ({ address: email, name })),
+      subject: mail.subject,
+      html: mail.body,
+    });
+  }
+
   formatMoney(amount: number, currency = "USD", locale = "en-US") {
     return new Intl.NumberFormat(locale, {
       style: "currency",

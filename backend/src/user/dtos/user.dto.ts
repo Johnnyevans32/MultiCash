@@ -1,5 +1,5 @@
 import { Transform } from "class-transformer";
-import { IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString, IsEmail } from "class-validator";
 
 export class CreateUserDTO {
   @IsOptional()
@@ -10,7 +10,7 @@ export class CreateUserDTO {
   @Transform(({ value }) => value.trim())
   readonly name: string;
 
-  @IsString()
+  @IsEmail()
   @Transform(({ value }) => value.trim().toLowerCase())
   readonly email: string;
 
@@ -51,7 +51,7 @@ export class UpdateUserDTO {
 }
 
 export class ForgotPasswordDTO {
-  @IsString()
+  @IsEmail()
   @Transform(({ value }) => value.trim().toLowerCase())
   readonly email: string;
 }

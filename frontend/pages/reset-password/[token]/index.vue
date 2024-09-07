@@ -23,6 +23,7 @@
 </template>
 
 <script lang="ts">
+import { notify } from "@kyvg/vue3-notification";
 export default defineComponent({
   setup() {
     useSeoMeta({
@@ -47,6 +48,10 @@ export default defineComponent({
         await $api.authService.resetPassword({
           newPassword: password.value,
           token: resetToken,
+        });
+        notify({
+          type: "success",
+          title: `password reset successful`,
         });
         await navigateTo("/signin");
       });

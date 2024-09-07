@@ -28,7 +28,7 @@ export class UserService {
   async me(user: UserDocument) {
     return this.userModel
       .findById(user.id)
-      .select("name email did profileImageUrl");
+      .select("name email did profileImageUrl country");
   }
 
   async signup(payload: CreateUserDTO) {

@@ -22,7 +22,7 @@ import {
   portableDid,
 } from "@/core/constants/schema.constants";
 import { PfiDocument } from "../schemas/pfi.schema";
-import { CreateExchangeDTO, OfferingDTO } from "../types";
+import { CreateExchangeDTO, OfferingDTO, UserKycInfoDTO } from "../types";
 import { RequestService } from "@/core/services/request.service";
 import { UserDocument } from "@/user/schemas/user.schema";
 import { OfferingDocument, OfferingStatus } from "../schemas/offering.schema";
@@ -37,6 +37,8 @@ import { PaginateDTO } from "@/core/services/response.service";
 import { RevenueService } from "@/revenue/services/revenue.service";
 import { RevenueSource } from "@/revenue/schemas/revenue.schema";
 import { EmailService } from "@/notification/email/email.service";
+import { plainToInstance } from "class-transformer";
+import { validate } from "class-validator";
 
 @Injectable()
 export class ExchangeService extends RequestService {
@@ -52,6 +54,7 @@ export class ExchangeService extends RequestService {
     USD_BANK_TRANSFER: { accountNumber: "", routingNumber: "" },
     EUR_BANK_TRANSFER: { accountNumber: "", IBAN: "" },
     BTC_WALLET_ADDRESS: { address: "" },
+    NGN_BANK_TRANSFER: {},
   };
 
   constructor(
@@ -115,7 +118,10 @@ export class ExchangeService extends RequestService {
 
     const pfis = await this.fetchPfis();
     const offeringsPromises = pfis.map((pfi) =>
-      this.tbdexHttpClient.getOfferings({ pfiDid: pfi.did })
+      this.tbdexHttpClient.getOfferings({ pfiDid: pfi.did }).catch((err) => {
+        console.log("Error fetching offerings from PFI", pfi.name, err.message);
+        return [];
+      })
     );
 
     offerings = (await Promise.all(offeringsPromises)).flat();
@@ -263,6 +269,15 @@ export class ExchangeService extends RequestService {
   }
 
   async createExchange(user: UserDocument, payload: CreateExchangeDTO) {
+    const fields = plainToInstance(UserKycInfoDTO, {
+      country: user.country,
+      did: user.did,
+      name: user.name,
+    });
+    const errors = await validate(fields);
+    if (errors.length > 0) {
+      throw new Error(`validation failed: ${errors}`);
+    }
     const { offerings, payinAmount } = payload;
 
     const [pfis, pfisOfferings] = await Promise.all([
@@ -351,9 +366,10 @@ export class ExchangeService extends RequestService {
         return updatedOffering;
       });
 
+      await this.offeringModel.insertMany(updatedOfferings, { session });
+
       const reference = UtilityService.generateRandomHex(12);
       const description = `exchange to ${exchange.payoutCurrency}`;
-
       await this.walletService.debitWallet({
         amount: payinAmount,
         currency: exchange.payinCurrency,
@@ -364,8 +380,6 @@ export class ExchangeService extends RequestService {
         meta: { exchangeId: exchange.id },
         purpose: TransactionPurpose.CURRENCY_EXCHANGE,
       });
-
-      await this.offeringModel.insertMany(updatedOfferings, { session });
     });
     if (exchange) this.processExchange(exchange);
   }
@@ -400,7 +414,7 @@ export class ExchangeService extends RequestService {
     const exchanges = await this.exchangeModel.find({
       ...(ids.length && { _id: { $in: ids } }),
       isDeleted: false,
-      status: ExchangeStatus.Processing,
+      status: { $in: [ExchangeStatus.Processing, ExchangeStatus.Pending] },
     });
 
     await Promise.all(
@@ -409,111 +423,117 @@ export class ExchangeService extends RequestService {
   }
 
   async processExchange(exchange: ExchangeDocument) {
-    await exchange.populate("offeringToBeProcessed");
-    const offering = exchange.offeringToBeProcessed;
-    if (!offering) {
-      exchange.status = ExchangeStatus.Completed;
-      const reference = UtilityService.generateRandomHex(12);
-      const description = `exchange from ${exchange.payinCurrency}`;
-      await this.walletService.creditWallet({
-        amount: exchange.payoutAmount,
-        currency: exchange.payoutCurrency,
-        balanceKeys: [AVAILABLE_BALANCE],
-        description,
-        reference,
-        user: exchange.user as string,
-        meta: { exchangeId: exchange.id },
-        purpose: TransactionPurpose.CURRENCY_EXCHANGE,
-      });
-      await exchange.save();
-      await this.revenueService.createRevenue({
-        amount: exchange.platformFee,
-        source: RevenueSource.CURRENCY_EXCHANGE,
-        currency: exchange.payinCurrency,
-        reference: `rev_${exchange.id}`,
-        meta: { exchangeId: exchange.id },
-      });
-      await exchange.populate("user");
-      const user = exchange.user as UserDocument;
-      this.emailService.sendCompletedExchangeNotification(
-        user,
-        exchange.payinAmount,
-        exchange.payinCurrency,
-        exchange.payoutAmount,
-        exchange.payoutCurrency
-      );
-      return;
-    }
-    if (offering.status === OfferingStatus.Processing) {
-      this.checkStatusOfOfferingsFromPFIs([offering.id]);
-      return;
-    }
-    if (offering.status !== OfferingStatus.Pending) {
-      return;
-    }
-
-    const { credential, did } = await this.getDidAndVc();
-    const pfiOffering = await this.getOfferingsById(offering.pfiOfferingId);
-    if (!pfiOffering) {
-      return;
-    }
-    const selectedCredentials = PresentationExchange.selectCredentials({
-      vcJwts: [credential],
-      presentationDefinition: pfiOffering.data.requiredClaims,
-    });
-
-    const payinPaymentDetails =
-      this.paymentDetailsMap[pfiOffering.data.payin.methods[0].kind];
-    const payoutPaymentDetails =
-      this.paymentDetailsMap[pfiOffering.data.payout.methods[0].kind];
-
-    // if (!payinPaymentDetails) {
-    //   console.log(
-    //     `missing payin payment details for kind: ${pfiOffering.data.payin.methods[0].kind}`
-    //   );
-    //   return;
-    // }
-
-    if (!payoutPaymentDetails) {
-      console.log(
-        `missing payin payment details for kind: ${pfiOffering.data.payout.methods[0].kind}`,
-        pfiOffering.data.payout.methods[0].requiredPaymentDetails
-      );
-      return;
-    }
-    const rfq = this.rfq.create({
-      metadata: {
-        to: pfiOffering.metadata.from,
-        from: did.uri,
-        protocol: pfiOffering.metadata.protocol,
-      },
-      data: {
-        offeringId: pfiOffering.metadata.id,
-        payin: {
-          kind: pfiOffering.data.payin.methods[0].kind,
-          amount: offering.expectedPayinAmount.toString(),
-          paymentDetails: {},
-        },
-        payout: {
-          kind: pfiOffering.data.payout.methods[0].kind,
-          paymentDetails: payoutPaymentDetails,
-        },
-        claims: selectedCredentials,
-      },
-    });
-
     try {
-      await rfq.verifyOfferingRequirements(pfiOffering);
-      await rfq.sign(did);
-      await this.tbdexHttpClient.createExchange(rfq);
-      offering.pfiExchangeId = rfq.exchangeId;
-      offering.status = OfferingStatus.Processing;
-      offering.transactionStartDate = moment().toDate();
-      exchange.status = ExchangeStatus.Processing;
-      await exchange.save();
-      await offering.save();
-    } catch (e) {
-      console.log("error verifyOfferingRequirements", e);
+      await exchange.populate("offeringToBeProcessed user");
+      const offering = exchange.offeringToBeProcessed;
+      const user = exchange.user as UserDocument;
+      if (!offering) {
+        exchange.status = ExchangeStatus.Completed;
+        const reference = UtilityService.generateRandomHex(12);
+        const description = `exchange from ${exchange.payinCurrency}`;
+        await this.walletService.creditWallet({
+          amount: exchange.payoutAmount,
+          currency: exchange.payoutCurrency,
+          balanceKeys: [AVAILABLE_BALANCE],
+          description,
+          reference,
+          user: user.id,
+          meta: { exchangeId: exchange.id },
+          purpose: TransactionPurpose.CURRENCY_EXCHANGE,
+        });
+        await exchange.save();
+        this.revenueService.createRevenue({
+          amount: exchange.platformFee,
+          source: RevenueSource.CURRENCY_EXCHANGE,
+          currency: exchange.payinCurrency,
+          reference: `rev_${exchange.id}`,
+          meta: { exchangeId: exchange.id },
+        });
+        this.emailService.sendCompletedExchangeNotification(
+          user,
+          exchange.payinAmount,
+          exchange.payinCurrency,
+          exchange.payoutAmount,
+          exchange.payoutCurrency
+        );
+        return;
+      }
+      if (offering.status === OfferingStatus.Processing) {
+        this.checkStatusOfOfferingsFromPFIs([offering.id]);
+        return;
+      }
+      if (offering.status !== OfferingStatus.Pending) {
+        return;
+      }
+
+      const [userKycVcJwt, did, pfiOffering] = await Promise.all([
+        this.getUserKycVcJtwt(user),
+        this.getDid(),
+        this.getOfferingsById(offering.pfiOfferingId),
+      ]);
+      if (!pfiOffering) {
+        return;
+      }
+      const selectedCredentials = PresentationExchange.selectCredentials({
+        vcJwts: [userKycVcJwt],
+        presentationDefinition: pfiOffering.data.requiredClaims,
+      });
+
+      const payinPaymentDetails =
+        this.paymentDetailsMap[pfiOffering.data.payin.methods[0].kind];
+      const payoutPaymentDetails =
+        this.paymentDetailsMap[pfiOffering.data.payout.methods[0].kind];
+
+      if (!payinPaymentDetails) {
+        console.log(
+          `missing payin payment details for kind: ${pfiOffering.data.payin.methods[0].kind}`
+        );
+        return;
+      }
+
+      if (!payoutPaymentDetails) {
+        console.log(
+          `missing payin payment details for kind: ${pfiOffering.data.payout.methods[0].kind}`,
+          pfiOffering.data.payout.methods[0].requiredPaymentDetails
+        );
+        return;
+      }
+      const rfq = this.rfq.create({
+        metadata: {
+          to: pfiOffering.metadata.from,
+          from: did.uri,
+          protocol: pfiOffering.metadata.protocol,
+        },
+        data: {
+          offeringId: pfiOffering.metadata.id,
+          payin: {
+            kind: pfiOffering.data.payin.methods[0].kind,
+            amount: offering.expectedPayinAmount.toString(),
+            paymentDetails: payinPaymentDetails,
+          },
+          payout: {
+            kind: pfiOffering.data.payout.methods[0].kind,
+            paymentDetails: payoutPaymentDetails,
+          },
+          claims: selectedCredentials,
+        },
+      });
+
+      try {
+        await rfq.verifyOfferingRequirements(pfiOffering);
+        await rfq.sign(did);
+        await this.tbdexHttpClient.createExchange(rfq);
+        offering.pfiExchangeId = rfq.exchangeId;
+        offering.status = OfferingStatus.Processing;
+        offering.transactionStartDate = moment().toDate();
+        exchange.status = ExchangeStatus.Processing;
+        await exchange.save();
+        await offering.save();
+      } catch (e) {
+        console.log("error verifyOfferingRequirements", e);
+      }
+    } catch (err) {
+      console.log("Error processing exchange", exchange.id, err);
     }
   }
 
@@ -537,93 +557,104 @@ export class ExchangeService extends RequestService {
     }
     const offeringsGroupByPfiDid = groupBy(offerings, "pfi.did");
 
-    const { did } = await this.getDidAndVc();
+    const did = await this.getDid();
 
     // Process each PFI group in parallel
     await Promise.all(
       Object.entries(offeringsGroupByPfiDid).map(
         async ([pfiDid, pfiOfferings]) => {
-          const exchanges = await this.tbdexHttpClient.getExchanges({
-            did,
-            pfiDid,
-            filter: {
-              id: pfiOfferings.map((i) => i.pfiExchangeId),
-            },
-          });
-
-          const offeringKeyedByExchangeId = keyBy(
-            pfiOfferings,
-            (o) => o.pfiExchangeId
-          );
-
-          const exchangesToBeProcessed = [];
-
-          // Process each exchange and update offerings accordingly
-          exchanges.forEach((exchange) => {
-            const lastMessage = exchange.at(-1);
-            const { kind } = lastMessage.metadata;
-            const offering =
-              offeringKeyedByExchangeId[lastMessage.metadata.exchangeId];
-            if (!offering) return;
-
-            switch (kind) {
-              case "quote":
-                offering.pfiQuoteExpiresAt = moment(
-                  (lastMessage.data as any).expiresAt
-                ).toDate();
-                offering.status = OfferingStatus.AwaitingOrder;
-                offering.pfiFee = Number(
-                  (lastMessage.data as any).payin.fee || 0
-                );
-                this.createOrder([offering.id]);
-                break;
-
-              case "order":
-                break;
-
-              case "close":
-                const isSuccessful = (lastMessage.data as any).success;
-                offering.status = isSuccessful
-                  ? OfferingStatus.Completed
-                  : OfferingStatus.Cancelled;
-                if (isSuccessful) {
-                  exchangesToBeProcessed.push(offering.exchange);
-                  offering.transactionEndDate = moment(
-                    lastMessage.metadata.createdAt
-                  ).toDate();
-                } else {
-                  offering.cancellationReason = (
-                    lastMessage.data as any
-                  ).reason;
-                }
-                break;
-
-              case "orderstatus":
-                offering.pfiOrderStatus = (lastMessage.data as any).orderStatus;
-                break;
-
-              default:
-                break;
-            }
-          });
-          // Bulk save offerings
-          await this.offeringModel.bulkWrite(
-            pfiOfferings.map((offering) => ({
-              updateOne: {
-                filter: { _id: offering.id },
-                update: offering.toObject(),
+          try {
+            const exchanges = await this.tbdexHttpClient.getExchanges({
+              did,
+              pfiDid,
+              filter: {
+                id: pfiOfferings.map((i) => i.pfiExchangeId),
               },
-            }))
-          );
+            });
 
-          this.processPendingExchanges(exchangesToBeProcessed);
+            const offeringKeyedByExchangeId = keyBy(
+              pfiOfferings,
+              (o) => o.pfiExchangeId
+            );
+
+            const exchangesToBeProcessed = [];
+
+            // Process each exchange and update offerings accordingly
+            exchanges.forEach((messages) => {
+              const lastMessage = messages.at(-1);
+              const { kind } = lastMessage.metadata;
+              const offering =
+                offeringKeyedByExchangeId[lastMessage.metadata.exchangeId];
+              if (!offering) return;
+
+              switch (kind) {
+                case "quote":
+                  offering.pfiQuoteExpiresAt = moment(
+                    (lastMessage.data as any).expiresAt
+                  ).toDate();
+                  offering.status = OfferingStatus.AwaitingOrder;
+                  offering.pfiFee = Number(
+                    (lastMessage.data as any).payin.fee || 0
+                  );
+                  this.createOrder([offering.id]);
+                  break;
+
+                case "order":
+                  break;
+
+                case "close":
+                  const isSuccessful = (lastMessage.data as any).success;
+                  offering.status = isSuccessful
+                    ? OfferingStatus.Completed
+                    : OfferingStatus.Cancelled;
+                  if (isSuccessful) {
+                    exchangesToBeProcessed.push(offering.exchange);
+                    offering.transactionEndDate = moment(
+                      lastMessage.metadata.createdAt
+                    ).toDate();
+                  } else {
+                    offering.cancellationReason = (
+                      lastMessage.data as any
+                    ).reason;
+                  }
+                  break;
+
+                case "orderstatus":
+                  offering.pfiOrderStatus = (
+                    lastMessage.data as any
+                  ).orderStatus;
+                  break;
+
+                default:
+                  break;
+              }
+            });
+            // Bulk save offerings
+            await this.offeringModel.bulkWrite(
+              pfiOfferings.map((offering) => ({
+                updateOne: {
+                  filter: { _id: offering.id },
+                  update: offering.toObject(),
+                },
+              }))
+            );
+
+            this.processPendingExchanges(exchangesToBeProcessed);
+          } catch (err) {
+            console.log(
+              "Error checking message thread from pfi",
+              pfiDid,
+              pfiOfferings.length,
+              err
+            );
+          }
         }
       )
     );
   }
 
   async createOrder(ids?: string[]) {
-    const { did } = await this.getDidAndVc();
+    const did = await this.getDid();
     const offerings = await this.offeringModel
       .find({
         ...(ids && ids.length && { _id: { $in: ids } }),
@@ -658,7 +689,7 @@ export class ExchangeService extends RequestService {
   }
 
   async closeOffering(ids?: string[], reason?: string) {
-    const { did } = await this.getDidAndVc();
+    const did = await this.getDid();
     const offerings = await this.offeringModel
       .find({
         ...(ids && ids.length && { _id: { $in: ids } }),
@@ -698,18 +729,20 @@ export class ExchangeService extends RequestService {
     );
   }
 
-  private async getVCJwt(did: string) {
-    const vcJwt = await this.request<string>({
-      method: "get",
-      url: `https://mock-idv.tbddev.org/kcc?name=Alice Smith&country=NGN&did=${did}`,
-    });
-
-    return vcJwt;
+  private async getDid() {
+    return DidDht.import({ portableDid: portableDid });
   }
 
-  private async getDidAndVc() {
-    const did = await DidDht.import({ portableDid: portableDid });
-    const credential = await this.getVCJwt(did.uri);
-    return { did, credential };
+  private async getUserKycVcJtwt(user: UserDocument) {
+    if (user.kycVcJwt) {
+      return user.kycVcJwt;
+    }
+    const vcJwt = await this.request<string>({
+      method: "get",
+      url: `https://mock-idv.tbddev.org/kcc?name=${user.name}&country=${user.country}&did=${user.did}`,
+    });
+    user.kycVcJwt = vcJwt;
+    await user.save();
+    return vcJwt;
   }
 }

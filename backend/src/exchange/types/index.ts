@@ -8,6 +8,7 @@ import {
   IsString,
 } from "class-validator";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
+import { SupportedCountry } from "@/user/schemas/user.schema";
 
 export class GetOfferingsDTO {
   @IsEnum(SupportedCurrencyEnum)
@@ -60,4 +61,15 @@ export class CreateExchangeDTO {
   @IsArray()
   @ArrayMinSize(1)
   offerings: string[];
+}
+
+export class UserKycInfoDTO {
+  @IsString()
+  name: string;
+
+  @IsEnum(SupportedCountry)
+  country: SupportedCountry;
+
+  @IsString()
+  did: string;
 }

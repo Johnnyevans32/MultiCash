@@ -4,7 +4,16 @@
   </div>
   <div class="flex flex-col gap-4 text-left">
     <CommonFormInput inputType="text" v-model="name" />
+    <CommonFormInput inputType="text" v-model="did" />
     <CommonFormInput inputType="text" v-model="email" :disabled="true" />
+
+    <CommonFormSelect
+      :selected="country"
+      :options="SupportedCountries"
+      labelKey="name"
+      valueKey="code"
+      :disabled="true"
+    />
     <CommonButton
       text="Save changes"
       @btn-action="updateUser"
@@ -17,6 +26,7 @@
 <script lang="ts">
 import { notify } from "@kyvg/vue3-notification";
 import { useUserStore } from "~/store/user";
+import { SupportedCountries } from "~/types/user";
 
 export default defineComponent({
   setup() {
@@ -30,6 +40,13 @@ export default defineComponent({
     const email = ref(user.value?.email);
     const name = ref(user.value?.name);
     const profileImage = ref(user.value?.profileImage);
+    const country = ref(user.value?.country);
+    const did = ref(user.value?.did);
+
+    onBeforeMount(async () => {
+      const user = await $api.userService.me();
+      setUser(user);
+    });
 
     const { withLoading, loading } = useLoading();
 
@@ -38,6 +55,7 @@ export default defineComponent({
         await $api.userService.updateUser({
           name: name.value,
           profileImage: profileImage.value,
+          did: did.value,
         });
         const user = await $api.userService.me();
         setUser(user);
@@ -53,6 +71,9 @@ export default defineComponent({
       email,
       profileImage,
       name,
+      country,
+      did,
+      SupportedCountries,
     };
   },
 });

@@ -6,7 +6,9 @@ import {
   MinLength,
   MaxLength,
   Matches,
+  IsEnum,
 } from "class-validator";
+import { SupportedCountry } from "../schemas/user.schema";
 
 export class CreateUserDTO {
   @IsOptional()
@@ -35,6 +37,9 @@ export class CreateUserDTO {
     message: "Password must contain at least one number",
   })
   readonly password: string;
+
+  @IsEnum(SupportedCountry)
+  readonly country: SupportedCountry;
 }
 
 export class ResetPasswordDTO {

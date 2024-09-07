@@ -3,11 +3,14 @@ export interface IUser {
   email: string;
   name: string;
   profileImage: string;
+  country: string;
+  did: string;
 }
 
 export interface UpdateUserDTO {
   name?: string;
   profileImage?: string;
+  did?: string;
 }
 export interface IResponse<T> {
   code?: string;
@@ -35,9 +38,17 @@ export interface SigninDTO {
 
 export interface SignupDTO extends SigninDTO {
   name: string;
+  country: string;
 }
 
 export interface UpdatePasswordDTO {
   oldPassword: string;
   newPassword: string;
 }
+
+export const SupportedCountries = [
+  { name: "Nigeria", code: "NGN" },
+  { name: "Ghana", code: "GHS" },
+  { name: "Kenya", code: "KES" },
+  { name: "South Africa", code: "ZAR" },
+];

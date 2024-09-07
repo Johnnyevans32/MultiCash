@@ -9,6 +9,19 @@
       title="Enter your name"
       placeholder="name"
     />
+    <CommonFormSelect
+      title="Select bank"
+      :selected="country"
+      :options="SupportedCountries"
+      @change-option="
+        (val) => {
+          country = val;
+        }
+      "
+      labelKey="name"
+      placeholder="-- Please select your country --"
+      valueKey="code"
+    />
     <CommonFormInput
       inputType="email"
       v-model="email"
@@ -45,6 +58,7 @@
 
 <script lang="ts">
 import { notify } from "@kyvg/vue3-notification";
+import { SupportedCountries } from "~/types/user";
 
 export default defineComponent({
   setup() {
@@ -61,6 +75,7 @@ export default defineComponent({
     const password = ref("");
     const email = ref("");
     const name = ref("");
+    const country = ref("");
 
     const { loading, withLoading } = useLoading();
 
@@ -70,6 +85,7 @@ export default defineComponent({
           email: email.value,
           password: password.value,
           name: name.value,
+          country: country.value,
         });
         notify({
           type: "success",
@@ -87,6 +103,8 @@ export default defineComponent({
       signup,
       generateMailToLink,
       loading,
+      country,
+      SupportedCountries,
     };
   },
 });

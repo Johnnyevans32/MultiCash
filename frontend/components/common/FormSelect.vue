@@ -5,6 +5,7 @@
       <select
         v-model="selectedOption"
         class="rounded-xl border-[1px] border-base bg-lightbase text-base pl-5 pr-8 py-2 w-full cursor-pointer appearance-none"
+        :disabled="disabled"
       >
         <option v-if="placeholder" disabled value="">{{ placeholder }}</option>
         <option
@@ -35,6 +36,10 @@ export default defineComponent({
     },
     customCss: {
       type: String,
+    },
+    disabled: {
+      type: Boolean,
+      default: false,
     },
     labelKey: {
       type: String,

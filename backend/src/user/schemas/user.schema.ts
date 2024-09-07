@@ -9,6 +9,12 @@ import { UtilityService } from "@/core/services/util.service";
 
 export type UserDocument = HydratedDocument<User>;
 
+export enum SupportedCountry {
+  NGN = "NGN",
+  GHS = "GHS",
+  KES = "KES",
+  ZAR = "ZAR",
+}
 @BaseSchemaDecorator({
   toJSON: {
     transform: (_doc: any, ret: any): void => {
@@ -36,8 +42,14 @@ export class User extends BaseSchema {
   @Prop({ type: String, required: true })
   password: string;
 
+  @Prop({ type: String, enum: Object.values(SupportedCountry) })
+  country: SupportedCountry;
+
   @Prop({ type: String })
   profileImageUrl?: string;
+
+  @Prop({ type: String })
+  kycVcJwt?: string;
 
   @Prop({ type: String })
   resetPasswordToken?: string;

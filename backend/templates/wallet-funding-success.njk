@@ -1,16 +1,16 @@
 {% extends "base.njk" %}
 
 {% block content %}
-  <h2 class="font-20" style="margin-bottom: 16px; font-weight: 500; color: #3c4049">
+  <h2 style="margin-bottom: 16px; font-weight: 500; color: #3c4049">
   Wallet Funding Confirmation
 </h2>
-  <p class="font-16" style="margin-bottom: 16px">Hello {{ user.name }},</p>
-  <p class="font-16" style="margin-bottom: 24px">
+  <p style="margin-bottom: 16px">Hello {{ user.name }},</p>
+  <p style="margin-bottom: 24px">
   Your wallet has been successfully funded with {{ amount }}. The updated balance is {{ balance }}.
 </p>
-  <p class="font-16" style="margin-bottom: 24px">
+  <p style="margin-bottom: 24px">
   If you did not initiate this transaction, please contact our support team immediately.
 </p>
-  <p class="font-16">Best regards,</p>
-  <p class="font-16" style="margin-bottom: 16px">The MultiCash Team</p>
+  <p class="signing">Best regards,</p>
+  <p class="signing" style="margin-bottom: 16px">The MultiCash Team</p>
 {% endblock %}

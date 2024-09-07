@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadGatewayException, Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 
 import { UserService } from "@/user/services/user.service";
@@ -36,6 +36,7 @@ export class AuthService {
   }
 
   async signup(payload: any) {
+    throw new BadGatewayException("try again after september 15th");
     return this.userService.signup(payload);
   }
 

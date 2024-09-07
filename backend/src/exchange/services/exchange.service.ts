@@ -503,7 +503,7 @@ export class ExchangeService extends RequestService {
     });
 
     try {
-      // await rfq.verifyOfferingRequirements(pfiOffering);
+      await rfq.verifyOfferingRequirements(pfiOffering);
       await rfq.sign(did);
       await this.tbdexHttpClient.createExchange(rfq);
       offering.pfiExchangeId = rfq.exchangeId;
@@ -591,9 +591,7 @@ export class ExchangeService extends RequestService {
                   offering.transactionEndDate = moment(
                     lastMessage.metadata.createdAt
                   ).toDate();
-                }
-
-                if (!isSuccessful) {
+                } else {
                   offering.cancellationReason = (
                     lastMessage.data as any
                   ).reason;

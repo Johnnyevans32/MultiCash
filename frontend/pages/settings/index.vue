@@ -74,28 +74,28 @@ export default defineComponent({
     const settingsItems = ref([
       {
         logo: "user",
-        action: "profile",
-        value: "see your account information.",
+        action: "Profile",
+        value: "See your account information.",
         logoType: "icon",
         href: "/settings/profile",
       },
       {
         logo: "key",
-        action: "change your password",
+        action: "Change your password",
         value: "Change your password at any time.",
         logoType: "icon",
         href: "/settings/password",
       },
       {
         logo: "shield-halved",
-        action: "guard",
-        value: "manage settings to guard your data.",
+        action: "Guard",
+        value: "Manage settings to guard your data.",
         logoType: "icon",
         href: "/settings/guard",
       },
       {
         logo: "fa-solid fa-palette",
-        action: "theme",
+        action: "Theme",
         value: appThemeColor.value,
         logoType: "icon",
         href: "/settings/theme",
@@ -103,15 +103,15 @@ export default defineComponent({
 
       {
         logo: "fa-solid fa-bug",
-        action: "report an issue",
-        value: "we will respond as soon as we can.",
+        action: "Report an issue",
+        value: "We will respond as soon as we can.",
         logoType: "icon",
         external: true,
         href: generateMailToLink(),
       },
       {
         logo: "radiation",
-        action: "deactivate your account",
+        action: "Deactivate your account",
         value: "This will deactivate your account.",
         logoType: "icon",
         customCss: "bg-red-400",
@@ -119,7 +119,7 @@ export default defineComponent({
       },
       {
         logo: "right-from-bracket",
-        action: "logout",
+        action: "Logout",
         logoType: "icon",
         settingAction: logout,
       },

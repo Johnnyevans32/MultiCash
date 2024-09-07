@@ -50,9 +50,9 @@ export class ExchangeService {
     return { data, metadata };
   }
 
-  async ratingExchange(exchangeId: string, rating: number) {
+  async rateExchange(exchangeId: string, rating: number) {
     const { useCustomFetch } = useAppVueUtils();
-    return useCustomFetch(`/api/exchanges/:${exchangeId}/rate`, {
+    return useCustomFetch(`/api/exchanges/${exchangeId}/rate`, {
       method: "put",
       body: { rating },
     });

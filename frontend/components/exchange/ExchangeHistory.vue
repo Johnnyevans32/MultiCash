@@ -189,7 +189,6 @@
                 </span>
               </div>
               <div class="flex flex-col">
-                <span>Description: {{ offering.description }}</span>
                 <span
                   >1 {{ offering.payinCurrency }} =
                   {{ offering.payoutUnitsPerPayinUnit }}
@@ -216,6 +215,7 @@
   </CommonModal>
 </template>
 <script lang="ts">
+import { notify } from "@kyvg/vue3-notification";
 import type { IExchange } from "~/types/exchange";
 import { type IMetadata } from "~/types/user";
 export default defineComponent({
@@ -260,6 +260,24 @@ export default defineComponent({
     const openExchangeModal = (exchange: any) => {
       modalExchange.value = exchange;
       updateExchangeModal.value = true;
+    };
+
+    const isLoadingRateExchange = ref(false);
+    const rateExchange = async () => {
+      if (!modalExchange.value) {
+        return;
+      }
+      await withLoadingPromise(
+        $api.exchangeService
+          .rateExchange(modalExchange.value?.id, 3)
+          .then(() => {
+            notify({
+              type: "success",
+              title: `rating has been updated`,
+            });
+          }),
+        isLoadingRateExchange
+      );
     };
 
     return {

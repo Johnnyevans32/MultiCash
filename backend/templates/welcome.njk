@@ -1,0 +1,19 @@
+{% extends "base.njk" %} {% block content %}
+<h2 class="font-20">Welcome to MultiCash, {{ user.name }}!</h2>
+<p style="margin-bottom: 16px">
+    We’re excited to have you on board. You’ve just joined a growing community of users who enjoy seamless and secure
+    transactions with MultiCash.
+</p>
+<p style="margin-bottom: 24px">
+    Whether you're looking to exchange currencies, manage multiple wallets, or send payments, we’ve got you covered.
+</p>
+<p style="margin-bottom: 24px">
+    Click the link below to get started and explore everything we have to offer.
+</p>
+<a href="{{ loginLink }}" class="button" style="margin-bottom: 34px;">Start Exploring MultiCash</a>
+<p style="margin-bottom: 24px">
+    If you have any questions, feel free to reach out to our support team. We’re here to help.
+</p>
+<p class="signing">Best regards,</p>
+<p class="signing" style="margin-bottom: 16px">The MultiCash Team</p>
+{% endblock %}

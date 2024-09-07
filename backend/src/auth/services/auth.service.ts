@@ -28,7 +28,10 @@ export class AuthService {
 
   async signin(user: UserDocument) {
     return {
-      accessToken: this.jwtService.sign({ sub: user.id }),
+      accessToken: this.jwtService.sign({
+        sub: user.id,
+        tokenVersion: user.jwtTokenVersion,
+      }),
     };
   }
 

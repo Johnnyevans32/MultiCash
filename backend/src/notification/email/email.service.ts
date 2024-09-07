@@ -17,16 +17,19 @@ export class EmailService {
     this.engine = configure(path, { autoescape: true });
   }
 
-  async sendResetPasswordLink(user: UserDocument, token: string) {
+  async sendEmail(
+    user: UserDocument,
+    subject: string,
+    template: string,
+    context: Record<string, any> = {}
+  ) {
     const mail = new Mail();
-
     const to = new Address(user.email, user.name);
     mail.to = [to];
+    mail.subject = subject;
 
-    mail.subject = "your reset password link is here!";
-
-    const body = this.engine.render("reset-password.njk", {
-      link: `${configuration().ui.url}/reset-password/${token}`,
+    const body = this.engine.render(template, {
+      ...context,
       user,
       year: moment().format("YYYY"),
     });
@@ -39,31 +42,30 @@ export class EmailService {
     });
   }
 
+  async sendResetPasswordLink(user: UserDocument, token: string) {
+    const context = {
+      link: `${configuration().ui.url}/reset-password/${token}`,
+    };
+    await this.sendEmail(
+      user,
+      "Your Reset Password Link is Here!",
+      "reset-password.njk",
+      context
+    );
+  }
+
   async sendWithdrawalNotification(
     user: UserDocument,
     amount: number,
     currency: string
   ) {
-    const mail = new Mail();
-
-    const to = new Address(user.email, user.name);
-    mail.to = [to];
-
-    mail.subject = "Withdrawal Confirmation";
-
-    const body = this.engine.render("wallet-withdrawal-success.njk", {
-      amount: this.formatMoney(amount, currency),
+    const context = { amount: this.formatMoney(amount, currency), currency };
+    await this.sendEmail(
       user,
-      year: moment().format("YYYY"),
-      currency,
-    });
-    mail.body = body;
-
-    await this.mailerService.sendMail({
-      to: mail.to.map(({ email, name }) => ({ address: email, name })),
-      subject: mail.subject,
-      html: mail.body,
-    });
+      "Withdrawal Confirmation",
+      "wallet-withdrawal-success.njk",
+      context
+    );
   }
 
   async sendWalletFundingNotification(
@@ -72,27 +74,16 @@ export class EmailService {
     balance: number,
     currency: string
   ) {
-    const mail = new Mail();
-
-    const to = new Address(user.email, user.name);
-    mail.to = [to];
-
-    mail.subject = "Wallet Funding Confirmation";
-
-    const body = this.engine.render("wallet-funding-success.njk", {
+    const context = {
       amount: this.formatMoney(amount, currency),
       balance: this.formatMoney(balance, currency),
+    };
+    await this.sendEmail(
       user,
-      subject: mail.subject,
-      year: moment().format("YYYY"),
-    });
-    mail.body = body;
-
-    await this.mailerService.sendMail({
-      to: mail.to.map(({ email, name }) => ({ address: email, name })),
-      subject: mail.subject,
-      html: mail.body,
-    });
+      "Wallet Funding Confirmation",
+      "wallet-funding-success.njk",
+      context
+    );
   }
 
   async sendCompletedExchangeNotification(
@@ -102,27 +93,16 @@ export class EmailService {
     toAmount: number,
     toCurrency: string
   ) {
-    const mail = new Mail();
-
-    const to = new Address(user.email, user.name);
-    mail.to = [to];
-
-    mail.subject = "Currency Exchange Completed";
-
-    const body = this.engine.render("exchange-completed.njk", {
+    const context = {
       fromAmount: this.formatMoney(fromAmount, fromCurrency),
       toAmount: this.formatMoney(toAmount, toCurrency),
+    };
+    await this.sendEmail(
       user,
-      subject: mail.subject,
-      year: moment().format("YYYY"),
-    });
-    mail.body = body;
-
-    await this.mailerService.sendMail({
-      to: mail.to.map(({ email, name }) => ({ address: email, name })),
-      subject: mail.subject,
-      html: mail.body,
-    });
+      "Currency Exchange Completed",
+      "exchange-completed.njk",
+      context
+    );
   }
 
   formatMoney(amount: number, currency = "USD", locale = "en-US") {

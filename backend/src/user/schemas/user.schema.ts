@@ -30,7 +30,7 @@ export class User extends BaseSchema {
   @Prop({ type: String, required: true })
   name: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, unique: true })
   email: string;
 
   @Prop({ type: String, required: true })
@@ -44,6 +44,9 @@ export class User extends BaseSchema {
 
   @Prop({ type: Date })
   resetPasswordTokenExpires?: Date;
+
+  @Prop({ type: Number, default: 0 })
+  jwtTokenVersion?: number;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

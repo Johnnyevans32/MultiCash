@@ -15,6 +15,7 @@ import { UserDocument } from "@/user/schemas/user.schema";
 import { USER } from "@/core/constants/schema.constants";
 import { EmailService } from "@/notification/email/email.service";
 import { UtilityService } from "@/core/services/util.service";
+import configuration from "@/core/services/configuration";
 
 @Injectable()
 export class UserService {
@@ -33,6 +34,9 @@ export class UserService {
   async signup(payload: CreateUserDTO) {
     await this.checkIfUserAlreadyExist(payload.email);
     const user = await this.userModel.create(payload);
+    this.emailService.sendEmail(user, "Welcome to MultiCash!", "welcome.njk", {
+      loginLink: `${configuration().ui.url}/signin`,
+    });
   }
 
   async checkIfUserAlreadyExist(email: string) {
@@ -80,9 +84,16 @@ export class UserService {
     }
 
     user.password = payload.newPassword;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordTokenExpires = undefined;
+    user.resetPasswordToken = null;
+    user.resetPasswordTokenExpires = null;
+    user.jwtTokenVersion += 1;
     await user.save();
+
+    this.emailService.sendEmail(
+      user,
+      "Password Resetted",
+      "password-update.njk"
+    );
   }
 
   async updatePassword(user: UserDocument, payload: UpdatePasswordDTO) {
@@ -96,9 +107,14 @@ export class UserService {
     }
 
     user.password = payload.newPassword;
+    user.jwtTokenVersion += 1;
     await user.save();
 
-    // TODO: send an email user password been changed
+    this.emailService.sendEmail(
+      user,
+      "Password Updated",
+      "password-update.njk"
+    );
   }
 
   async updateUser(user: UserDocument, payload: UpdateUserDTO) {

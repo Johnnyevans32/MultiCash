@@ -81,6 +81,15 @@ export class PaystackService
     };
   }
 
+  async fetchBanks() {
+    const { data } = await this.request<any>({
+      method: "get",
+      url: "bank",
+    });
+
+    return data;
+  }
+
   async checkTransferStatus(payload: CheckTransferStatusDTO) {
     const { reference } = payload;
     const { data } = await this.request<any>({

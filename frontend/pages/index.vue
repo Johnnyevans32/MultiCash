@@ -7,7 +7,7 @@
       @btn-action="handleFundWalletBtnClick"
       customCss="justify-self-end"
     />
-    <CommonFormSelect
+    <CommonListbox
       v-if="!isLoadingWallets"
       :selected="selectedCurrency"
       :options="walletCurrencies"
@@ -15,7 +15,7 @@
     />
   </div>
   <div
-    class="flex justify-between p-5 font-bold rounded-xl border-[1px] bg-lightbase border-base md:text-3xl text-xl"
+    class="flex items-center justify-between p-5 font-bold rounded-xl border-[1px] bg-lightbase border-base md:text-3xl text-xl"
   >
     <p class="text-left">Balance</p>
     <p v-show="!isLoadingWallets" class="text-right">
@@ -261,7 +261,7 @@
       <CommonButton
         text="Close"
         @btn-action="transactionDetailsModal = false"
-        custom-css="bg-gray-400 w-full text-black"
+        custom-css="bg-base w-full text-base"
       />
     </template>
   </CommonModal>

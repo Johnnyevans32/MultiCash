@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col text-left">
+  <div class="flex flex-col gap-2 text-left">
     <span>Select your prefered exchange route:</span>
     <div
       v-for="(matchedOffering, index) in matchedOfferings"
@@ -11,7 +11,8 @@
         <div class="flex items-center justify-between">
           <span class="font-bold">Route {{ index + 1 }}</span>
           <span class="text-gray-600"
-            >Cumulative Fee: {{ formatMoney(matchedOffering.cumulativeFee) }}
+            >Cumulative PFI Fee:
+            {{ formatMoney(matchedOffering.cumulativeFee) }}
             {{ matchedOffering.payinCurrency }}</span
           >
         </div>
@@ -104,7 +105,7 @@
             </span>
           </div>
           <div class="flex justify-between">
-            <span>Pfi(s) Fee:</span>
+            <span>PFI(s) Fee:</span>
             <span class="font-bold"
               >{{ formatMoney(selectedOffering.cumulativeFee) }}
               {{ selectedOffering.payinCurrency }}</span

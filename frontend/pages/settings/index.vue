@@ -62,6 +62,15 @@ export default defineComponent({
     const { loading, withLoading } = useLoading();
     const confirmDeletionModal = ref(false);
 
+    const logout = async () => {
+      setAccessToken(null);
+      await navigateTo("/signin");
+      notify({
+        type: "info",
+        title: "you have been logged out",
+      });
+    };
+
     const settingsItems = ref([
       {
         logo: "user",
@@ -84,6 +93,7 @@ export default defineComponent({
         logoType: "icon",
         href: "/settings/theme",
       },
+
       {
         logo: "fa-solid fa-bug",
         action: "report an issue",
@@ -99,6 +109,12 @@ export default defineComponent({
         logoType: "icon",
         customCss: "bg-red-400",
         settingAction: () => (confirmDeletionModal.value = true),
+      },
+      {
+        logo: "right-from-bracket",
+        action: "logout",
+        logoType: "icon",
+        settingAction: logout,
       },
     ]);
 

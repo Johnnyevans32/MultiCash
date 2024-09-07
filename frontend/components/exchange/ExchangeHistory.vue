@@ -47,14 +47,21 @@
               {{ formatMoney(exchange.payoutAmount) }}
               {{ exchange.payoutCurrency }}
             </span>
-            <span class="text-xs"
-              >Fee: {{ formatMoney(exchange.totalFee) }}
-              {{ exchange.payinCurrency }}</span
+            <span
+              class="md:hidden flex text-sm"
+              :class="
+                exchange?.status === 'completed'
+                  ? 'text-green-600'
+                  : exchange?.status === 'failed'
+                  ? 'text-red-600'
+                  : 'text-yellow-600'
+              "
+              >{{ exchange.status }}</span
             >
           </div>
         </div>
 
-        <div class="flex flex-col text-right">
+        <div class="md:flex hidden flex-col text-right">
           <span
             class="md:text-tbase text-sm"
             :class="
@@ -159,7 +166,7 @@
         </div>
 
         <div v-if="modalExchange?.offerings?.length" class="flex flex-col">
-          <span>Exchange Chain:</span>
+          <span>Exchange Route:</span>
           <ul class="font-bold flex flex-col gap-4">
             <li
               v-for="offering in modalExchange.offerings"
@@ -203,7 +210,7 @@
       <CommonButton
         text="Close"
         @btn-action="updateExchangeModal = false"
-        custom-css="bg-gray-400 w-full text-black"
+        custom-css="bg-base w-full text-base"
       />
     </template>
   </CommonModal>

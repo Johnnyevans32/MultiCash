@@ -17,11 +17,11 @@ export default defineComponent({
     const tabs = ref([
       {
         title: "Exchange Currency",
-        content: ExchangeTable,
+        content: markRaw(ExchangeTable),
       },
       {
         title: "Exchange History",
-        content: ExchangeHistory,
+        content: markRaw(ExchangeHistory),
       },
     ]);
 

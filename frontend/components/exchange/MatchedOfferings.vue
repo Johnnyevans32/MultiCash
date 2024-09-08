@@ -93,6 +93,8 @@
             title="Enter amount"
             :currency="selectedOffering.payinCurrency"
             :balance="wallet?.availableBalance"
+            :max="wallet?.availableBalance"
+            :min="0"
           />
         </div>
 

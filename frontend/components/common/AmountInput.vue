@@ -12,6 +12,8 @@
         class="w-full"
         custom-css="pl-0 border-l-0 rounded-l-none"
         :placeholder="placeholder"
+        :min="min"
+        :max="max"
       />
     </div>
 
@@ -29,6 +31,12 @@ export default defineComponent({
     placeholder: { type: String, required: false },
     currency: { type: String },
     balance: { type: Number },
+    min: {
+      type: Number,
+    },
+    max: {
+      type: Number,
+    },
   },
   emits: ["update:modelValue"],
   setup(props: any, ctx: any) {

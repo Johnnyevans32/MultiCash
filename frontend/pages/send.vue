@@ -88,6 +88,9 @@
           title="Enter account number"
           input-type="text"
         />
+        <span v-if="accountName" class="text-sm text-red-600"
+          >Account Name: {{ accountName }}</span
+        >
       </div>
     </template>
     <template v-slot:footer>
@@ -143,6 +146,8 @@
           title="Enter amount"
           :currency="selectedWalletAccount?.bank.currency"
           :balance="wallet?.availableBalance"
+          :max="wallet?.availableBalance"
+          :min="0"
         />
         <CommonFormInput
           v-model="note"
@@ -177,7 +182,7 @@
 <script lang="ts">
 import { notify } from "@kyvg/vue3-notification";
 import { useWalletStore } from "~/store/wallet";
-import type { IWallet, IWalletAccount } from "~/types/wallet";
+import type { IWalletAccount } from "~/types/wallet";
 
 export default defineComponent({
   async setup() {
@@ -226,6 +231,7 @@ export default defineComponent({
     };
 
     const isCreateWalletLoading = ref(false);
+    const accountName = ref("");
     const createWalletAccount = async () => {
       await withLoadingPromise(
         $api.paymentService
@@ -234,6 +240,7 @@ export default defineComponent({
             bankId: selectedBankId.value,
           })
           .then(async (resp: { accountName: string }) => {
+            accountName.value = resp.accountName;
             await $api.walletService.createWalletAccount({
               accountNumber: accountNumber.value,
               accountName: resp.accountName,
@@ -330,6 +337,7 @@ export default defineComponent({
       withdraw,
       openWithdrawalModal,
       wallet,
+      accountName,
     };
   },
 });

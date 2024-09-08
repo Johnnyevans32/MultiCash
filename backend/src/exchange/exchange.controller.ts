@@ -85,7 +85,7 @@ export class ExchangeController {
     @Res() res: Response,
     @CurrentUser() user: UserDocument,
     @Param("id") exchangeId: string,
-    @Body("rating") rating: number
+    @Body() payload: any
   ) {
     return UtilityService.handleRequest(
       res,
@@ -95,7 +95,7 @@ export class ExchangeController {
       HttpStatusCode.Ok,
       user,
       exchangeId,
-      rating
+      payload
     );
   }
 

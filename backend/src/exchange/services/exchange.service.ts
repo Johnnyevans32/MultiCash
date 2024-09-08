@@ -92,10 +92,19 @@ export class ExchangeService extends RequestService {
     } = await this.loadTbdexModules());
   }
 
-  async rateExchange(user: UserDocument, exchangeId: string, rating: number) {
+  async rateExchange(
+    user: UserDocument,
+    exchangeId: string,
+    payload: { rating: number; comment: string }
+  ) {
     await this.exchangeModel.updateOne(
       { user: user.id, _id: exchangeId, isDeleted: false },
-      { $set: { userSatisfactionRating: rating } }
+      {
+        $set: {
+          rating: payload.rating,
+          comment: payload.comment,
+        },
+      }
     );
   }
   async fetchPfis() {
@@ -397,7 +406,7 @@ export class ExchangeService extends RequestService {
         limit,
         pagination: !all,
         select:
-          "payinAmount payoutAmount payinCurrency payoutCurrency payoutUnitsPerPayinUnit totalFee status createdAt",
+          "payinAmount payoutAmount payinCurrency payoutCurrency payoutUnitsPerPayinUnit totalFee status createdAt rating comment",
         populate: {
           path: "offerings",
           select:

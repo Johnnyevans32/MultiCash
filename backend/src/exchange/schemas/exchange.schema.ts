@@ -53,7 +53,9 @@ export class Exchange extends BaseSchema {
   status: ExchangeStatus;
 
   @Prop({ type: SchemaTypes.Number, max: 5, min: 1 })
-  userSatisfactionRating?: number;
+  rating?: number;
+  @Prop({ type: SchemaTypes.String })
+  comment?: string;
 
   offeringToBeProcessed?: OfferingDocument;
   offerings?: OfferingDocument[];

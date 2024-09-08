@@ -32,6 +32,8 @@ export interface IExchange {
   id: string;
   createdAt: string;
   offerings: IOffering[];
+  rating: number;
+  comment: string;
 }
 
 export interface IPfi {

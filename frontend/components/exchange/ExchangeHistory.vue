@@ -202,6 +202,8 @@
             </li>
           </ul>
         </div>
+
+        <CommonTextArea v-model="comment" title="" />
       </div>
     </template>
 
@@ -263,17 +265,19 @@ export default defineComponent({
     };
 
     const isLoadingRateExchange = ref(false);
+    const comment = ref(modalExchange.value?.comment);
+    const rating = ref(modalExchange.value?.rating);
     const rateExchange = async () => {
       if (!modalExchange.value) {
         return;
       }
       await withLoadingPromise(
         $api.exchangeService
-          .rateExchange(modalExchange.value?.id, 3)
+          .rateExchange(modalExchange.value?.id, rating.value, comment.value)
           .then(() => {
             notify({
               type: "success",
-              title: `rating has been updated`,
+              title: `acknowledged`,
             });
           }),
         isLoadingRateExchange
@@ -290,6 +294,7 @@ export default defineComponent({
       updateExchangeModal,
       openExchangeModal,
       modalExchange,
+      comment,
     };
   },
 });

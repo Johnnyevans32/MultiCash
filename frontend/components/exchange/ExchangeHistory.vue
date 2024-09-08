@@ -12,7 +12,6 @@
 
           <div class="flex flex-col gap-2">
             <div class="h-2 w-32 bg-base rounded"></div>
-            <div class="h-2 w-20 bg-base rounded"></div>
           </div>
         </div>
         <div class="flex flex-col gap-2">

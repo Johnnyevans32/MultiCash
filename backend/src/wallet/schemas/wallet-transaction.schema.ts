@@ -74,6 +74,9 @@ export class WalletTransaction extends BaseSchema {
 
   @Prop({ type: SchemaTypes.Mixed })
   meta?: any;
+
+  @Prop({ type: SchemaTypes.String })
+  note?: string;
 }
 
 export const WalletTransactionSchema =

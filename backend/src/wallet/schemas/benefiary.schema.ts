@@ -10,10 +10,10 @@ import {
 import { BankDocument } from "@/payment/schemas/bank.schema";
 import { WalletDocument } from "./wallet.schema";
 
-export type WalletAccountDocument = HydratedDocument<WalletAccount>;
+export type BenefiaryDocument = HydratedDocument<Benefiary>;
 
 @BaseSchemaDecorator()
-export class WalletAccount extends BaseSchema {
+export class Benefiary extends BaseSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: USER })
   user: UserDocument | string;
 
@@ -23,11 +23,8 @@ export class WalletAccount extends BaseSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: BANK })
   bank: BankDocument | string;
 
-  @Prop({ type: SchemaTypes.ObjectId, ref: WALLET })
-  wallet: WalletDocument | string;
-
   @Prop({ type: SchemaTypes.String })
   accountName: string;
 }
 
-export const WalletAccountSchema = SchemaFactory.createForClass(WalletAccount);
+export const BenefiarySchema = SchemaFactory.createForClass(Benefiary);

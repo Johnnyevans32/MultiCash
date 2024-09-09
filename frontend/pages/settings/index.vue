@@ -2,10 +2,12 @@
   <div class="border-b-[1px] border-base text-left py-5">
     <CommonPageBar mainPage="Settings" />
   </div>
-  <img
-    :src="user?.profileImage || `https://robohash.org/${user?.email}`"
+
+  <CommonImage
+    :image="user?.profileImage || `https://robohash.org/${user?.email}`"
     alt="avatar"
-    class="w-28 h-28 rounded-xl justify-self-center border-[1px] border-base bg-lightbase"
+    type="image"
+    custom-css="w-28 h-28 rounded-xl justify-self-center border-[1px] border-base bg-lightbase"
   />
 
   <div class="flex flex-col gap-2">
@@ -60,6 +62,7 @@ export default defineComponent({
     const { appThemeColor } = storeToRefs(useConfigStore());
     const { setAccessToken } = useUserStore();
     const { loading, withLoading } = useLoading();
+    const config = useRuntimeConfig();
     const confirmDeletionModal = ref(false);
 
     const logout = async () => {
@@ -72,6 +75,13 @@ export default defineComponent({
     };
 
     const settingsItems = ref([
+      {
+        logo: "at",
+        action: `${config.public.appName} tag`,
+        value: user.value?.tag ? `@${user.value?.tag}` : "@",
+        logoType: "icon",
+        href: "/settings/tag",
+      },
       {
         logo: "user",
         action: "Profile",

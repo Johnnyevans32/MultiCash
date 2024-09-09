@@ -23,6 +23,11 @@ export interface Configuration {
   ui: {
     url: string;
   };
+  cloudinary: {
+    cloudName: string;
+    apiKey: string;
+    apiSecret: string;
+  };
 }
 
 export default (): Configuration => ({
@@ -49,5 +54,10 @@ export default (): Configuration => ({
   },
   ui: {
     url: process.env.UI_URL,
+  },
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
   },
 });

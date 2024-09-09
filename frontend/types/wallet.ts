@@ -32,6 +32,7 @@ export interface IWalletTransaction {
   id: string;
   createdAt: string;
   currency: string;
+  note: string;
 }
 
 export interface IBank {
@@ -40,7 +41,7 @@ export interface IBank {
   id: string;
   logo: string;
 }
-export interface IWalletAccount {
+export interface IBenefiary {
   accountNumber: string;
   accountName: string;
   bank: IBank;

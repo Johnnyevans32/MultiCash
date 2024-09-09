@@ -19,6 +19,7 @@ import { PaymentModule } from "./payment/payment.module";
 import { WebhookModule } from "./webhook/webhook.module";
 import configuration from "./core/services/configuration";
 import { RevenueModule } from "./revenue/revenue.module";
+import { FileModule } from "./file/file.module";
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { RevenueModule } from "./revenue/revenue.module";
     PaymentModule,
     WebhookModule,
     RevenueModule,
+    FileModule,
   ],
   providers: [
     {

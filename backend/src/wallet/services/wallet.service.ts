@@ -10,8 +10,8 @@ import { Connection, Model, PaginateModel } from "mongoose";
 import { Mutex, MutexInterface } from "async-mutex";
 
 import {
+  BENEFIARY,
   WALLET,
-  WALLET_ACCOUNT,
   WALLET_CURRENCY,
   WALLET_TRANSACTION,
 } from "@/core/constants/schema.constants";
@@ -21,7 +21,7 @@ import {
 } from "@/wallet/schemas/wallet.schema";
 import {
   AVAILABLE_BALANCE,
-  CreateWalletAccountDTO,
+  CreateBenefiarytDTO,
   CreateWalletTxnDTO,
   WithdrawFromWalletDTO,
 } from "@/wallet/dtos/wallet.dto";
@@ -36,7 +36,7 @@ import { WalletCurrencyDocument } from "../schemas/wallet-currency.schema";
 import { UtilityService } from "@/core/services/util.service";
 import { PaymentService } from "@/payment/services/payment.service";
 import { TransferPurpose } from "@/payment/schemas/transfer-record.schema";
-import { WalletAccountDocument } from "../schemas/wallet-account.schema";
+import { BenefiaryDocument } from "../schemas/benefiary.schema";
 import { BankDocument } from "@/payment/schemas/bank.schema";
 import { RevenueService } from "@/revenue/services/revenue.service";
 import { RevenueSource } from "@/revenue/schemas/revenue.schema";
@@ -49,8 +49,8 @@ export class WalletService {
 
   constructor(
     @InjectModel(WALLET) private walletModel: Model<WalletDocument>,
-    @InjectModel(WALLET_ACCOUNT)
-    private walletAccountModel: Model<WalletAccountDocument>,
+    @InjectModel(BENEFIARY)
+    private benefiaryModel: Model<BenefiaryDocument>,
     @InjectModel(WALLET_TRANSACTION)
     private walletTransactionModel: PaginateModel<WalletTransactionDocument>,
     @InjectModel(WALLET_CURRENCY)
@@ -245,7 +245,7 @@ export class WalletService {
           limit,
           pagination: !all,
           select:
-            "amount description type purpose currency createdAt walletStateAfter.availableBalance walletStateAfter.currency walletStateBefore.availableBalance",
+            "amount description type purpose currency createdAt walletStateAfter.availableBalance walletStateAfter.currency walletStateBefore.availableBalance note",
         }
       );
     return { data, metadata };
@@ -383,6 +383,7 @@ export class WalletService {
       purpose,
       meta,
       fee,
+      note,
     } = payload;
 
     const wallet = await this.fetchWallet(user, currency);
@@ -411,6 +412,7 @@ export class WalletService {
         meta,
         currency,
         fee,
+        note,
       };
 
       return await this.executeTransaction(
@@ -433,22 +435,27 @@ export class WalletService {
     if (!isMatch) {
       throw new BadRequestException("invalid password");
     }
-    const { amount, note, walletAccount: walletAccountId } = payload;
+    const { amount, note, benefiary: benefiaryId } = payload;
 
-    const wallletAccount = await this.walletAccountModel
+    const benefiary = await this.benefiaryModel
       .findOne({
-        _id: walletAccountId,
+        _id: benefiaryId,
         user: user.id,
         isDeleted: false,
       })
       .populate("bank wallet");
 
-    if (!wallletAccount) {
-      throw new BadRequestException("invalid wallet account");
+    if (!benefiary) {
+      throw new BadRequestException("invalid benefiary");
     }
 
-    const { accountNumber, bank, accountName } = wallletAccount;
-    const wallet = wallletAccount.wallet as WalletDocument;
+    const { accountNumber, accountName } = benefiary;
+    const bank = benefiary.bank as BankDocument;
+    const wallet = await this.walletModel.findOne({
+      user: user.id,
+      isDeleted: false,
+      currency: bank.currency,
+    });
     await wallet.populate("walletCurrency");
     const { currency, transferFee } = wallet.walletCurrency;
     const reference = UtilityService.generateRandomHex(12);
@@ -457,11 +464,12 @@ export class WalletService {
       amount: amount + transferFee,
       currency,
       balanceKeys: [AVAILABLE_BALANCE],
-      description: note,
+      description: `Withdrew money to ${accountNumber} of ${bank.name}`,
       reference,
       user: user.id,
       purpose: TransactionPurpose.WITHDRAWAL,
       fee: transferFee,
+      note,
     });
 
     await this.revenueService.createRevenue({
@@ -478,7 +486,7 @@ export class WalletService {
       description: `withdrawal from user wallet`,
       amount,
       currency,
-      bank: bank as BankDocument,
+      bank: bank,
       accountNumber,
       accountName,
       meta: {},
@@ -487,33 +495,29 @@ export class WalletService {
     this.emailService.sendWithdrawalNotification(user, amount, currency);
   }
 
-  async createWalletAccount(
-    user: UserDocument,
-    payload: CreateWalletAccountDTO
-  ) {
+  async createBenefiary(user: UserDocument, payload: CreateBenefiarytDTO) {
     const { bank: bankId, accountNumber, accountName } = payload;
     const bank = await this.paymentService.fetchBankById(bankId);
     if (!bank) {
       throw new BadRequestException("invalid bank");
     }
-    const wallet = await this.fetchWallet(user.id, bank.currency);
-    await this.walletAccountModel.findOneAndUpdate(
-      { user: user.id, accountNumber, isDeleted: false, wallet: wallet.id },
-      { bank, accountName },
+    await this.benefiaryModel.findOneAndUpdate(
+      { user: user.id, accountNumber, isDeleted: false },
+      { bank: bank.id, accountName },
       { upsert: true, new: true }
     );
   }
 
-  async fetchWalletAccounts(user: UserDocument) {
-    return this.walletAccountModel
+  async fetchBenefiaries(user: UserDocument) {
+    return this.benefiaryModel
       .find({ user: user.id, isDeleted: false })
       .populate({ path: "bank", select: "name currency logo" })
       .select("accountNumber accountName");
   }
 
-  async deleteWalletAccount(user: UserDocument, walletAccountId: string) {
-    await this.walletAccountModel.updateOne(
-      { _id: walletAccountId, user: user.id },
+  async deleteBenefiary(user: UserDocument, benefiaryId: string) {
+    await this.benefiaryModel.updateOne(
+      { _id: benefiaryId, user: user.id },
       { $set: { isDeleted: true, deletedAt: new Date() } }
     );
   }

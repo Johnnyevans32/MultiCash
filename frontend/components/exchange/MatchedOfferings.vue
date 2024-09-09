@@ -4,14 +4,14 @@
     <div
       v-for="(matchedOffering, index) in matchedOfferings"
       :key="index"
-      class="cursor-pointer py-4 px-5 flex flex-col gap-4 rounded-xl bg-lightbase border-[1px] border-base"
+      class="cursor-pointer py-4 px-5 flex flex-col gap-4 rounded-xl bg-lightbase border-[1px] border-base md:text-sm text-xs"
       @click="selectOffering(matchedOffering)"
     >
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <span class="font-bold">Route {{ index + 1 }}</span>
-          <span class="text-gray-600"
-            >Cumulative PFI Fee:
+          <span
+            >Cumulative PFI fee:
             {{ formatMoney(matchedOffering.cumulativeFee) }}
             {{ matchedOffering.payinCurrency }}</span
           >
@@ -25,11 +25,11 @@
           >
             <div class="flex flex-col items-start">
               <span class="font-bold">{{ offering.pfiName }}</span>
-              <span class="text-sm"
+              <span
                 >{{ offering.payinCurrency }} →
                 {{ offering.payoutCurrency }}</span
               >
-              <span class="text-xs text-gray-500"
+              <span class="text-xs"
                 >1 {{ offering.payinCurrency }} =
                 {{ offering.payoutUnitsPerPayinUnit }}
                 {{ offering.payoutCurrency }}</span
@@ -37,7 +37,7 @@
             </div>
 
             <div v-if="offeringIndex < matchedOffering.offerings.length - 1">
-              <span class="text-gray-400">→</span>
+              <span>→</span>
             </div>
           </div>
         </div>
@@ -57,7 +57,7 @@
           Hours</span
         >
         <div class="text-green-600 font-bold">
-          Exchange Rate: 1
+          Exchange rate: 1
           {{ matchedOffering.payinCurrency }} =
           {{
             formatMoney(matchedOffering.cumulativePayoutUnitsPerPayinUnit, 5)
@@ -114,24 +114,25 @@
           />
         </div>
 
-        <div class="flex flex-col">
-          <span>Summary:</span>
+        <div class="flex flex-col text-sm">
+          <span class="border-b-[1px] border-base">Summary:</span>
 
-          <div class="flex justify-between">
-            <span>Platform Fee:</span>
-            <span class="font-bold"
-              >{{ (walletCurrency?.exchangePercentageFee || 0) * 100 }}%
+          <div class="flex justify-between border-b-[1px] border-base">
+            <span>Platform fee:</span>
+            <span
+              >{{ formatMoney(calculatedPlatformFeeAmount) }}
+              {{ selectedOffering.payinCurrency }}
             </span>
           </div>
-          <div class="flex justify-between">
-            <span>PFI(s) Fee:</span>
-            <span class="font-bold"
+          <div class="flex justify-between border-b-[1px] border-base">
+            <span>PFI(s) fee:</span>
+            <span
               >{{ formatMoney(selectedOffering.cumulativeFee) }}
               {{ selectedOffering.payinCurrency }}</span
             >
           </div>
-          <div class="flex justify-between text-sm">
-            <span>Total Fees:</span>
+          <div class="flex justify-between border-b-[1px] border-base">
+            <span>Total fees:</span>
             <span
               >{{
                 formatMoney(
@@ -141,16 +142,16 @@
               {{ selectedOffering.payinCurrency }}</span
             >
           </div>
-          <div class="flex justify-between">
+          <div class="flex justify-between border-b-[1px] border-base">
             <span>You will receive:</span>
-            <span class="font-bold"
+            <span
               >{{ formatMoney(calculatedPayoutAmount) }}
               {{ selectedOffering.payoutCurrency }}</span
             >
           </div>
           <div class="flex justify-between">
             <span>Estimated settlement time:</span>
-            <span class="font-bold">
+            <span>
               {{
                 convertTime(
                   selectedOffering.cumulativeSettlementTimeInSecs,

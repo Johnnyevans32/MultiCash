@@ -14,7 +14,7 @@
     />
   </div>
 
-  <div v-if="isFetchWalletAccountLoading">
+  <div v-if="isFetchBenefiariesLoading">
     <div
       v-for="i in 2"
       :key="i"
@@ -31,29 +31,29 @@
       <div class="h-2 w-12 bg-base rounded"></div>
     </div>
   </div>
-  <div v-else-if="!walletAccounts.length">
+  <div v-else-if="!benefiaries.length">
     <font-awesome-icon class="text-7xl mb-5" icon="university" />
     <p>Nothing to see here</p>
     <p>your benefiary bank accounts will appear here once added.</p>
   </div>
   <div v-else class="flex flex-col gap-2">
     <div
-      v-for="account in walletAccounts"
-      :key="account.id"
+      v-for="benefiary in benefiaries"
+      :key="benefiary.id"
       class="cursor-pointer py-5 md:px-5 px-2 flex items-center h-16 justify-between rounded-xl bg-lightbase"
-      @click="openWithdrawalModal(account)"
+      @click="openWithdrawalModal(benefiary)"
     >
       <div class="flex space-x-3 items-center">
-        <CommonImage :image="account.bank.logo" :alt="account.bank.name" />
+        <CommonImage :image="benefiary.bank.logo" :alt="benefiary.bank.name" />
 
         <div class="flex flex-col text-left">
-          <span class="md:text-sm text-xs">{{ account.accountName }}</span>
+          <span class="md:text-sm text-xs">{{ benefiary.accountName }}</span>
           <span class="md:text-sm text-xs"
-            >{{ account.accountNumber }} ({{ account.bank.name }})</span
+            >{{ benefiary.accountNumber }} ({{ benefiary.bank.name }})</span
           >
         </div>
       </div>
-      <span class="text-sm">{{ account.bank.currency }}</span>
+      <span class="text-sm">{{ benefiary.bank.currency }}</span>
     </div>
   </div>
   <CommonModal
@@ -100,17 +100,17 @@
         custom-css="bg-red-600 w-full text-white"
       />
       <CommonButton
-        text="Add account"
-        @btn-action="createWalletAccount"
+        text="Add benefiary"
+        @btn-action="createBenefiary"
         custom-css="!bg-blue-600 w-full text-white"
-        :loading="isCreateWalletLoading"
+        :loading="isCreateBenefiaryLoading"
       />
     </template>
   </CommonModal>
 
   <CommonModal
     :open="withdrawalModal"
-    title="Withdraw from wallet"
+    title="Send money to benefiary"
     @change-modal-status="
       (value) => {
         withdrawalModal = value;
@@ -122,21 +122,21 @@
         <div>
           <span class="text-sm">Benefiary Account Name:</span>
           <p class="md:text-sm text-xs">
-            {{ selectedWalletAccount?.accountName }}
+            {{ selectedBenefiary?.accountName }}
           </p>
         </div>
 
         <div>
           <span class="text-sm">Benefiary Account Number:</span>
           <p class="md:text-sm text-xs">
-            {{ selectedWalletAccount?.accountNumber }}
+            {{ selectedBenefiary?.accountNumber }}
           </p>
         </div>
 
         <div>
           <span class="text-sm">Benefiary Bank Name:</span>
           <p class="md:text-sm text-xs">
-            {{ selectedWalletAccount?.bank.name }}
+            {{ selectedBenefiary?.bank.name }}
           </p>
         </div>
 
@@ -144,22 +144,22 @@
           v-model="amount"
           placeholder="Enter amount"
           title="Enter amount"
-          :currency="selectedWalletAccount?.bank.currency"
+          :currency="selectedBenefiary?.bank.currency"
           :balance="wallet?.availableBalance"
           :max="wallet?.availableBalance"
           :min="0"
         />
-        <CommonFormInput
-          v-model="note"
-          placeholder="What is it for?"
-          title="What is it for?"
-          inputType="text"
-        />
+
         <CommonFormInput
           inputType="password"
           v-model="password"
           title="Enter your password"
           placeholder="password"
+        />
+        <CommonTextArea
+          v-model="note"
+          placeholder="Add note"
+          title="Add note"
         />
       </div>
     </template>
@@ -182,7 +182,7 @@
 <script lang="ts">
 import { notify } from "@kyvg/vue3-notification";
 import { useWalletStore } from "~/store/wallet";
-import type { IWalletAccount } from "~/types/wallet";
+import type { IBenefiary } from "~/types/wallet";
 
 export default defineComponent({
   async setup() {
@@ -191,7 +191,7 @@ export default defineComponent({
       ogTitle: "Send",
     });
     onBeforeMount(async () => {
-      await Promise.all([fetchBanks(), fetchWallets(), fetchWalletAccounts()]);
+      await Promise.all([fetchBanks(), fetchWallets(), fetchBenefiaries()]);
     });
 
     const { $api } = useNuxtApp();
@@ -230,9 +230,9 @@ export default defineComponent({
       );
     };
 
-    const isCreateWalletLoading = ref(false);
+    const isCreateBenefiaryLoading = ref(false);
     const accountName = ref("");
-    const createWalletAccount = async () => {
+    const createBenefiary = async () => {
       await withLoadingPromise(
         $api.paymentService
           .verifyAccountNumber({
@@ -241,19 +241,19 @@ export default defineComponent({
           })
           .then(async (resp: { accountName: string }) => {
             accountName.value = resp.accountName;
-            await $api.walletService.createWalletAccount({
+            await $api.walletService.createBenefiary({
               accountNumber: accountNumber.value,
               accountName: resp.accountName,
               bank: selectedBankId.value,
             });
             addAccountModal.value = false;
-            fetchWalletAccounts();
+            fetchBenefiaries();
             notify({
               type: "success",
               title: "account created",
             });
           }),
-        isCreateWalletLoading
+        isCreateBenefiaryLoading
       );
     };
 
@@ -264,14 +264,14 @@ export default defineComponent({
       selectedBankId.value = newVal;
     };
 
-    const walletAccounts = ref<IWalletAccount[]>([]);
-    const isFetchWalletAccountLoading = ref(false);
-    const fetchWalletAccounts = async () => {
+    const benefiaries = ref<IBenefiary[]>([]);
+    const isFetchBenefiariesLoading = ref(false);
+    const fetchBenefiaries = async () => {
       await withLoadingPromise(
-        $api.walletService.fetchWalletAccounts().then((resp) => {
-          walletAccounts.value = resp;
+        $api.walletService.fetchBenefiaries().then((resp) => {
+          benefiaries.value = resp;
         }),
-        isFetchWalletAccountLoading
+        isFetchBenefiariesLoading
       );
     };
 
@@ -282,11 +282,11 @@ export default defineComponent({
 
     const note = ref("");
     const amount = ref(100);
-    const selectedWalletAccount = ref<IWalletAccount>();
+    const selectedBenefiary = ref<IBenefiary>();
     const password = ref("");
     const isWithdrawLoading = ref(false);
     const withdraw = async () => {
-      if (!selectedWalletAccount.value) {
+      if (!selectedBenefiary.value) {
         return;
       }
       await withLoadingPromise(
@@ -294,7 +294,7 @@ export default defineComponent({
           .withdraw({
             note: note.value,
             amount: amount.value,
-            walletAccount: selectedWalletAccount.value?.id,
+            benefiary: selectedBenefiary.value?.id,
             password: password.value,
           })
           .then(() => {
@@ -309,8 +309,8 @@ export default defineComponent({
     };
 
     const withdrawalModal = ref(false);
-    const openWithdrawalModal = (_selectedAccount: IWalletAccount) => {
-      selectedWalletAccount.value = _selectedAccount;
+    const openWithdrawalModal = (_selectedBenefiary: IBenefiary) => {
+      selectedBenefiary.value = _selectedBenefiary;
       withdrawalModal.value = true;
     };
 
@@ -318,18 +318,18 @@ export default defineComponent({
       selectedCurrency,
       accountNumber,
       addAccountModal,
-      createWalletAccount,
+      createBenefiary,
       groupedBanksByCurrency,
       withdrawableCurrencies,
       handleCurrencyChange,
       isFetchWalletLoading,
       selectedBankId,
       handleBankChange,
-      isCreateWalletLoading,
-      isFetchWalletAccountLoading,
-      walletAccounts,
+      isCreateBenefiaryLoading,
+      isFetchBenefiariesLoading,
+      benefiaries,
       withdrawalModal,
-      selectedWalletAccount,
+      selectedBenefiary,
       amount,
       note,
       password,

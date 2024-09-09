@@ -5,6 +5,7 @@ export interface IUser {
   profileImage: string;
   country: string;
   did: string;
+  tag: string;
 }
 
 export interface UpdateUserDTO {

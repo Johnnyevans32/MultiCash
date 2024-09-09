@@ -1,9 +1,5 @@
 import type { IResponse } from "~/types/user";
-import type {
-  IWallet,
-  IWalletAccount,
-  IWalletTransaction,
-} from "~/types/wallet";
+import type { IBenefiary, IWallet, IWalletTransaction } from "~/types/wallet";
 
 export class WalletService {
   async fetchWallets() {
@@ -35,7 +31,7 @@ export class WalletService {
   async withdraw(payload: {
     amount: number;
     note: string;
-    walletAccount: string;
+    benefiary: string;
     password: string;
   }) {
     const { useCustomFetch } = useAppVueUtils();
@@ -45,22 +41,22 @@ export class WalletService {
     });
   }
 
-  async createWalletAccount(payload: {
+  async createBenefiary(payload: {
     accountNumber: string;
     accountName: string;
     bank: string;
   }) {
     const { useCustomFetch } = useAppVueUtils();
-    return await useCustomFetch(`/api/wallets/accounts`, {
+    return await useCustomFetch(`/api/wallets/benefiaries`, {
       method: "post",
       body: payload,
     });
   }
 
-  async fetchWalletAccounts() {
+  async fetchBenefiaries() {
     const { useCustomFetch } = useAppVueUtils();
-    const { data } = await useCustomFetch<IResponse<IWalletAccount[]>>(
-      `/api/wallets/accounts`,
+    const { data } = await useCustomFetch<IResponse<IBenefiary[]>>(
+      `/api/wallets/benefiaries`,
       {
         method: "get",
       }
@@ -68,9 +64,9 @@ export class WalletService {
     return data;
   }
 
-  async deleteWalletAccount(walletAccountId: string) {
+  async deleteBenefiary(benefiaryId: string) {
     const { useCustomFetch } = useAppVueUtils();
-    return await useCustomFetch(`/api/wallets/accounts/${walletAccountId}`, {
+    return await useCustomFetch(`/api/wallets/benefiaries/${benefiaryId}`, {
       method: "delete",
     });
   }

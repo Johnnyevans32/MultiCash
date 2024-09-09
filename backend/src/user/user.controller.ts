@@ -10,7 +10,11 @@ import {
 import { Response } from "express";
 
 import { UserService } from "@/user/services/user.service";
-import { UpdatePasswordDTO, UpdateUserDTO } from "@/user/dtos/user.dto";
+import {
+  UpdatePasswordDTO,
+  UpdateUserDTO,
+  UpdateUserTagDTO,
+} from "@/user/dtos/user.dto";
 import { CurrentUser } from "@/auth/decorators/user.decorator";
 import { UtilityService } from "@/core/services/util.service";
 import { HttpStatusCode } from "axios";
@@ -75,6 +79,23 @@ export class UserController {
       "deleteUser",
       HttpStatusCode.Ok,
       user
+    );
+  }
+
+  @Put("tag")
+  async updateUserTag(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument,
+    @Body() payload: UpdateUserTagDTO
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "update successful",
+      this.userService,
+      "updateUserTag",
+      HttpStatusCode.Ok,
+      user,
+      payload.tag
     );
   }
 }

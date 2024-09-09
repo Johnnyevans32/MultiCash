@@ -254,6 +254,13 @@
             {{ modalTransaction?.type === "debit" ? "Debit" : "Credit" }}
           </span>
         </div>
+
+        <div class="flex flex-col">
+          <span>Transaction Note:</span>
+          <span class="font-bold">
+            {{ modalTransaction?.note }}
+          </span>
+        </div>
       </div>
     </template>
 

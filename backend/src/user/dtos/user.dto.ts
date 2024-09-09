@@ -7,6 +7,7 @@ import {
   MaxLength,
   Matches,
   IsEnum,
+  Length,
 } from "class-validator";
 import { SupportedCountry } from "../schemas/user.schema";
 
@@ -90,7 +91,7 @@ export class UpdateUserDTO {
 
   @IsOptional()
   @IsString()
-  readonly profileImageUrl: string;
+  readonly profileImage: string;
 
   @IsOptional()
   @IsString()
@@ -101,4 +102,15 @@ export class ForgotPasswordDTO {
   @IsEmail()
   @Transform(({ value }) => value.trim().toLowerCase())
   readonly email: string;
+}
+
+export class UpdateUserTagDTO {
+  @Transform(({ value }) => value.trim().toLowerCase())
+  @IsString({ message: "Tag must be a string" })
+  @Length(3, 30, { message: "Tag length must be between 3 and 30 characters" })
+  @Matches(/^[a-z0-9-_]+$/, {
+    message:
+      "Tag can only contain lowercase letters, numbers, hyphens, and underscores",
+  })
+  readonly tag: string;
 }

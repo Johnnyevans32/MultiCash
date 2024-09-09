@@ -29,7 +29,6 @@ import { OfferingDocument, OfferingStatus } from "../schemas/offering.schema";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 import { WalletService } from "@/wallet/services/wallet.service";
 import { AVAILABLE_BALANCE } from "@/wallet/dtos/wallet.dto";
-import { UtilityService } from "@/core/services/util.service";
 import { TransactionPurpose } from "@/wallet/schemas/wallet-transaction.schema";
 import { Interval } from "@nestjs/schedule";
 import { ExchangeDocument, ExchangeStatus } from "../schemas/exchange.schema";
@@ -387,14 +386,13 @@ export class ExchangeService extends RequestService {
 
       await this.offeringModel.insertMany(updatedOfferings, { session });
 
-      const reference = UtilityService.generateRandomHex(12);
       const description = `exchange to ${exchange.payoutCurrency}`;
       await this.walletService.debitWallet({
         amount: payinAmount,
         currency: exchange.payinCurrency,
         balanceKeys: [AVAILABLE_BALANCE],
         description,
-        reference,
+        reference: `debit_${exchange.id}`,
         user: user.id,
         meta: { exchangeId: exchange.id },
         purpose: TransactionPurpose.CURRENCY_EXCHANGE,
@@ -448,14 +446,13 @@ export class ExchangeService extends RequestService {
       const user = exchange.user as UserDocument;
       if (!offering) {
         exchange.status = ExchangeStatus.Completed;
-        const reference = UtilityService.generateRandomHex(12);
         const description = `exchange from ${exchange.payinCurrency}`;
         await this.walletService.creditWallet({
           amount: exchange.payoutAmount,
           currency: exchange.payoutCurrency,
           balanceKeys: [AVAILABLE_BALANCE],
           description,
-          reference,
+          reference: `credit_${exchange.id}`,
           user: user.id,
           meta: { exchangeId: exchange.id },
           purpose: TransactionPurpose.CURRENCY_EXCHANGE,

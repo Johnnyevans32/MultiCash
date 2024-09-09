@@ -38,6 +38,9 @@ export class CreateWalletTxnDTO {
 
   @IsOptional()
   fee?: number;
+
+  @IsOptional()
+  note?: string;
 }
 
 export const AVAILABLE_BALANCE = "availableBalance";
@@ -49,16 +52,17 @@ export class WithdrawFromWalletDTO {
   amount: number;
 
   @IsString()
-  note: string;
+  @IsOptional()
+  note?: string;
 
   @IsMongoId()
-  walletAccount: string;
+  benefiary: string;
 
   @IsString()
   password: string;
 }
 
-export class CreateWalletAccountDTO {
+export class CreateBenefiarytDTO {
   @IsString()
   accountNumber: string;
 

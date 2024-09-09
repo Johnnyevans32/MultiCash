@@ -46,7 +46,7 @@ export class User extends BaseSchema {
   country: SupportedCountry;
 
   @Prop({ type: String })
-  profileImageUrl?: string;
+  profileImage?: string;
 
   @Prop({ type: String })
   kycVcJwt?: string;
@@ -59,6 +59,9 @@ export class User extends BaseSchema {
 
   @Prop({ type: Number, default: 0 })
   jwtTokenVersion?: number;
+
+  @Prop({ type: String })
+  tag?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

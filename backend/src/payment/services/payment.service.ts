@@ -6,6 +6,7 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
+import { Interval } from "@nestjs/schedule";
 
 import {
   BANK,
@@ -33,7 +34,6 @@ import { ChargeRecordDocument } from "../schemas/charge-record.schema";
 import { WalletService } from "@/wallet/services/wallet.service";
 import { AVAILABLE_BALANCE } from "@/wallet/dtos/wallet.dto";
 import { TransactionPurpose } from "@/wallet/schemas/wallet-transaction.schema";
-import { Interval } from "@nestjs/schedule";
 
 @Injectable()
 export class PaymentService {
@@ -198,7 +198,6 @@ export class PaymentService {
       },
       isDeleted: false,
     };
-
     const failedTransfers = await this.transferRecordModel
       .find(query)
       .populate("bank");

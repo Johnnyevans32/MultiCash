@@ -11,7 +11,6 @@ export class UserService {
     const { data } = await useCustomFetch<IResponse<IUser>>(`/api/users`, {
       method: "get",
     });
-
     return data;
   }
 
@@ -36,5 +35,25 @@ export class UserService {
     return useCustomFetch(`/api/users`, {
       method: "delete",
     });
+  }
+
+  async updateTag(payload: { tag: string }) {
+    const { useCustomFetch } = useAppVueUtils();
+    return useCustomFetch(`/api/users/tag`, {
+      method: "put",
+      body: payload,
+    });
+  }
+
+  async uploadFile(payload: any) {
+    const { useCustomFetch } = useAppVueUtils();
+    const { data } = await useCustomFetch<IResponse<{ url: string }>>(
+      `/api/files`,
+      {
+        method: "post",
+        body: payload,
+      }
+    );
+    return data;
   }
 }

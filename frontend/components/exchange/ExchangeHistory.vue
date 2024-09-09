@@ -15,7 +15,7 @@
           </div>
         </div>
         <div class="flex flex-col gap-2">
-          <div class="h-2 w-28 bg-base rounded"></div>
+          <div class="h-2 w-20 bg-base rounded"></div>
         </div>
       </div>
     </div>
@@ -40,11 +40,11 @@
 
           <div class="flex flex-col text-left">
             <span class="truncate">
-              {{ formatMoney(exchange.payinAmount) }}
               {{ exchange.payinCurrency }}
+              {{ formatMoney(exchange.payinAmount) }}
               <font-awesome-icon icon="fas fa-arrow-right " class="mx-1" />
-              {{ formatMoney(exchange.payoutAmount) }}
               {{ exchange.payoutCurrency }}
+              {{ formatMoney(exchange.payoutAmount) }}
             </span>
             <span
               class="md:hidden flex text-sm"
@@ -170,7 +170,7 @@
             <li
               v-for="offering in modalExchange.offerings"
               :key="offering.id"
-              class="border-b border-gray-300 py-2"
+              class="border-t border-base py-2"
             >
               <div class="flex justify-between">
                 <span>PFI: {{ offering.pfi?.name }}</span>
@@ -190,11 +190,11 @@
               <div class="flex flex-col">
                 <span
                   >1 {{ offering.payinCurrency }} =
-                  {{ offering.payoutUnitsPerPayinUnit }}
+                  {{ formatMoney(offering.payoutUnitsPerPayinUnit, 5) }}
                   {{ offering.payoutCurrency }}</span
                 >
                 <span
-                  >PFI Fee: {{ offering.payinCurrency }}
+                  >PFI fee: {{ offering.payinCurrency }}
                   {{ formatMoney(offering.pfiFee || 0) }}</span
                 >
               </div>

@@ -63,3 +63,27 @@ export const groupBy = <T extends Record<string | number, any>>(
 export const generateRandomDigits = (length = 6) => {
   return Array.from({ length }, () => Math.floor(Math.random() * 10)).join("");
 };
+
+export const convertFileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
+};
+
+export const uploadFile = async (file: File) => {
+  const base64File = await convertFileToBase64(file);
+  const fileType = file.type;
+  const fileName = file.name;
+
+  const payload = {
+    file: base64File,
+    fileName,
+    fileType,
+  };
+  const { $api } = useNuxtApp();
+  const resp = await $api.userService.uploadFile(payload);
+  return resp.url;
+};

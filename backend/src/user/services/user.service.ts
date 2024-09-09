@@ -28,7 +28,7 @@ export class UserService {
   async me(user: UserDocument) {
     return this.userModel
       .findById(user.id)
-      .select("name email did profileImageUrl country");
+      .select("name email did profileImage country tag");
   }
 
   async signup(payload: CreateUserDTO) {
@@ -126,5 +126,19 @@ export class UserService {
       { _id: user.id },
       { $set: { isDeleted: true, deletedAt: new Date() } }
     );
+  }
+
+  async updateUserTag(user: UserDocument, tag: string) {
+    const tagAlreadyExist = await this.userModel.findOne({
+      tag,
+      isDeleted: false,
+      _id: { $ne: user.id },
+    });
+
+    if (tagAlreadyExist) {
+      throw new BadRequestException("tag already exist");
+    }
+
+    await this.userModel.updateOne({ _id: user.id }, { $set: { tag } });
   }
 }

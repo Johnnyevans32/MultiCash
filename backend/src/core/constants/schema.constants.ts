@@ -3,7 +3,7 @@ import { PortableDid } from "@web5/dids";
 export const USER = "users";
 export const WALLET = "wallets";
 export const WALLET_TRANSACTION = "wallettransactions";
-export const WALLET_ACCOUNT = "walletaccounts";
+export const BENEFIARY = "benefiaries";
 export const WALLET_CURRENCY = "walletcurrencies";
 
 export const PFI = "pfis";

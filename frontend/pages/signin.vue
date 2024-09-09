@@ -23,7 +23,7 @@
       custom-css="!bg-blue-600 w-full text-white"
     />
     <NuxtLink class="text-blue-600 text-sm" to="/signup"
-      >Don't have an account? Register</NuxtLink
+      >Don't have an account? Sign up</NuxtLink
     >
     <NuxtLink class="text-blue-600 text-sm" to="/forgot-password"
       >Forgot Password?</NuxtLink

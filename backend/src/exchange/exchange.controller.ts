@@ -34,6 +34,7 @@ export class ExchangeController {
     );
   }
 
+  @Public()
   @Get("offerings")
   async getOfferings(@Res() res: Response, @Query() payload: GetOfferingsDTO) {
     return UtilityService.handleRequest(

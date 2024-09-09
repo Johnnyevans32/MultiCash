@@ -43,11 +43,27 @@
         </div>
       </div>
 
-      <div class="text-right text-green-600 font-bold">
-        Exchange Rate: 1
-        {{ matchedOffering.payinCurrency }} =
-        {{ formatMoney(matchedOffering.cumulativePayoutUnitsPerPayinUnit, 5) }}
-        {{ matchedOffering.payoutCurrency }}
+      <div class="flex items-center justify-between">
+        <span
+          >Estimated settlement time:
+
+          {{
+            convertTime(
+              matchedOffering.cumulativeSettlementTimeInSecs,
+              "seconds",
+              "hours"
+            )
+          }}
+          Hours</span
+        >
+        <div class="text-green-600 font-bold">
+          Exchange Rate: 1
+          {{ matchedOffering.payinCurrency }} =
+          {{
+            formatMoney(matchedOffering.cumulativePayoutUnitsPerPayinUnit, 5)
+          }}
+          {{ matchedOffering.payoutCurrency }}
+        </div>
       </div>
     </div>
   </div>
@@ -130,6 +146,19 @@
             <span class="font-bold"
               >{{ formatMoney(calculatedPayoutAmount) }}
               {{ selectedOffering.payoutCurrency }}</span
+            >
+          </div>
+          <div class="flex justify-between">
+            <span>Estimated settlement time:</span>
+            <span class="font-bold">
+              {{
+                convertTime(
+                  selectedOffering.cumulativeSettlementTimeInSecs,
+                  "seconds",
+                  "hours"
+                )
+              }}
+              Hours</span
             >
           </div>
         </div>

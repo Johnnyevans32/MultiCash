@@ -42,7 +42,7 @@
       custom-css="!bg-blue-600 w-full text-white"
     />
     <NuxtLink class="text-blue-600 text-sm" to="/signin"
-      >Already have an account? Signin In</NuxtLink
+      >Already have an account? Sign in</NuxtLink
     >
     <p class="text-sm">
       Need Help?

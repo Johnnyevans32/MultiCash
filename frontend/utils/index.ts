@@ -9,6 +9,12 @@ export const formatMoney = (value?: number, maxFractionDigits = 2) =>
 export const formatDate = (date: string, format = "MMM Do YY") =>
   moment(date).format(format);
 
+export const convertTime = (
+  time: number,
+  from: moment.unitOfTime.Base,
+  to: moment.unitOfTime.Base
+) => moment.duration(time, from).as(to);
+
 export const groupByDate = <T>(
   array: T[],
   dateField: keyof T,

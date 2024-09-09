@@ -19,6 +19,7 @@ export interface IMatchedOffering {
   cumulativeFee: number;
   payinCurrency: string;
   payoutCurrency: string;
+  cumulativeSettlementTimeInSecs: number;
 }
 
 export interface IExchange {

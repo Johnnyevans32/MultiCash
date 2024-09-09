@@ -162,6 +162,7 @@ export class ExchangeService extends RequestService {
     const matchedOfferings: {
       offerings: OfferingDTO[];
       cumulativePayoutUnitsPerPayinUnit: number;
+      cumulativeSettlementTimeInSecs?: number;
       cumulativeFee: number;
       payinCurrency: SupportedCurrencyEnum;
       payoutCurrency: SupportedCurrencyEnum;
@@ -171,6 +172,7 @@ export class ExchangeService extends RequestService {
       lastCurrency: SupportedCurrencyEnum;
       cumulativePayoutUnitsPerPayinUnit: number;
       cumulativeFee: number;
+      cumulativeSettlementTimeInSecs: number;
     }[] = [];
     const visited = new Set<SupportedCurrencyEnum>();
 
@@ -182,6 +184,8 @@ export class ExchangeService extends RequestService {
           lastCurrency: offering.payoutCurrency,
           cumulativePayoutUnitsPerPayinUnit: offering.payoutUnitsPerPayinUnit,
           cumulativeFee: offering.fee,
+          cumulativeSettlementTimeInSecs:
+            offering.estimatedSettlementTimeInSecs,
         });
         visited.add(offering.payoutCurrency);
       }
@@ -194,6 +198,7 @@ export class ExchangeService extends RequestService {
         lastCurrency,
         cumulativeFee,
         cumulativePayoutUnitsPerPayinUnit,
+        cumulativeSettlementTimeInSecs,
       } = queue.shift()!;
 
       // Check if we reached the desired payoutCurrency
@@ -204,6 +209,7 @@ export class ExchangeService extends RequestService {
           cumulativeFee,
           payinCurrency,
           payoutCurrency,
+          cumulativeSettlementTimeInSecs,
         });
         continue;
       }
@@ -223,6 +229,9 @@ export class ExchangeService extends RequestService {
               cumulativePayoutUnitsPerPayinUnit *
               nextOffering.payoutUnitsPerPayinUnit,
             cumulativeFee: cumulativeFee + nextOffering.fee,
+            cumulativeSettlementTimeInSecs:
+              cumulativeSettlementTimeInSecs +
+              nextOffering.estimatedSettlementTimeInSecs,
           });
           visited.add(nextPayoutCurrency);
         }
@@ -248,7 +257,7 @@ export class ExchangeService extends RequestService {
       data: {
         description,
         payin: { currencyCode: payinCurrency },
-        payout: { currencyCode: payoutCurrency },
+        payout: { currencyCode: payoutCurrency, methods },
         payoutUnitsPerPayinUnit,
       },
     } = offering;
@@ -263,6 +272,7 @@ export class ExchangeService extends RequestService {
       payinCurrency: payinCurrency as SupportedCurrencyEnum,
       payoutCurrency: payoutCurrency as SupportedCurrencyEnum,
       fee: 0,
+      estimatedSettlementTimeInSecs: methods[0]?.estimatedSettlementTime,
     };
   }
 

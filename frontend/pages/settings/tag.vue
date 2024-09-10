@@ -6,7 +6,7 @@
     <CommonFormInput
       inputType="text"
       v-model="tag"
-      :title="`Your ${config.public.name} tag`"
+      :title="`Your ${config.public.appName} tag`"
     />
 
     <CommonButton

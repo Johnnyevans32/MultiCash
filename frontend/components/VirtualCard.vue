@@ -22,12 +22,9 @@
                 image="./whitelogo.png"
                 custom-css="h-10 w-10 rounded-none"
               />
-              <p class="md:text-2xl text-xl">
-                {{ config.public.appName }}
-              </p>
             </div>
           </div>
-          <h1 class="md:text-3xl text-xl">**** **** **** ****</h1>
+          <h1 class="md:text-4xl text-xl">**** **** **** ****</h1>
 
           <div class="self-start text-left">
             <p>NAME ON CARD</p>
@@ -53,15 +50,13 @@
 <script lang="ts">
 export default defineComponent({
   setup() {
-    const config = useRuntimeConfig();
     const isFlipped = ref(false);
 
-    // Flip the card on hover
     const flipCard = () => {
       isFlipped.value = !isFlipped.value;
     };
 
-    return { config, isFlipped, flipCard };
+    return { isFlipped, flipCard };
   },
 });
 </script>

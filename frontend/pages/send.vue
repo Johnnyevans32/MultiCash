@@ -103,6 +103,7 @@
             :selected="selectedCurrency"
             :options="withdrawableCurrencies"
             @change-option="handleCurrencyChange"
+            placeholder="-- Please select a currency --"
           />
           <CommonFormSelect
             title="Select bank"
@@ -207,6 +208,7 @@
             :selected="selectedCurrency"
             :options="allCurrencies"
             @change-option="handleCurrencyChange"
+            placeholder="-- Please select a currency --"
           />
         </div>
 

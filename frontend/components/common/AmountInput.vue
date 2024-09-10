@@ -17,8 +17,8 @@
       />
     </div>
 
-    <span v-if="balance" class="text-tiny text-red-600"
-      >Wallet Balance: {{ currency }} {{ formatMoney(balance) }}</span
+    <span v-if="balance !== undefined" class="text-tiny text-red-600"
+      >Wallet Balance: {{ currency }} {{ formatMoney(balance, 10) }}</span
     >
   </div>
 </template>

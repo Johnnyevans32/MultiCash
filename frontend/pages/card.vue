@@ -2,8 +2,15 @@
   <div class="border-b-[1px] border-base text-left py-5">
     <CommonPageBar mainPage="Card" />
   </div>
-  <CommonImage image="./card.png" alt="card" custom-css="w-96 h-56" />
-  <h1 class="text-2xl">Coming Soon</h1>
+  <VirtualCard />
+  <h1 class="text-2xl">Go Global With Ease</h1>
+  <p>Unlock a seamless global experience with your new virtual card.</p>
+
+  <CommonButton
+    text="Coming Soon"
+    :disabled="true"
+    custom-css="bg-base w-full text-base"
+  />
 </template>
 
 <script lang="ts">

@@ -45,6 +45,8 @@ export class WalletService {
     accountNumber: string;
     accountName: string;
     bank: string;
+    benefiaryTag: string;
+    benefiaryType: string;
   }) {
     const { useCustomFetch } = useAppVueUtils();
     return await useCustomFetch(`/api/wallets/benefiaries`, {

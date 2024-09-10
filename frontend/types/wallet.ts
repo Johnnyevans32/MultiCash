@@ -1,3 +1,5 @@
+import type { IUser } from "./user";
+
 interface WalletCurrency {
   withdrawalEnabled: boolean;
   fundingEnabled: boolean;
@@ -46,4 +48,6 @@ export interface IBenefiary {
   accountName: string;
   bank: IBank;
   id: string;
+  beneficiaryUser: IUser;
+  type: string;
 }

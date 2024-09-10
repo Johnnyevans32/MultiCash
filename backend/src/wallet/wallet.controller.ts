@@ -16,7 +16,7 @@ import { CurrentUser } from "@/auth/decorators/user.decorator";
 import { UtilityService } from "@/core/services/util.service";
 import { HttpStatusCode } from "axios";
 import { PaginateDTO } from "@/core/services/response.service";
-import { CreateBenefiarytDTO, WithdrawFromWalletDTO } from "./dtos/wallet.dto";
+import { CreateBenefiaryDTO, WithdrawFromWalletDTO } from "./dtos/wallet.dto";
 
 @Controller("wallets")
 export class WalletController {
@@ -74,7 +74,7 @@ export class WalletController {
   async createBenefiary(
     @Res() res: Response,
     @CurrentUser() user: UserDocument,
-    @Body() payload: CreateBenefiarytDTO
+    @Body() payload: CreateBenefiaryDTO
   ) {
     return UtilityService.handleRequest(
       res,

@@ -44,16 +44,33 @@
       @click="openWithdrawalModal(benefiary)"
     >
       <div class="flex space-x-3 items-center">
-        <CommonImage :image="benefiary.bank.logo" :alt="benefiary.bank.name" />
+        <CommonImage
+          :image="
+            benefiary.type === 'platform'
+              ? benefiary.beneficiaryUser.profileImage
+              : benefiary.bank.logo
+          "
+          :alt="
+            benefiary.type === 'platform'
+              ? benefiary.beneficiaryUser.tag
+              : benefiary.bank.name
+          "
+        />
 
         <div class="flex flex-col text-left">
-          <span class="md:text-sm text-xs">{{ benefiary.accountName }}</span>
-          <span class="md:text-sm text-xs"
-            >{{ benefiary.accountNumber }} ({{ benefiary.bank.name }})</span
-          >
+          <span class="md:text-sm text-xs line-clamp-1">{{
+            benefiary.type === "platform"
+              ? benefiary.beneficiaryUser.name
+              : benefiary.accountName
+          }}</span>
+          <span class="md:text-sm text-xs line-clamp-1">{{
+            benefiary.type === "platform"
+              ? `@${benefiary.beneficiaryUser.tag}`
+              : `${benefiary.accountNumber} (${benefiary.bank.name})`
+          }}</span>
         </div>
       </div>
-      <span class="text-sm">{{ benefiary.bank.currency }}</span>
+      <font-awesome-icon icon="arrow-right" />
     </div>
   </div>
   <CommonModal
@@ -68,12 +85,24 @@
     <template v-slot:content>
       <div class="flex flex-col gap-4">
         <CommonFormSelect
+          title="Select benefiary type"
+          :selected="benefiaryType"
+          :options="['platform', 'bankacccount']"
+          @change-option="
+            (val) => {
+              benefiaryType = val;
+            }
+          "
+        />
+        <CommonFormSelect
+          v-if="benefiaryType === 'bankacccount'"
           title="Select currency"
           :selected="selectedCurrency"
           :options="withdrawableCurrencies"
           @change-option="handleCurrencyChange"
         />
         <CommonFormSelect
+          v-if="benefiaryType === 'bankacccount'"
           title="Select bank"
           :selected="selectedBankId"
           :options="groupedBanksByCurrency[selectedCurrency]"
@@ -83,9 +112,17 @@
           valueKey="id"
         />
         <CommonFormInput
+          v-if="benefiaryType === 'bankacccount'"
           v-model="accountNumber"
           placeholder="Enter account number"
           title="Enter account number"
+          input-type="text"
+        />
+        <CommonFormInput
+          v-if="benefiaryType === 'platform'"
+          v-model="benefiaryTag"
+          placeholder="Enter user tag"
+          title="Enter user tag"
           input-type="text"
         />
         <span v-if="accountName" class="text-sm text-red-600"
@@ -230,6 +267,8 @@ export default defineComponent({
       );
     };
 
+    const benefiaryType = ref<"bankacccount" | "platform">("bankacccount");
+    const benefiaryTag = ref();
     const isCreateBenefiaryLoading = ref(false);
     const accountName = ref("");
     const createBenefiary = async () => {
@@ -245,12 +284,14 @@ export default defineComponent({
               accountNumber: accountNumber.value,
               accountName: resp.accountName,
               bank: selectedBankId.value,
+              benefiaryType: benefiaryType.value,
+              benefiaryTag: benefiaryTag.value,
             });
             addAccountModal.value = false;
             fetchBenefiaries();
             notify({
               type: "success",
-              title: "account created",
+              title: "benefiary created",
             });
           }),
         isCreateBenefiaryLoading
@@ -285,6 +326,7 @@ export default defineComponent({
     const selectedBenefiary = ref<IBenefiary>();
     const password = ref("");
     const isWithdrawLoading = ref(false);
+
     const withdraw = async () => {
       if (!selectedBenefiary.value) {
         return;
@@ -338,6 +380,8 @@ export default defineComponent({
       openWithdrawalModal,
       wallet,
       accountName,
+      benefiaryType,
+      benefiaryTag,
     };
   },
 });

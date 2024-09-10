@@ -9,6 +9,7 @@ import {
 } from "class-validator";
 import { SupportedCurrencyEnum } from "../schemas/wallet.schema";
 import { TransactionPurpose } from "../schemas/wallet-transaction.schema";
+import { BenefiaryType } from "../schemas/benefiary.schema";
 
 export class CreateWalletTxnDTO {
   @IsNumber()
@@ -62,13 +63,23 @@ export class WithdrawFromWalletDTO {
   password: string;
 }
 
-export class CreateBenefiarytDTO {
+export class CreateBenefiaryDTO {
+  @IsOptional()
   @IsString()
   accountNumber: string;
 
+  @IsOptional()
   @IsString()
   accountName: string;
 
+  @IsOptional()
   @IsMongoId()
   bank: string;
+
+  @IsEnum(BenefiaryType)
+  benefiaryType: BenefiaryType;
+
+  @IsOptional()
+  @IsString()
+  benefiaryTag: string;
 }

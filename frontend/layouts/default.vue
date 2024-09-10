@@ -4,7 +4,7 @@
     <Navbar />
     <div class="grid grid-cols-4 gap-y-4">
       <div class="col-span-4 md:col-start-2 md:col-span-2">
-        <div class="grid grid-cols-1 gap-4 p-5 text-center">
+        <div class="grid grid-cols-1 gap-4 p-5 md:mb-0 mb-20 text-center">
           <slot />
         </div>
       </div>

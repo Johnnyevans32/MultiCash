@@ -38,6 +38,7 @@ import { RevenueSource } from "@/revenue/schemas/revenue.schema";
 import { EmailService } from "@/notification/email/email.service";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
+import { UtilityService } from "@/core/services/util.service";
 
 @Injectable()
 export class ExchangeService extends RequestService {
@@ -165,6 +166,7 @@ export class ExchangeService extends RequestService {
       cumulativeFee: number;
       payinCurrency: SupportedCurrencyEnum;
       payoutCurrency: SupportedCurrencyEnum;
+      id: string;
     }[] = [];
     const queue: {
       chain: OfferingDTO[];
@@ -209,6 +211,7 @@ export class ExchangeService extends RequestService {
           payinCurrency,
           payoutCurrency,
           cumulativeSettlementTimeInSecs,
+          id: UtilityService.generateRandomHex(5),
         });
         continue;
       }

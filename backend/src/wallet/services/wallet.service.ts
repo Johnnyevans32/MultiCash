@@ -21,7 +21,7 @@ import {
 } from "@/wallet/schemas/wallet.schema";
 import {
   AVAILABLE_BALANCE,
-  CreateBenefiarytDTO,
+  CreateBenefiaryDTO,
   CreateWalletTxnDTO,
   WithdrawFromWalletDTO,
 } from "@/wallet/dtos/wallet.dto";
@@ -36,7 +36,7 @@ import { WalletCurrencyDocument } from "../schemas/wallet-currency.schema";
 import { UtilityService } from "@/core/services/util.service";
 import { PaymentService } from "@/payment/services/payment.service";
 import { TransferPurpose } from "@/payment/schemas/transfer-record.schema";
-import { BenefiaryDocument } from "../schemas/benefiary.schema";
+import { BenefiaryDocument, BenefiaryType } from "../schemas/benefiary.schema";
 import { BankDocument } from "@/payment/schemas/bank.schema";
 import { RevenueService } from "@/revenue/services/revenue.service";
 import { RevenueSource } from "@/revenue/schemas/revenue.schema";
@@ -495,24 +495,53 @@ export class WalletService {
     this.emailService.sendWithdrawalNotification(user, amount, currency);
   }
 
-  async createBenefiary(user: UserDocument, payload: CreateBenefiarytDTO) {
-    const { bank: bankId, accountNumber, accountName } = payload;
-    const bank = await this.paymentService.fetchBankById(bankId);
-    if (!bank) {
-      throw new BadRequestException("invalid bank");
+  async createBeneficiary(user: UserDocument, payload: CreateBenefiaryDTO) {
+    const {
+      bank: bankId,
+      accountNumber,
+      accountName,
+      benefiaryTag,
+      benefiaryType,
+    } = payload;
+
+    let updateQuery: any = { type: benefiaryType };
+    let searchQuery: any = { user: user.id, isDeleted: false };
+
+    if (benefiaryType === BenefiaryType.BankAccount) {
+      const bank = await this.paymentService.fetchBankById(bankId);
+      if (!bank) {
+        throw new BadRequestException("Invalid bank");
+      }
+
+      searchQuery.accountNumber = accountNumber;
+      updateQuery = { ...updateQuery, bank: bank.id, accountName };
+    } else {
+      const beneficiaryUser = await this.userService.findUser({
+        tag: benefiaryTag,
+        isDeleted: false,
+      });
+
+      if (!beneficiaryUser) {
+        throw new BadRequestException("User not found");
+      }
+
+      searchQuery.beneficiaryUser = beneficiaryUser.id;
     }
-    await this.benefiaryModel.findOneAndUpdate(
-      { user: user.id, accountNumber, isDeleted: false },
-      { bank: bank.id, accountName },
-      { upsert: true, new: true }
-    );
+
+    await this.benefiaryModel.findOneAndUpdate(searchQuery, updateQuery, {
+      upsert: true,
+      new: true,
+    });
   }
 
   async fetchBenefiaries(user: UserDocument) {
     return this.benefiaryModel
       .find({ user: user.id, isDeleted: false })
-      .populate({ path: "bank", select: "name currency logo" })
-      .select("accountNumber accountName");
+      .populate([
+        { path: "bank", select: "name currency logo" },
+        { path: "beneficiaryUser", select: "name tag profileImage" },
+      ])
+      .select("accountNumber accountName type ");
   }
 
   async deleteBenefiary(user: UserDocument, benefiaryId: string) {

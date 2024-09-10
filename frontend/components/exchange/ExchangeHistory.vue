@@ -201,8 +201,6 @@
             </li>
           </ul>
         </div>
-
-        <CommonTextArea v-model="comment" title="" />
       </div>
     </template>
 
@@ -284,7 +282,6 @@ export default defineComponent({
     };
 
     return {
-      config,
       exchanges,
       exchangesMetadata,
       isLoadingExchanges,
@@ -293,7 +290,6 @@ export default defineComponent({
       updateExchangeModal,
       openExchangeModal,
       modalExchange,
-      comment,
     };
   },
 });

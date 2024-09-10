@@ -10,6 +10,28 @@
       <div class="flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <span class="font-bold">Route {{ index + 1 }}</span>
+          <div class="flex gap-2">
+            <span
+              v-if="matchedOffering.id === cheapestOffering.id"
+              class="md:text-xs text-tiny bg-blue-100 text-blue-700 py-1 px-2 rounded"
+            >
+              Cheapest
+            </span>
+
+            <span
+              v-if="matchedOffering.id === fastestOffering.id"
+              class="md:text-xs text-tiny bg-red-100 text-red-700 py-1 px-2 rounded"
+            >
+              Fastest
+            </span>
+            <span
+              v-if="matchedOffering.id === highestPayoutOffering.id"
+              class="md:text-xs text-tiny bg-green-100 text-green-700 py-1 px-2 rounded"
+            >
+              Highest Payout
+            </span>
+          </div>
+
           <span
             >Cumulative PFI fee:
             {{ formatMoney(matchedOffering.cumulativeFee) }}
@@ -193,7 +215,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup() {
+  setup(props) {
     const selectedOffering = ref<IMatchedOffering>();
     const exchangeModal = ref(false);
     const { $api } = useNuxtApp();
@@ -249,6 +271,29 @@ export default defineComponent({
         );
       }
     };
+
+    const cheapestOffering = computed(() => {
+      return props.matchedOfferings.reduce((prev, curr) =>
+        prev.cumulativeFee < curr.cumulativeFee ? prev : curr
+      );
+    });
+
+    const fastestOffering = computed(() => {
+      return props.matchedOfferings.reduce((prev, curr) =>
+        prev.cumulativeSettlementTimeInSecs <
+        curr.cumulativeSettlementTimeInSecs
+          ? prev
+          : curr
+      );
+    });
+    const highestPayoutOffering = computed(() => {
+      return props.matchedOfferings.reduce((prev, curr) =>
+        prev.cumulativePayoutUnitsPerPayinUnit >
+        curr.cumulativePayoutUnitsPerPayinUnit
+          ? prev
+          : curr
+      );
+    });
     return {
       selectedOffering,
       exchangeModal,
@@ -260,6 +305,9 @@ export default defineComponent({
       walletCurrency,
       calculatedPlatformFeeAmount,
       wallet,
+      fastestOffering,
+      cheapestOffering,
+      highestPayoutOffering,
     };
   },
 });

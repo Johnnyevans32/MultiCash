@@ -12,9 +12,13 @@ import { WalletDocument } from "./wallet.schema";
 
 export type BenefiaryDocument = HydratedDocument<Benefiary>;
 
+export enum BenefiaryType {
+  BankAccount = "bankaccount",
+  Platform = "platform",
+}
 @BaseSchemaDecorator()
 export class Benefiary extends BaseSchema {
-  @Prop({ type: SchemaTypes.ObjectId, ref: USER })
+  @Prop({ type: SchemaTypes.ObjectId, ref: USER, required: true })
   user: UserDocument | string;
 
   @Prop({ type: SchemaTypes.String })
@@ -25,6 +29,16 @@ export class Benefiary extends BaseSchema {
 
   @Prop({ type: SchemaTypes.String })
   accountName: string;
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: USER })
+  beneficiaryUser?: UserDocument | string;
+
+  @Prop({
+    type: SchemaTypes.String,
+    enum: Object.values(BenefiaryType),
+    default: BenefiaryType.BankAccount,
+  })
+  type: BenefiaryType;
 }
 
 export const BenefiarySchema = SchemaFactory.createForClass(Benefiary);

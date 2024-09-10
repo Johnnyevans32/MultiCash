@@ -113,7 +113,7 @@
           </div>
 
           <div class="flex flex-col text-left">
-            <span class="truncate">{{ txn.description }}</span>
+            <span class="truncate line-clamp-1">{{ txn.description }}</span>
             <span class="text-xs">{{
               txn?.purpose?.replaceAll("_", " ")
             }}</span>

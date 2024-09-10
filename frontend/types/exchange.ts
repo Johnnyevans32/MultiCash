@@ -20,6 +20,7 @@ export interface IMatchedOffering {
   payinCurrency: string;
   payoutCurrency: string;
   cumulativeSettlementTimeInSecs: number;
+  id: string;
 }
 
 export interface IExchange {

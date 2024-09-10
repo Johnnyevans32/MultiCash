@@ -8,13 +8,13 @@ import {
   WALLET,
   WALLET_CURRENCY,
   WALLET_TRANSACTION,
-  BENEFIARY,
+  BENEFICIARY,
 } from "@/core/constants/schema.constants";
 import { WalletTransactionSchema } from "@/wallet/schemas/wallet-transaction.schema";
 import { WalletCurrencySchema } from "./schemas/wallet-currency.schema";
 import { PaymentModule } from "@/payment/payment.module";
 import { RevenueModule } from "@/revenue/revenue.module";
-import { BenefiarySchema } from "./schemas/benefiary.schema";
+import { BeneficiarySchema } from "./schemas/beneficiary.schema";
 
 @Module({
   imports: [
@@ -25,7 +25,9 @@ import { BenefiarySchema } from "./schemas/benefiary.schema";
     MongooseModule.forFeature([
       { name: WALLET_CURRENCY, schema: WalletCurrencySchema },
     ]),
-    MongooseModule.forFeature([{ name: BENEFIARY, schema: BenefiarySchema }]),
+    MongooseModule.forFeature([
+      { name: BENEFICIARY, schema: BeneficiarySchema },
+    ]),
     forwardRef(() => PaymentModule),
     RevenueModule,
   ],

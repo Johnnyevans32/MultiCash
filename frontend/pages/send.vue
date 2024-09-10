@@ -3,10 +3,10 @@
     <CommonPageBar mainPage="Send" />
   </div>
   <div class="flex items-center justify-between">
-    <h1 class="text-xl font-bold">Benefiaries</h1>
+    <h1 class="text-xl font-bold">Beneficiaries</h1>
     <CommonButton
       v-if="!isFetchWalletLoading"
-      text="Add Benefiary"
+      text="Add Beneficiary"
       imageType="icon"
       image="fa-solid fa-plus"
       @btn-action="addAccountModal = true"
@@ -14,7 +14,7 @@
     />
   </div>
 
-  <div v-if="isFetchBenefiariesLoading">
+  <div v-if="isFetchBeneficiariesLoading">
     <div
       v-for="i in 2"
       :key="i"
@@ -31,42 +31,42 @@
       <div class="h-2 w-12 bg-base rounded"></div>
     </div>
   </div>
-  <div v-else-if="!benefiaries.length">
+  <div v-else-if="!beneficiaries.length">
     <font-awesome-icon class="text-7xl mb-5" icon="university" />
     <p>Nothing to see here</p>
-    <p>your benefiary bank accounts will appear here once added.</p>
+    <p>your beneficiaries will appear here once added.</p>
   </div>
   <div v-else class="flex flex-col gap-2">
     <div
-      v-for="benefiary in benefiaries"
-      :key="benefiary.id"
+      v-for="beneficiary in beneficiaries"
+      :key="beneficiary.id"
       class="cursor-pointer py-5 md:px-5 px-2 flex items-center h-16 justify-between rounded-xl bg-lightbase"
-      @click="openWithdrawalModal(benefiary)"
+      @click="openWithdrawalModal(beneficiary)"
     >
       <div class="flex space-x-3 items-center">
         <CommonImage
           :image="
-            benefiary.type === 'platform'
-              ? benefiary.beneficiaryUser.profileImage
-              : benefiary.bank.logo
+            beneficiary.type === 'platform'
+              ? beneficiary.beneficiaryUser.profileImage
+              : beneficiary.bank.logo
           "
           :alt="
-            benefiary.type === 'platform'
-              ? benefiary.beneficiaryUser.tag
-              : benefiary.bank.name
+            beneficiary.type === 'platform'
+              ? beneficiary.beneficiaryUser.tag
+              : beneficiary.bank.name
           "
         />
 
         <div class="flex flex-col text-left">
           <span class="md:text-sm text-xs line-clamp-1">{{
-            benefiary.type === "platform"
-              ? benefiary.beneficiaryUser.name
-              : benefiary.accountName
+            beneficiary.type === "platform"
+              ? beneficiary.beneficiaryUser.name
+              : beneficiary.accountName
           }}</span>
           <span class="md:text-sm text-xs line-clamp-1">{{
-            benefiary.type === "platform"
-              ? `@${benefiary.beneficiaryUser.tag}`
-              : `${benefiary.accountNumber} (${benefiary.bank.name})`
+            beneficiary.type === "platform"
+              ? `@${beneficiary.beneficiaryUser.tag}`
+              : `${beneficiary.accountNumber} (${beneficiary.bank.name})`
           }}</span>
         </div>
       </div>
@@ -85,42 +85,44 @@
     <template v-slot:content>
       <div class="flex flex-col gap-4">
         <CommonFormSelect
-          title="Select benefiary type"
-          :selected="benefiaryType"
-          :options="['platform', 'bankacccount']"
+          title="Select beneficiary type"
+          :selected="beneficiaryType"
+          :options="['platform', 'bankaccount']"
           @change-option="
             (val) => {
-              benefiaryType = val;
+              beneficiaryType = val;
             }
           "
         />
-        <CommonFormSelect
-          v-if="benefiaryType === 'bankacccount'"
-          title="Select currency"
-          :selected="selectedCurrency"
-          :options="withdrawableCurrencies"
-          @change-option="handleCurrencyChange"
-        />
-        <CommonFormSelect
-          v-if="benefiaryType === 'bankacccount'"
-          title="Select bank"
-          :selected="selectedBankId"
-          :options="groupedBanksByCurrency[selectedCurrency]"
-          @change-option="handleBankChange"
-          labelKey="name"
-          placeholder="-- Please select a bank --"
-          valueKey="id"
-        />
+        <div
+          v-if="beneficiaryType === 'bankaccount'"
+          class="flex flex-col gap-4"
+        >
+          <CommonFormSelect
+            title="Select currency"
+            :selected="selectedCurrency"
+            :options="withdrawableCurrencies"
+            @change-option="handleCurrencyChange"
+          />
+          <CommonFormSelect
+            title="Select bank"
+            :selected="selectedBankId"
+            :options="groupedBanksByCurrency[selectedCurrency]"
+            @change-option="handleBankChange"
+            labelKey="name"
+            placeholder="-- Please select a bank --"
+            valueKey="id"
+          />
+          <CommonFormInput
+            v-model="accountNumber"
+            placeholder="Enter account number"
+            title="Enter account number"
+            input-type="text"
+          />
+        </div>
         <CommonFormInput
-          v-if="benefiaryType === 'bankacccount'"
-          v-model="accountNumber"
-          placeholder="Enter account number"
-          title="Enter account number"
-          input-type="text"
-        />
-        <CommonFormInput
-          v-if="benefiaryType === 'platform'"
-          v-model="benefiaryTag"
+          v-if="beneficiaryType === 'platform'"
+          v-model="beneficiaryTag"
           placeholder="Enter user tag"
           title="Enter user tag"
           input-type="text"
@@ -137,17 +139,17 @@
         custom-css="bg-red-600 w-full text-white"
       />
       <CommonButton
-        text="Add benefiary"
-        @btn-action="createBenefiary"
+        text="Add beneficiary"
+        @btn-action="createBeneficiary"
         custom-css="!bg-blue-600 w-full text-white"
-        :loading="isCreateBenefiaryLoading"
+        :loading="isCreateBeneficiaryLoading"
       />
     </template>
   </CommonModal>
 
   <CommonModal
     :open="withdrawalModal"
-    title="Send money to benefiary"
+    title="Send money to beneficiary"
     @change-modal-status="
       (value) => {
         withdrawalModal = value;
@@ -156,32 +158,63 @@
   >
     <template v-slot:content>
       <div class="flex flex-col gap-4">
-        <div>
-          <span class="text-sm">Benefiary Account Name:</span>
-          <p class="md:text-sm text-xs">
-            {{ selectedBenefiary?.accountName }}
-          </p>
+        <div
+          v-if="selectedBeneficiary?.type === 'bankaccount'"
+          class="flex flex-col gap-4"
+        >
+          <div>
+            <span class="text-sm">Beneficiary Account Name:</span>
+            <p class="md:text-sm text-xs">
+              {{ selectedBeneficiary?.accountName }}
+            </p>
+          </div>
+
+          <div>
+            <span class="text-sm">Beneficiary Account Number:</span>
+            <p class="md:text-sm text-xs">
+              {{ selectedBeneficiary?.accountNumber }}
+            </p>
+          </div>
+
+          <div>
+            <span class="text-sm">Beneficiary Bank Name:</span>
+            <p class="md:text-sm text-xs">
+              {{ selectedBeneficiary?.bank.name }}
+            </p>
+          </div>
         </div>
 
-        <div>
-          <span class="text-sm">Benefiary Account Number:</span>
-          <p class="md:text-sm text-xs">
-            {{ selectedBenefiary?.accountNumber }}
-          </p>
-        </div>
+        <div v-if="selectedBeneficiary?.type === 'platform'">
+          <div>
+            <span class="text-sm">Beneficiary</span>
+            <div class="flex items-center gap-2">
+              <CommonImage
+                :image="selectedBeneficiary.beneficiaryUser?.profileImage"
+                alt="avatar"
+                type="image"
+              />
+              <div>
+                <p>
+                  {{ selectedBeneficiary?.beneficiaryUser.name }}
+                </p>
+                <p>@{{ selectedBeneficiary?.beneficiaryUser.tag }}</p>
+              </div>
+            </div>
+          </div>
 
-        <div>
-          <span class="text-sm">Benefiary Bank Name:</span>
-          <p class="md:text-sm text-xs">
-            {{ selectedBenefiary?.bank.name }}
-          </p>
+          <CommonFormSelect
+            title="Select currency"
+            :selected="selectedCurrency"
+            :options="allCurrencies"
+            @change-option="handleCurrencyChange"
+          />
         </div>
 
         <CommonAmountInput
           v-model="amount"
           placeholder="Enter amount"
           title="Enter amount"
-          :currency="selectedBenefiary?.bank.currency"
+          :currency="selectedBeneficiary?.bank?.currency || selectedCurrency"
           :balance="wallet?.availableBalance"
           :max="wallet?.availableBalance"
           :min="0"
@@ -219,7 +252,7 @@
 <script lang="ts">
 import { notify } from "@kyvg/vue3-notification";
 import { useWalletStore } from "~/store/wallet";
-import type { IBenefiary } from "~/types/wallet";
+import type { IBeneficiary } from "~/types/wallet";
 
 export default defineComponent({
   async setup() {
@@ -228,7 +261,7 @@ export default defineComponent({
       ogTitle: "Send",
     });
     onBeforeMount(async () => {
-      await Promise.all([fetchBanks(), fetchWallets(), fetchBenefiaries()]);
+      await Promise.all([fetchBanks(), fetchWallets(), fetchBeneficiaries()]);
     });
 
     const { $api } = useNuxtApp();
@@ -247,6 +280,8 @@ export default defineComponent({
         .filter((w) => w.walletCurrency.withdrawalEnabled)
         .map((i) => i.currency)
     );
+
+    const allCurrencies = computed(() => wallets.value.map((i) => i.currency));
 
     const selectedCurrency = ref("");
 
@@ -267,35 +302,41 @@ export default defineComponent({
       );
     };
 
-    const benefiaryType = ref<"bankacccount" | "platform">("bankacccount");
-    const benefiaryTag = ref();
-    const isCreateBenefiaryLoading = ref(false);
+    const beneficiaryType = ref<"bankaccount" | "platform">("bankaccount");
+    const beneficiaryTag = ref();
+    const isCreateBeneficiaryLoading = ref(false);
     const accountName = ref("");
-    const createBenefiary = async () => {
-      await withLoadingPromise(
-        $api.paymentService
-          .verifyAccountNumber({
+    const createBeneficiary = async () => {
+      try {
+        isCreateBeneficiaryLoading.value = true;
+        if (beneficiaryType.value === "bankaccount") {
+          const resp = await $api.paymentService.verifyAccountNumber({
             accountNumber: accountNumber.value,
             bankId: selectedBankId.value,
-          })
-          .then(async (resp: { accountName: string }) => {
-            accountName.value = resp.accountName;
-            await $api.walletService.createBenefiary({
-              accountNumber: accountNumber.value,
-              accountName: resp.accountName,
-              bank: selectedBankId.value,
-              benefiaryType: benefiaryType.value,
-              benefiaryTag: benefiaryTag.value,
-            });
-            addAccountModal.value = false;
-            fetchBenefiaries();
-            notify({
-              type: "success",
-              title: "benefiary created",
-            });
-          }),
-        isCreateBenefiaryLoading
-      );
+          });
+          accountName.value = resp.accountName;
+        }
+        await $api.walletService.createBeneficiary({
+          beneficiaryType: beneficiaryType.value,
+          ...(beneficiaryType.value === "bankaccount"
+            ? {
+                accountNumber: accountNumber.value,
+                accountName: accountName.value,
+                bank: selectedBankId.value,
+              }
+            : {
+                beneficiaryTag: beneficiaryTag.value,
+              }),
+        });
+        addAccountModal.value = false;
+        fetchBeneficiaries();
+        notify({
+          type: "success",
+          title: "beneficiary created",
+        });
+      } finally {
+        isCreateBeneficiaryLoading.value = false;
+      }
     };
 
     const handleCurrencyChange = (newVal: string) => {
@@ -305,14 +346,14 @@ export default defineComponent({
       selectedBankId.value = newVal;
     };
 
-    const benefiaries = ref<IBenefiary[]>([]);
-    const isFetchBenefiariesLoading = ref(false);
-    const fetchBenefiaries = async () => {
+    const beneficiaries = ref<IBeneficiary[]>([]);
+    const isFetchBeneficiariesLoading = ref(false);
+    const fetchBeneficiaries = async () => {
       await withLoadingPromise(
-        $api.walletService.fetchBenefiaries().then((resp) => {
-          benefiaries.value = resp;
+        $api.walletService.fetchBeneficiaries().then((resp) => {
+          beneficiaries.value = resp;
         }),
-        isFetchBenefiariesLoading
+        isFetchBeneficiariesLoading
       );
     };
 
@@ -323,12 +364,11 @@ export default defineComponent({
 
     const note = ref("");
     const amount = ref(100);
-    const selectedBenefiary = ref<IBenefiary>();
+    const selectedBeneficiary = ref<IBeneficiary>();
     const password = ref("");
     const isWithdrawLoading = ref(false);
-
     const withdraw = async () => {
-      if (!selectedBenefiary.value) {
+      if (!selectedBeneficiary.value) {
         return;
       }
       await withLoadingPromise(
@@ -336,8 +376,9 @@ export default defineComponent({
           .withdraw({
             note: note.value,
             amount: amount.value,
-            benefiary: selectedBenefiary.value?.id,
+            beneficiary: selectedBeneficiary.value?.id,
             password: password.value,
+            currency: selectedCurrency.value,
           })
           .then(() => {
             withdrawalModal.value = false;
@@ -351,8 +392,8 @@ export default defineComponent({
     };
 
     const withdrawalModal = ref(false);
-    const openWithdrawalModal = (_selectedBenefiary: IBenefiary) => {
-      selectedBenefiary.value = _selectedBenefiary;
+    const openWithdrawalModal = (_selectedBeneficiary: IBeneficiary) => {
+      selectedBeneficiary.value = _selectedBeneficiary;
       withdrawalModal.value = true;
     };
 
@@ -360,18 +401,18 @@ export default defineComponent({
       selectedCurrency,
       accountNumber,
       addAccountModal,
-      createBenefiary,
+      createBeneficiary,
       groupedBanksByCurrency,
       withdrawableCurrencies,
       handleCurrencyChange,
       isFetchWalletLoading,
       selectedBankId,
       handleBankChange,
-      isCreateBenefiaryLoading,
-      isFetchBenefiariesLoading,
-      benefiaries,
+      isCreateBeneficiaryLoading,
+      isFetchBeneficiariesLoading,
+      beneficiaries,
       withdrawalModal,
-      selectedBenefiary,
+      selectedBeneficiary,
       amount,
       note,
       password,
@@ -380,8 +421,9 @@ export default defineComponent({
       openWithdrawalModal,
       wallet,
       accountName,
-      benefiaryType,
-      benefiaryTag,
+      beneficiaryType,
+      beneficiaryTag,
+      allCurrencies,
     };
   },
 });

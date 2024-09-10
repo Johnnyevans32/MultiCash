@@ -2,22 +2,21 @@ import { Prop, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument, SchemaTypes, Types } from "mongoose";
 
 import { UserDocument } from "@/user/schemas/user.schema";
-import { BANK, USER, WALLET } from "@/core/constants/schema.constants";
+import { BANK, USER } from "@/core/constants/schema.constants";
 import {
   BaseSchema,
   BaseSchemaDecorator,
 } from "@/core/decorators/base-schema.decorator";
 import { BankDocument } from "@/payment/schemas/bank.schema";
-import { WalletDocument } from "./wallet.schema";
 
-export type BenefiaryDocument = HydratedDocument<Benefiary>;
+export type BeneficiaryDocument = HydratedDocument<Beneficiary>;
 
-export enum BenefiaryType {
+export enum BeneficiaryType {
   BankAccount = "bankaccount",
   Platform = "platform",
 }
 @BaseSchemaDecorator()
-export class Benefiary extends BaseSchema {
+export class Beneficiary extends BaseSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: USER, required: true })
   user: UserDocument | string;
 
@@ -35,10 +34,10 @@ export class Benefiary extends BaseSchema {
 
   @Prop({
     type: SchemaTypes.String,
-    enum: Object.values(BenefiaryType),
-    default: BenefiaryType.BankAccount,
+    enum: Object.values(BeneficiaryType),
+    default: BeneficiaryType.BankAccount,
   })
-  type: BenefiaryType;
+  type: BeneficiaryType;
 }
 
-export const BenefiarySchema = SchemaFactory.createForClass(Benefiary);
+export const BeneficiarySchema = SchemaFactory.createForClass(Beneficiary);

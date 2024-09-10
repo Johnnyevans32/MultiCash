@@ -1,4 +1,5 @@
 export interface Configuration {
+  app: { name: string; uiUrl: string };
   database: {
     uri: string;
   };
@@ -20,9 +21,7 @@ export interface Configuration {
     baseurl: string;
     secretKey: string;
   };
-  ui: {
-    url: string;
-  };
+
   cloudinary: {
     cloudName: string;
     apiKey: string;
@@ -31,6 +30,7 @@ export interface Configuration {
 }
 
 export default (): Configuration => ({
+  app: { name: process.env.APP_NAME, uiUrl: process.env.UI_URL },
   database: {
     uri: process.env.DATABASE_URI,
   },
@@ -52,9 +52,7 @@ export default (): Configuration => ({
     baseurl: process.env.PAYSTACK_BASE_URL,
     secretKey: process.env.PAYSTACK_SECRET_KEY,
   },
-  ui: {
-    url: process.env.UI_URL,
-  },
+
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     apiKey: process.env.CLOUDINARY_API_KEY,

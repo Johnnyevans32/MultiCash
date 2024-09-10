@@ -22,6 +22,7 @@ export enum TransactionPurpose {
   CURRENCY_EXCHANGE = "currency_exchange",
   WITHDRAWAL = "withdrawal",
   DEPOSIT = "deposit",
+  TRANSFER = "transfer",
   PENDING_CURRENCY_EXCHANGE_CREDIT = "pending_currency_exchange_credit",
   PENDING_CURRENCY_EXCHANGE_DEBIT = "pending_currency_exchange_debit",
 }
@@ -35,6 +36,12 @@ export class WalletTransaction extends BaseSchema {
 
   @Prop({ type: SchemaTypes.ObjectId, ref: USER })
   user: UserDocument | string;
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: USER })
+  receiver?: UserDocument | string;
+
+  @Prop({ type: SchemaTypes.ObjectId, ref: USER })
+  sender?: UserDocument | string;
 
   @Prop({ type: SchemaTypes.String })
   reference: string;

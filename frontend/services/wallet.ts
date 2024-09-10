@@ -1,5 +1,5 @@
 import type { IResponse } from "~/types/user";
-import type { IBenefiary, IWallet, IWalletTransaction } from "~/types/wallet";
+import type { IBeneficiary, IWallet, IWalletTransaction } from "~/types/wallet";
 
 export class WalletService {
   async fetchWallets() {
@@ -31,8 +31,9 @@ export class WalletService {
   async withdraw(payload: {
     amount: number;
     note: string;
-    benefiary: string;
+    beneficiary: string;
     password: string;
+    currency: string;
   }) {
     const { useCustomFetch } = useAppVueUtils();
     return await useCustomFetch(`/api/wallets/withdraw`, {
@@ -41,24 +42,24 @@ export class WalletService {
     });
   }
 
-  async createBenefiary(payload: {
-    accountNumber: string;
-    accountName: string;
-    bank: string;
-    benefiaryTag: string;
-    benefiaryType: string;
+  async createBeneficiary(payload: {
+    accountNumber?: string;
+    accountName?: string;
+    bank?: string;
+    beneficiaryTag?: string;
+    beneficiaryType: string;
   }) {
     const { useCustomFetch } = useAppVueUtils();
-    return await useCustomFetch(`/api/wallets/benefiaries`, {
+    return await useCustomFetch(`/api/wallets/beneficiaries`, {
       method: "post",
       body: payload,
     });
   }
 
-  async fetchBenefiaries() {
+  async fetchBeneficiaries() {
     const { useCustomFetch } = useAppVueUtils();
-    const { data } = await useCustomFetch<IResponse<IBenefiary[]>>(
-      `/api/wallets/benefiaries`,
+    const { data } = await useCustomFetch<IResponse<IBeneficiary[]>>(
+      `/api/wallets/beneficiaries`,
       {
         method: "get",
       }
@@ -66,9 +67,9 @@ export class WalletService {
     return data;
   }
 
-  async deleteBenefiary(benefiaryId: string) {
+  async deleteBeneficiary(beneficiaryId: string) {
     const { useCustomFetch } = useAppVueUtils();
-    return await useCustomFetch(`/api/wallets/benefiaries/${benefiaryId}`, {
+    return await useCustomFetch(`/api/wallets/beneficiaries/${beneficiaryId}`, {
       method: "delete",
     });
   }

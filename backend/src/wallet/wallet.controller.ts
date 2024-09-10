@@ -16,7 +16,7 @@ import { CurrentUser } from "@/auth/decorators/user.decorator";
 import { UtilityService } from "@/core/services/util.service";
 import { HttpStatusCode } from "axios";
 import { PaginateDTO } from "@/core/services/response.service";
-import { CreateBenefiaryDTO, WithdrawFromWalletDTO } from "./dtos/wallet.dto";
+import { CreateBeneficiaryDTO, WithdrawFromWalletDTO } from "./dtos/wallet.dto";
 
 @Controller("wallets")
 export class WalletController {
@@ -70,25 +70,25 @@ export class WalletController {
     );
   }
 
-  @Post("benefiaries")
-  async createBenefiary(
+  @Post("beneficiaries")
+  async createBeneficiary(
     @Res() res: Response,
     @CurrentUser() user: UserDocument,
-    @Body() payload: CreateBenefiaryDTO
+    @Body() payload: CreateBeneficiaryDTO
   ) {
     return UtilityService.handleRequest(
       res,
       "successful",
       this.walletService,
-      "createBenefiary",
+      "createBeneficiary",
       HttpStatusCode.Created,
       user,
       payload
     );
   }
 
-  @Get("benefiaries")
-  async fetchBenefiaries(
+  @Get("beneficiaries")
+  async fetchBeneficiaries(
     @Res() res: Response,
     @CurrentUser() user: UserDocument
   ) {
@@ -96,26 +96,26 @@ export class WalletController {
       res,
       "successful",
       this.walletService,
-      "fetchBenefiaries",
+      "fetchBeneficiaries",
       HttpStatusCode.Ok,
       user
     );
   }
 
-  @Delete("benefiaries/:id")
-  async deleteBenefiary(
+  @Delete("beneficiaries/:id")
+  async deleteBeneficiary(
     @Res() res: Response,
     @CurrentUser() user: UserDocument,
-    @Param("id") benefiaryId: string
+    @Param("id") beneficiaryId: string
   ) {
     return UtilityService.handleRequest(
       res,
       "successful",
       this.walletService,
-      "deleteBenefiary",
+      "deleteBeneficiary",
       HttpStatusCode.Ok,
       user,
-      benefiaryId
+      beneficiaryId
     );
   }
 }

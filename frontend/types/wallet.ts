@@ -43,7 +43,7 @@ export interface IBank {
   id: string;
   logo: string;
 }
-export interface IBenefiary {
+export interface IBeneficiary {
   accountNumber: string;
   accountName: string;
   bank: IBank;

@@ -3,14 +3,13 @@ import {
   forwardRef,
   Inject,
   Injectable,
-  NotFoundException,
 } from "@nestjs/common";
 import { InjectConnection, InjectModel } from "@nestjs/mongoose";
 import { Connection, Model, PaginateModel } from "mongoose";
 import { Mutex, MutexInterface } from "async-mutex";
 
 import {
-  BENEFIARY,
+  BENEFICIARY,
   WALLET,
   WALLET_CURRENCY,
   WALLET_TRANSACTION,
@@ -21,9 +20,9 @@ import {
 } from "@/wallet/schemas/wallet.schema";
 import {
   AVAILABLE_BALANCE,
-  CreateBenefiaryDTO,
   CreateWalletTxnDTO,
   WithdrawFromWalletDTO,
+  CreateBeneficiaryDTO,
 } from "@/wallet/dtos/wallet.dto";
 import {
   TransactionPurpose,
@@ -36,7 +35,10 @@ import { WalletCurrencyDocument } from "../schemas/wallet-currency.schema";
 import { UtilityService } from "@/core/services/util.service";
 import { PaymentService } from "@/payment/services/payment.service";
 import { TransferPurpose } from "@/payment/schemas/transfer-record.schema";
-import { BenefiaryDocument, BenefiaryType } from "../schemas/benefiary.schema";
+import {
+  BeneficiaryDocument,
+  BeneficiaryType,
+} from "../schemas/beneficiary.schema";
 import { BankDocument } from "@/payment/schemas/bank.schema";
 import { RevenueService } from "@/revenue/services/revenue.service";
 import { RevenueSource } from "@/revenue/schemas/revenue.schema";
@@ -49,8 +51,8 @@ export class WalletService {
 
   constructor(
     @InjectModel(WALLET) private walletModel: Model<WalletDocument>,
-    @InjectModel(BENEFIARY)
-    private benefiaryModel: Model<BenefiaryDocument>,
+    @InjectModel(BENEFICIARY)
+    private beneficiaryModel: Model<BeneficiaryDocument>,
     @InjectModel(WALLET_TRANSACTION)
     private walletTransactionModel: PaginateModel<WalletTransactionDocument>,
     @InjectModel(WALLET_CURRENCY)
@@ -327,6 +329,7 @@ export class WalletService {
       balanceKeys,
       purpose,
       meta,
+      sender,
     } = payload;
 
     const wallet = await this.fetchWallet(user, currency);
@@ -346,6 +349,7 @@ export class WalletService {
         amount,
         meta,
         currency,
+        sender,
       };
 
       const txn = await this.executeTransaction(
@@ -355,7 +359,11 @@ export class WalletService {
         balanceKeys
       );
 
-      if (purpose === TransactionPurpose.DEPOSIT) {
+      if (
+        [TransactionPurpose.DEPOSIT, TransactionPurpose.TRANSFER].includes(
+          purpose
+        )
+      ) {
         const user = await this.userService.findUser({ _id: wallet.user });
         this.emailService.sendWalletFundingNotification(
           user,
@@ -384,6 +392,7 @@ export class WalletService {
       meta,
       fee,
       note,
+      receiver,
     } = payload;
 
     const wallet = await this.fetchWallet(user, currency);
@@ -413,6 +422,7 @@ export class WalletService {
         currency,
         fee,
         note,
+        receiver,
       };
 
       return await this.executeTransaction(
@@ -435,79 +445,109 @@ export class WalletService {
     if (!isMatch) {
       throw new BadRequestException("invalid password");
     }
-    const { amount, note, benefiary: benefiaryId } = payload;
+    const { amount, note, beneficiary: beneficiaryId } = payload;
+    let { currency } = payload;
 
-    const benefiary = await this.benefiaryModel
+    const beneficiary = await this.beneficiaryModel
       .findOne({
-        _id: benefiaryId,
+        _id: beneficiaryId,
         user: user.id,
         isDeleted: false,
       })
-      .populate("bank wallet");
+      .populate("bank beneficiaryUser");
 
-    if (!benefiary) {
-      throw new BadRequestException("invalid benefiary");
+    if (!beneficiary) {
+      throw new BadRequestException("invalid beneficiary");
     }
 
-    const { accountNumber, accountName } = benefiary;
-    const bank = benefiary.bank as BankDocument;
-    const wallet = await this.walletModel.findOne({
-      user: user.id,
-      isDeleted: false,
-      currency: bank.currency,
-    });
-    await wallet.populate("walletCurrency");
-    const { currency, transferFee } = wallet.walletCurrency;
-    const reference = UtilityService.generateRandomHex(12);
+    if (beneficiary.type === BeneficiaryType.BankAccount) {
+      const { accountNumber, accountName } = beneficiary;
+      const bank = beneficiary.bank as BankDocument;
+      const wallet = await this.walletModel
+        .findOne({
+          user: user.id,
+          isDeleted: false,
+          currency: bank.currency,
+        })
+        .populate("walletCurrency");
+      const { transferFee } = wallet.walletCurrency;
+      currency = wallet.walletCurrency.currency;
+      const txn = await this.debitWallet({
+        amount: amount + transferFee,
+        currency,
+        balanceKeys: [AVAILABLE_BALANCE],
+        description: `Withdrew money to ${accountNumber} of ${bank.name}`,
+        reference: UtilityService.generateRandomHex(12),
+        user: user.id,
+        purpose: TransactionPurpose.WITHDRAWAL,
+        fee: transferFee,
+        note,
+      });
 
-    const txn = await this.debitWallet({
-      amount: amount + transferFee,
-      currency,
-      balanceKeys: [AVAILABLE_BALANCE],
-      description: `Withdrew money to ${accountNumber} of ${bank.name}`,
-      reference,
-      user: user.id,
-      purpose: TransactionPurpose.WITHDRAWAL,
-      fee: transferFee,
-      note,
-    });
+      await this.paymentService.transferToAccount({
+        purpose: TransferPurpose.WALLET_WITHDRAWAL,
+        reference: `wallet_txn_${txn.id}`,
+        description: `withdrawal from user wallet`,
+        amount,
+        currency,
+        bank: bank,
+        accountNumber,
+        accountName,
+        meta: {},
+      });
 
-    await this.revenueService.createRevenue({
-      amount: transferFee,
-      source: RevenueSource.WALLET_WITHDRAWAL,
-      currency,
-      reference: `rev_${txn.id}`,
-      meta: { walletTransactionId: txn.id },
-    });
+      this.revenueService.createRevenue({
+        amount: transferFee,
+        source: RevenueSource.WALLET_WITHDRAWAL,
+        currency,
+        reference: `rev_${txn.id}`,
+        meta: { walletTransactionId: txn.id },
+      });
+    }
 
-    await this.paymentService.transferToAccount({
-      purpose: TransferPurpose.WALLET_WITHDRAWAL,
-      reference,
-      description: `withdrawal from user wallet`,
-      amount,
-      currency,
-      bank: bank,
-      accountNumber,
-      accountName,
-      meta: {},
-    });
+    if (beneficiary.type === BeneficiaryType.Platform) {
+      const receiver = beneficiary.beneficiaryUser as UserDocument;
+      const txn = await this.debitWallet({
+        amount,
+        currency,
+        balanceKeys: [AVAILABLE_BALANCE],
+        description: `Sent ${amount} ${currency} to @${receiver.tag}`,
+        reference: UtilityService.generateRandomHex(12),
+        user: user.id,
+        purpose: TransactionPurpose.TRANSFER,
+        note,
+        receiver: receiver.id,
+      });
+
+      await this.creditWallet({
+        amount,
+        currency,
+        balanceKeys: [AVAILABLE_BALANCE],
+        description: `Reecived ${amount} ${currency} from @${user.tag}`,
+        reference: `platform_trf_${txn.id}`,
+        user: receiver.id,
+        purpose: TransactionPurpose.TRANSFER,
+        note,
+        sender: user.id,
+      });
+    }
 
     this.emailService.sendWithdrawalNotification(user, amount, currency);
   }
 
-  async createBeneficiary(user: UserDocument, payload: CreateBenefiaryDTO) {
+  async createBeneficiary(user: UserDocument, payload: CreateBeneficiaryDTO) {
     const {
       bank: bankId,
       accountNumber,
       accountName,
-      benefiaryTag,
-      benefiaryType,
+      beneficiaryType,
+      beneficiaryTag,
     } = payload;
 
-    let updateQuery: any = { type: benefiaryType };
+    let updateQuery: any = { type: beneficiaryType };
     let searchQuery: any = { user: user.id, isDeleted: false };
 
-    if (benefiaryType === BenefiaryType.BankAccount) {
+    if (beneficiaryType === BeneficiaryType.BankAccount) {
       const bank = await this.paymentService.fetchBankById(bankId);
       if (!bank) {
         throw new BadRequestException("Invalid bank");
@@ -517,7 +557,7 @@ export class WalletService {
       updateQuery = { ...updateQuery, bank: bank.id, accountName };
     } else {
       const beneficiaryUser = await this.userService.findUser({
-        tag: benefiaryTag,
+        tag: beneficiaryTag,
         isDeleted: false,
       });
 
@@ -528,14 +568,14 @@ export class WalletService {
       searchQuery.beneficiaryUser = beneficiaryUser.id;
     }
 
-    await this.benefiaryModel.findOneAndUpdate(searchQuery, updateQuery, {
+    await this.beneficiaryModel.findOneAndUpdate(searchQuery, updateQuery, {
       upsert: true,
       new: true,
     });
   }
 
-  async fetchBenefiaries(user: UserDocument) {
-    return this.benefiaryModel
+  async fetchBeneficiaries(user: UserDocument) {
+    return this.beneficiaryModel
       .find({ user: user.id, isDeleted: false })
       .populate([
         { path: "bank", select: "name currency logo" },
@@ -544,9 +584,9 @@ export class WalletService {
       .select("accountNumber accountName type ");
   }
 
-  async deleteBenefiary(user: UserDocument, benefiaryId: string) {
-    await this.benefiaryModel.updateOne(
-      { _id: benefiaryId, user: user.id },
+  async deleteBeneficiary(user: UserDocument, beneficiaryId: string) {
+    await this.beneficiaryModel.updateOne(
+      { _id: beneficiaryId, user: user.id },
       { $set: { isDeleted: true, deletedAt: new Date() } }
     );
   }

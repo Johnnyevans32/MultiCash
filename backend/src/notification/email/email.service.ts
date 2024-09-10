@@ -44,7 +44,7 @@ export class EmailService {
 
   async sendResetPasswordLink(user: UserDocument, token: string) {
     const context = {
-      link: `${configuration().ui.url}/reset-password/${token}`,
+      link: `${configuration().app.uiUrl}/reset-password/${token}`,
     };
     await this.sendEmail(
       user,

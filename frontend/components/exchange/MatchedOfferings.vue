@@ -154,7 +154,7 @@
             >
           </div>
           <div class="flex justify-between border-b-[1px] border-base">
-            <span>Total fees:</span>
+            <span>Total fee:</span>
             <span
               >{{
                 formatMoney(

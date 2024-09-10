@@ -3,7 +3,11 @@
     <CommonPageBar mainPage="Settings" currentPage="Tag" />
   </div>
   <div class="flex flex-col gap-4 text-left">
-    <CommonFormInput inputType="text" v-model="tag" title="Your tag" />
+    <CommonFormInput
+      inputType="text"
+      v-model="tag"
+      :title="`Your ${config.public.name} tag`"
+    />
 
     <CommonButton
       text="Claim tag"
@@ -24,6 +28,7 @@ export default defineComponent({
       title: "Settings",
       ogTitle: "Settings",
     });
+    const config = useRuntimeConfig();
     const { user } = storeToRefs(useUserStore());
     const { setUser } = useUserStore();
     const { $api } = useNuxtApp();
@@ -56,6 +61,7 @@ export default defineComponent({
       loading,
       updateTag,
       tag,
+      config,
     };
   },
 });

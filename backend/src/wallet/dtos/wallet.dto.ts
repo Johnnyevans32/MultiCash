@@ -9,7 +9,7 @@ import {
 } from "class-validator";
 import { SupportedCurrencyEnum } from "../schemas/wallet.schema";
 import { TransactionPurpose } from "../schemas/wallet-transaction.schema";
-import { BenefiaryType } from "../schemas/benefiary.schema";
+import { BeneficiaryType } from "../schemas/beneficiary.schema";
 
 export class CreateWalletTxnDTO {
   @IsNumber()
@@ -42,6 +42,12 @@ export class CreateWalletTxnDTO {
 
   @IsOptional()
   note?: string;
+
+  @IsOptional()
+  sender?: string;
+
+  @IsOptional()
+  receiver?: string;
 }
 
 export const AVAILABLE_BALANCE = "availableBalance";
@@ -57,13 +63,17 @@ export class WithdrawFromWalletDTO {
   note?: string;
 
   @IsMongoId()
-  benefiary: string;
+  beneficiary: string;
 
   @IsString()
   password: string;
+
+  @IsOptional()
+  @IsEnum(SupportedCurrencyEnum)
+  currency: SupportedCurrencyEnum;
 }
 
-export class CreateBenefiaryDTO {
+export class CreateBeneficiaryDTO {
   @IsOptional()
   @IsString()
   accountNumber: string;
@@ -76,10 +86,10 @@ export class CreateBenefiaryDTO {
   @IsMongoId()
   bank: string;
 
-  @IsEnum(BenefiaryType)
-  benefiaryType: BenefiaryType;
+  @IsEnum(BeneficiaryType)
+  beneficiaryType: BeneficiaryType;
 
   @IsOptional()
   @IsString()
-  benefiaryTag: string;
+  beneficiaryTag: string;
 }

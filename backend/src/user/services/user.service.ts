@@ -34,9 +34,14 @@ export class UserService {
   async signup(payload: CreateUserDTO) {
     await this.checkIfUserAlreadyExist(payload.email);
     const user = await this.userModel.create(payload);
-    this.emailService.sendEmail(user, "Welcome to MultiCash!", "welcome.njk", {
-      loginLink: `${configuration().ui.url}/signin`,
-    });
+    this.emailService.sendEmail(
+      user,
+      `Welcome to ${configuration().app.name}`,
+      "welcome.njk",
+      {
+        loginLink: `${configuration().app.uiUrl}/signin`,
+      }
+    );
   }
 
   async checkIfUserAlreadyExist(email: string) {

@@ -210,6 +210,50 @@
         @btn-action="updateExchangeModal = false"
         custom-css="bg-base w-full text-base"
       />
+      <CommonButton
+        v-if="!modalExchange.rating && !modalExchange.comment"
+        text="Drop feedback"
+        @btn-action="
+          () => {
+            updateExchangeModal = false;
+            feedbackModal = true;
+          }
+        "
+        custom-css="!bg-blue-600 w-full text-white"
+      />
+    </template>
+  </CommonModal>
+
+  <CommonModal
+    :open="feedbackModal"
+    title="Drop feedback on exchange"
+    @change-modal-status="
+      (value) => {
+        feedbackModal = value;
+      }
+    "
+  >
+    <template v-slot:content>
+      <div class="flex flex-col gap-4">
+        <CommonTextArea
+          v-model="comment"
+          placeholder="Add comment"
+          title="Add comment"
+        />
+      </div>
+    </template>
+    <template v-slot:footer>
+      <CommonButton
+        text="Cancel"
+        @btn-action="feedbackModal = false"
+        custom-css="bg-red-600 w-full text-white"
+      />
+      <CommonButton
+        text="Send"
+        @btn-action="dropFeedbackOnExchange"
+        custom-css="!bg-blue-600 w-full text-white"
+        :loading="isLoadingDropFeedbackOnExchange"
+      />
     </template>
   </CommonModal>
 </template>
@@ -219,7 +263,6 @@ import type { IExchange } from "~/types/exchange";
 import { type IMetadata } from "~/types/user";
 export default defineComponent({
   setup() {
-    const config = useRuntimeConfig();
     const { $api } = useNuxtApp();
 
     const { withLoadingPromise } = useLoading();
@@ -261,10 +304,11 @@ export default defineComponent({
       updateExchangeModal.value = true;
     };
 
-    const isLoadingRateExchange = ref(false);
+    const isLoadingDropFeedbackOnExchange = ref(false);
     const comment = ref(modalExchange.value?.comment);
     const rating = ref(modalExchange.value?.rating);
-    const rateExchange = async () => {
+    const feedbackModal = ref(false);
+    const dropFeedbackOnExchange = async () => {
       if (!modalExchange.value) {
         return;
       }
@@ -272,12 +316,14 @@ export default defineComponent({
         $api.exchangeService
           .rateExchange(modalExchange.value?.id, rating.value, comment.value)
           .then(() => {
+            fetchExchanges();
+            feedbackModal.value = false;
             notify({
               type: "success",
               title: `acknowledged`,
             });
           }),
-        isLoadingRateExchange
+        isLoadingDropFeedbackOnExchange
       );
     };
 
@@ -290,6 +336,10 @@ export default defineComponent({
       updateExchangeModal,
       openExchangeModal,
       modalExchange,
+      feedbackModal,
+      comment,
+      isLoadingDropFeedbackOnExchange,
+      dropFeedbackOnExchange,
     };
   },
 });

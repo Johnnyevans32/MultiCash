@@ -41,7 +41,7 @@ import { FileModule } from "./file/file.module";
           },
         },
         defaults: {
-          from: `${configuration().app.name} <evanseburu32@gmail.com>`,
+          from: `${configuration().app.name} <${configuration().mail.username}>`,
         },
         preview: true,
       }),

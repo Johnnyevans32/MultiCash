@@ -133,7 +133,7 @@
         </div>
 
         <div class="flex flex-col">
-          <span>Fees:</span>
+          <span>Fee:</span>
           <span class="font-bold"
             >{{ modalExchange?.payinCurrency }}
             {{ formatMoney(modalExchange?.totalFee || 0) }}</span

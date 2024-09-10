@@ -271,6 +271,7 @@ export class WalletService {
       user,
       reference,
       wallet,
+      isDeleted: false,
     });
     if (existingTxn) {
       throw new BadRequestException(
@@ -333,9 +334,9 @@ export class WalletService {
     } = payload;
 
     const wallet = await this.fetchWallet(user, currency);
-    await this.validateDuplicateReference(user, reference, wallet.id);
     const mutex = await this.getOrCreateMutex(wallet.id);
     const release = await mutex.acquire();
+    await this.validateDuplicateReference(user, reference, wallet.id);
 
     try {
       const transactionPayload = {
@@ -396,9 +397,9 @@ export class WalletService {
     } = payload;
 
     const wallet = await this.fetchWallet(user, currency);
-    await this.validateDuplicateReference(user, reference, wallet.id);
     const mutex = await this.getOrCreateMutex(wallet.id);
     const release = await mutex.acquire();
+    await this.validateDuplicateReference(user, reference, wallet.id);
 
     try {
       balanceKeys.forEach((k) => {

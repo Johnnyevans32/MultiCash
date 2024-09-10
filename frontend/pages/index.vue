@@ -134,7 +134,7 @@
       </div>
     </div>
     <CommonPaginationBar
-      v-show="walletTransactions.length"
+      v-if="walletTransactions.length"
       :currentPage="walletTransactionsMetadata?.page"
       :totalItems="walletTransactionsMetadata?.totalDocs"
       @change-option="handlePageChange"

@@ -22,7 +22,8 @@ export enum TransactionPurpose {
   CURRENCY_EXCHANGE = "currency_exchange",
   WITHDRAWAL = "withdrawal",
   DEPOSIT = "deposit",
-  TRANSFER = "transfer",
+  TRANSFER_CREDIT = "transfer_credit",
+  TRANSFER_DEBIT = "transfer_debit",
   PENDING_CURRENCY_EXCHANGE_CREDIT = "pending_currency_exchange_credit",
   PENDING_CURRENCY_EXCHANGE_DEBIT = "pending_currency_exchange_debit",
 }

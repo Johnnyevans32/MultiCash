@@ -360,17 +360,28 @@ export class WalletService {
         balanceKeys
       );
 
-      if (
-        [TransactionPurpose.DEPOSIT, TransactionPurpose.TRANSFER].includes(
-          purpose
-        )
-      ) {
-        const user = await this.userService.findUser({ _id: wallet.user });
+      if ([TransactionPurpose.DEPOSIT].includes(purpose)) {
+        const userObj = await this.userService.findUser({ _id: wallet.user });
         this.emailService.sendWalletFundingNotification(
-          user,
+          userObj,
           amount,
-          wallet.availableBalance + amount,
           currency
+        );
+      }
+
+      if ([TransactionPurpose.TRANSFER_CREDIT].includes(purpose)) {
+        const [userObj, senderObj] = await Promise.all([
+          this.userService.findUser({ _id: wallet.user }),
+          this.userService.findUser({ _id: sender }),
+        ]);
+        this.emailService.sendEmail(
+          userObj,
+          "Wallet Transfer Confirmation",
+          "transfer-success-receiver.njk",
+          {
+            amount: UtilityService.formatMoney(amount, currency),
+            sender: senderObj,
+          }
         );
       }
       return txn;
@@ -426,12 +437,28 @@ export class WalletService {
         receiver,
       };
 
-      return await this.executeTransaction(
+      const txn = await this.executeTransaction(
         wallet,
         transactionPayload,
         -amount,
         balanceKeys
       );
+      if ([TransactionPurpose.TRANSFER_DEBIT].includes(purpose)) {
+        const [userObj, receiverObj] = await Promise.all([
+          this.userService.findUser({ _id: wallet.user }),
+          this.userService.findUser({ _id: receiver }),
+        ]);
+        this.emailService.sendEmail(
+          userObj,
+          "Wallet Transfer Confirmation",
+          "transfer-success-sender.njk",
+          {
+            amount: UtilityService.formatMoney(amount, currency),
+            receiver: receiverObj,
+          }
+        );
+      }
+      return txn;
     } finally {
       release();
     }
@@ -515,7 +542,7 @@ export class WalletService {
         description: `Sent ${amount} ${currency} to @${receiver.tag}`,
         reference: UtilityService.generateRandomHex(12),
         user: user.id,
-        purpose: TransactionPurpose.TRANSFER,
+        purpose: TransactionPurpose.TRANSFER_DEBIT,
         note,
         receiver: receiver.id,
       });
@@ -524,10 +551,10 @@ export class WalletService {
         amount,
         currency,
         balanceKeys: [AVAILABLE_BALANCE],
-        description: `Reecived ${amount} ${currency} from @${user.tag}`,
-        reference: `platform_trf_${txn.id}`,
+        description: `Received ${amount} ${currency} from @${user.tag}`,
+        reference: `transfer_${txn.id}`,
         user: receiver.id,
-        purpose: TransactionPurpose.TRANSFER,
+        purpose: TransactionPurpose.TRANSFER_CREDIT,
         note,
         sender: user.id,
       });

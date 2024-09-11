@@ -51,5 +51,5 @@ These ratings allow MultiCash to track PFI performance and maintain a database o
 In addition to the core functionality, MultiCash is exploring the following features to further enhance the user experience:
 
 - **Transaction Monitoring:** Users will have real-time updates and notifications about their exchange transactions.
-- **Mobile App Integration:** MultiCash is working on a mobile app to give users easy access to their wallets and exchange functionalities on the go.
+- **Mobile App Integration:** MultiCash plans to work on a mobile app to give users easy access to their wallets and exchange functionalities on the go.
 - **Credit Card Integration:** MultiCash plans to launch a physical and virtual credit card service, allowing users to make transactions across borders with any currency in their wallet.

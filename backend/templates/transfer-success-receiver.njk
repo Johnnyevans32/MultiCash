@@ -2,13 +2,17 @@
 
 {% block content %}
   <h2 style="margin-bottom: 16px; font-weight: 500; color: #3c4049">
-  Wallet Funding Confirmation
-</h2>
+    Wallet Transfer Confirmation
+  </h2>
+
   <p style="margin-bottom: 16px">Hello {{ user.name }},</p>
+
   <p style="margin-bottom: 24px">
-  Your wallet has been successfully funded with {{ amount }}.
-</p>
+    You have received <strong>{{ amount }}</strong> from @{{ sender.tag }}.
+  </p>
+
   <p style="margin-bottom: 24px">
-  If you did not initiate this transaction, please contact our support team immediately.
-</p>
+    If you did not initiate this transaction, please contact our support team immediately.
+  </p>
+
 {% endblock %}

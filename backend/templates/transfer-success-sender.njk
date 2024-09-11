@@ -1,0 +1,18 @@
+{% extends "base.njk" %}
+
+{% block content %}
+    <h2 style="margin-bottom: 16px; font-weight: 500; color: #3c4049">
+    Wallet Transfer Confirmation
+  </h2>
+
+    <p style="margin-bottom: 16px">Hello {{ user.name }},</p>
+
+    <p style="margin-bottom: 24px">
+    You have sent <strong>{{ amount }}</strong> to @{{ receiver.tag }}.
+  </p>
+
+    <p style="margin-bottom: 24px">
+    If you did not initiate this transaction, please contact our support team immediately.
+  </p>
+
+{% endblock %}

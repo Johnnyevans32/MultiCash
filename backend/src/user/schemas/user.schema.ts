@@ -60,7 +60,7 @@ export class User extends BaseSchema {
   @Prop({ type: Number, default: 0 })
   jwtTokenVersion?: number;
 
-  @Prop({ type: String })
+  @Prop({ type: String, unique: true })
   tag?: string;
 }
 

@@ -7,6 +7,7 @@ import { Injectable } from "@nestjs/common";
 import { UserDocument } from "@/user/schemas/user.schema";
 import { MailerService } from "@nestjs-modules/mailer";
 import configuration from "@/core/services/configuration";
+import { UtilityService } from "@/core/services/util.service";
 
 @Injectable()
 export class EmailService {
@@ -59,7 +60,10 @@ export class EmailService {
     amount: number,
     currency: string
   ) {
-    const context = { amount: this.formatMoney(amount, currency), currency };
+    const context = {
+      amount: UtilityService.formatMoney(amount, currency),
+      currency,
+    };
     await this.sendEmail(
       user,
       "Withdrawal Confirmation",
@@ -71,12 +75,10 @@ export class EmailService {
   async sendWalletFundingNotification(
     user: UserDocument,
     amount: number,
-    balance: number,
     currency: string
   ) {
     const context = {
-      amount: this.formatMoney(amount, currency),
-      balance: this.formatMoney(balance, currency),
+      amount: UtilityService.formatMoney(amount, currency),
     };
     await this.sendEmail(
       user,
@@ -94,8 +96,8 @@ export class EmailService {
     toCurrency: string
   ) {
     const context = {
-      fromAmount: this.formatMoney(fromAmount, fromCurrency),
-      toAmount: this.formatMoney(toAmount, toCurrency),
+      fromAmount: UtilityService.formatMoney(fromAmount, fromCurrency),
+      toAmount: UtilityService.formatMoney(toAmount, toCurrency),
     };
     await this.sendEmail(
       user,
@@ -103,13 +105,5 @@ export class EmailService {
       "exchange-completed.njk",
       context
     );
-  }
-
-  formatMoney(amount: number, currency = "USD", locale = "en-US") {
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: currency,
-      minimumFractionDigits: 2,
-    }).format(amount);
   }
 }

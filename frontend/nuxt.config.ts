@@ -22,31 +22,17 @@ export default defineNuxtConfig({
   pwa: {
     registerType: "autoUpdate",
     manifest: {
-      background_color: "#FFFFFF",
+      background_color: "#F4F4F4",
       name: process.env.APP_NAME,
       description: process.env.APP_DESCRIPTION,
       short_name: process.env.APP_NAME,
-      theme_color: "#FFFFFF",
+      theme_color: "#F4F4F4",
       display: "standalone",
       icons: [
         {
           src: "logo.png",
           sizes: "512x512",
           type: "image/png",
-        },
-      ],
-    },
-    workbox: {
-      navigateFallback: "/",
-      runtimeCaching: [
-        {
-          urlPattern: /^\/_nuxt\//,
-          handler: "NetworkFirst", // Fetch from network first, fallback to cache
-          options: {
-            cacheableResponse: {
-              statuses: [0, 200],
-            },
-          },
         },
       ],
     },

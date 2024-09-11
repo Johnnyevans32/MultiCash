@@ -235,6 +235,7 @@
   >
     <template v-slot:content>
       <div class="flex flex-col gap-4">
+        <CommonRatingInput v-model="rating" :maxRating="5" />
         <CommonTextArea
           v-model="comment"
           placeholder="Add comment"
@@ -306,7 +307,7 @@ export default defineComponent({
 
     const isLoadingDropFeedbackOnExchange = ref(false);
     const comment = ref(modalExchange.value?.comment);
-    const rating = ref(modalExchange.value?.rating);
+    const rating = ref(modalExchange.value?.rating || 0);
     const feedbackModal = ref(false);
     const dropFeedbackOnExchange = async () => {
       if (!modalExchange.value) {
@@ -340,6 +341,7 @@ export default defineComponent({
       comment,
       isLoadingDropFeedbackOnExchange,
       dropFeedbackOnExchange,
+      rating,
     };
   },
 });

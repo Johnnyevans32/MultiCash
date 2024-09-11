@@ -1,9 +1,11 @@
 <template>
   <div :class="appThemeColor" class="bg-bgbase text-base">
-    <NuxtPwaManifest />
     <NuxtLayout>
+      <NuxtPwaManifest />
       <NuxtPage />
     </NuxtLayout>
+
+    <NuxtPwaManifest />
     <notifications position="top center" width="100%" animation-type="css">
       <template #body="props">
         <div

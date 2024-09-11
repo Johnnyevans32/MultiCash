@@ -16,15 +16,43 @@ export default defineNuxtConfig({
         },
         { name: "format-detection", content: "telephone=no" },
       ],
-      link: [
+      link: [],
+    },
+  },
+  pwa: {
+    manifest: {
+      background_color: "#FFFFFF",
+      name: process.env.APP_NAME,
+      description: process.env.APP_DESCRIPTION,
+      short_name: process.env.APP_NAME,
+      theme_color: "#FFFFFF",
+      display: "standalone",
+      icons: [
         {
-          href: "https://db.onlinewebfonts.com/c/ccdb598c7dd2100f5f7a8c1296c1dcfe?family=Farfetch+Basis+Regular",
-          rel: "stylesheet",
+          src: "logo.png",
+          sizes: "512x512",
+          type: "image/png",
         },
       ],
     },
+    workbox: {
+      navigateFallback: "/",
+      runtimeCaching: [
+        {
+          urlPattern: /^\/_nuxt\//,
+          handler: "NetworkFirst", // Fetch from network first, fallback to cache
+          options: {
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+      ],
+    },
+    devOptions: {
+      enabled: true,
+    },
   },
-  pwa: {},
   typescript: {
     shim: false,
     strict: true,

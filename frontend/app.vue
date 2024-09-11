@@ -116,7 +116,6 @@ export default defineComponent({
 
 <style>
 html {
-  /* font-family: "Farfetch Basis Regular"; */
   font-family: "PowerGroteskTrial-Regular";
 }
 

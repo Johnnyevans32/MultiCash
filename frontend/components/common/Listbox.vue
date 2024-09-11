@@ -14,14 +14,13 @@
           </span>
         </ListboxButton>
 
-        <ListboxOptions
-          class="absolute w-full mt-1 bg-white border border-base rounded-xl"
-        >
+        <ListboxOptions class="absolute w-full mt-1 rounded-xl">
           <ListboxOption
             v-if="placeholder"
             :key="placeholder"
             :value="''"
-            class="cursor-default relative py-2 pl-10 pr-4 bg-lightbase"
+            disabled
+            class="cursor-default py-2 bg-lightbase"
           >
             {{ placeholder }}
           </ListboxOption>
@@ -29,7 +28,7 @@
             v-for="option in options"
             :key="getOptionKey(option)"
             :value="option"
-            class="cursor-pointer relative py-2 bg-lightbase hover:bg-base"
+            class="cursor-pointer py-2 bg-lightbase hover:bg-base border-[1px] border-base"
           >
             {{ getOptionLabel(option) }}
           </ListboxOption>

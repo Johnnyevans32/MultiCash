@@ -14,7 +14,9 @@
           </span>
         </ListboxButton>
 
-        <ListboxOptions class="absolute w-full mt-1 rounded-xl">
+        <ListboxOptions
+          class="absolute w-full mt-1 rounded-xl border-[1px] border-base"
+        >
           <ListboxOption
             v-if="placeholder"
             :key="placeholder"
@@ -25,10 +27,14 @@
             {{ placeholder }}
           </ListboxOption>
           <ListboxOption
-            v-for="option in options"
+            v-for="(option, index) in options"
             :key="getOptionKey(option)"
             :value="option"
-            class="cursor-pointer py-2 bg-lightbase hover:bg-base border-[1px] border-base"
+            :class="[
+              'cursor-pointer py-2 bg-lightbase hover:bg-base border-b-[1px] border-base',
+              index === 0 ? 'rounded-t-xl' : '',
+              index === options.length - 1 ? 'rounded-b-xl border-b-0' : '',
+            ]"
           >
             {{ getOptionLabel(option) }}
           </ListboxOption>

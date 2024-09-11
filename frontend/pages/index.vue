@@ -323,7 +323,8 @@ export default defineComponent({
     const fetchWallets = async () => {
       await withLoadingPromise(
         $api.walletService.fetchWallets().then((walletsResponse: IWallet[]) => {
-          selectedCurrency.value = walletsResponse[0]?.currency;
+          if (!selectedCurrency.value)
+            selectedCurrency.value = walletsResponse[0]?.currency;
           setWallets(walletsResponse);
         }),
         isLoadingWallets

@@ -64,12 +64,12 @@ export class CreateExchangeDTO {
 }
 
 export class UserKycInfoDTO {
-  @IsString()
+  @IsString({ message: "user name is required" })
   name: string;
 
   @IsEnum(SupportedCountry)
   country: SupportedCountry;
 
-  @IsString()
+  @IsString({ message: "user did is required" })
   did: string;
 }

@@ -593,6 +593,10 @@ export class WalletService {
         throw new BadRequestException("User not found");
       }
 
+      if (beneficiaryUser.id === user.id) {
+        throw new BadRequestException("You cant add yourself as beneficiary");
+      }
+
       searchQuery.beneficiaryUser = beneficiaryUser.id;
     }
 

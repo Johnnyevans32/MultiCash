@@ -20,6 +20,7 @@ export default defineNuxtConfig({
     },
   },
   pwa: {
+    registerType: "autoUpdate",
     manifest: {
       background_color: "#FFFFFF",
       name: process.env.APP_NAME,
@@ -48,9 +49,6 @@ export default defineNuxtConfig({
           },
         },
       ],
-    },
-    devOptions: {
-      enabled: true,
     },
   },
   typescript: {

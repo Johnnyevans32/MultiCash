@@ -67,7 +67,7 @@ export class UserKycInfoDTO {
   @IsString({ message: "user name is required" })
   name: string;
 
-  @IsEnum(SupportedCountry)
+  @IsEnum(SupportedCountry, { message: "user country is required" })
   country: SupportedCountry;
 
   @IsString({ message: "user did is required" })

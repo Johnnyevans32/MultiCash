@@ -297,7 +297,13 @@ export class ExchangeService extends RequestService {
     });
     const errors = await validate(fields);
     if (errors.length > 0) {
-      throw new Error(`validation failed: ${errors}`);
+      const errorMessages = errors
+        .map(
+          (error) =>
+            `${error.property}: ${Object.values(error.constraints).join(", ")}`
+        )
+        .join("; ");
+      throw new Error(`Validation failed: ${errorMessages}`);
     }
     const { offerings, payinAmount } = payload;
 

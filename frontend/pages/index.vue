@@ -15,7 +15,7 @@
         @change-option="handleCurrencyChange"
       />
       <CommonButton
-        text="Manage Wallets"
+        text="Wallets"
         @btn-action="walletsModal = true"
         customCss="justify-self-end"
       />

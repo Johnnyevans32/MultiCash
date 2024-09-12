@@ -38,8 +38,8 @@
   </div>
   <CommonConfirmationModal
     :open="confirmDeletionModal"
-    title="Confirm data deletion from platform"
-    desc="Are you sure you want to delete all your data associated with this platfrom?"
+    title="Confirm account deactivation"
+    desc="Are you sure you want to deactivate your account? This will remove access to all your data associated with this platform."
     :loading="loading"
     @change-modal-status="(value) => (confirmDeletionModal = value)"
     @confirm-modal-action="deleteUser"

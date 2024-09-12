@@ -7,7 +7,12 @@
       @btn-action="handleFundWalletBtnClick"
       customCss="justify-self-end"
     />
-    <div class="flex gap-2">
+    <div class="flex gap-2 items-center">
+      <!-- <font-awesome-icon
+        icon="wallet"
+        class="text-2xl p-4"
+        @click="walletsModal = true"
+      /> -->
       <CommonListbox
         v-if="!isLoadingWallets"
         :selected="selectedCurrency"
@@ -133,11 +138,11 @@
             class="md:text-tbase text-xs"
             :class="txn?.type === 'credit' ? 'text-green-600' : 'text-red-600'"
             >{{ getCurrencySign(txn.currency || txn.walletStateAfter.currency)
-            }}{{ formatMoney(txn.amount) }}
+            }}{{ formatMoney(txn.amount, 8) }}
           </span>
           <span class="md:text-sm text-tiny"
             >{{ getCurrencySign(txn.currency || txn.walletStateAfter.currency)
-            }}{{ formatMoney(txn.walletStateAfter.availableBalance) }}</span
+            }}{{ formatMoney(txn.walletStateAfter.availableBalance, 8) }}</span
           >
         </div>
       </div>

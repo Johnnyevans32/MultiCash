@@ -435,7 +435,7 @@ export class ExchangeService extends RequestService {
     return { data, metadata };
   }
 
-  @Interval(60 * 100)
+  @Interval("processPendingExchanges", 60 * 100 * 10)
   async processPendingExchanges(ids = []) {
     const exchanges = await this.exchangeModel.find({
       ...(ids.length && { _id: { $in: ids } }),
@@ -562,7 +562,7 @@ export class ExchangeService extends RequestService {
     }
   }
 
-  @Interval(60 * 100) // every 1 min
+  @Interval("checkStatusOfOfferingsFromPFIs", 60 * 100 * 2) //every 2mins
   async checkStatusOfOfferingsFromPFIs(ids?: string[]) {
     const query: any = {
       status: {

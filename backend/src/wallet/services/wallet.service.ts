@@ -71,88 +71,66 @@ export class WalletService {
     const currencyData = [
       {
         currency: SupportedCurrencyEnum.USD,
-        name: "US Dollar",
-        logo: "usd.png",
         exchangePercentageFee: 0.02,
         maxExchangeFee: 50, // max exchange fee as amount
         transferFee: 2, // transfer fee as amount
       },
       {
         currency: SupportedCurrencyEnum.GBP,
-        name: "British Pound",
-        logo: "gbp.png",
         exchangePercentageFee: 0.03,
         maxExchangeFee: 40,
         transferFee: 3,
       },
       {
         currency: SupportedCurrencyEnum.EUR,
-        name: "Euro",
-        logo: "eur.png",
         exchangePercentageFee: 0.025,
         maxExchangeFee: 45,
         transferFee: 2.5,
       },
       {
         currency: SupportedCurrencyEnum.NGN,
-        name: "Nigerian Naira",
-        logo: "ngn.png",
         exchangePercentageFee: 0.05,
         maxExchangeFee: 5000,
         transferFee: 100,
       },
       {
         currency: SupportedCurrencyEnum.GHS,
-        name: "Ghanaian Cedi",
-        logo: "ghs.png",
         exchangePercentageFee: 0.04,
         maxExchangeFee: 450,
         transferFee: 15,
       },
       {
         currency: SupportedCurrencyEnum.KES,
-        name: "Kenyan Shilling",
-        logo: "kes.png",
         exchangePercentageFee: 0.045,
         maxExchangeFee: 300,
         transferFee: 20,
       },
       {
         currency: SupportedCurrencyEnum.ZAR,
-        name: "South African Rand",
-        logo: "zar.png",
         exchangePercentageFee: 0.045,
         maxExchangeFee: 600,
         transferFee: 25,
       },
       {
         currency: SupportedCurrencyEnum.USDC,
-        name: "USD Coin",
-        logo: "usdc.png",
         exchangePercentageFee: 0.01,
         maxExchangeFee: 5,
         transferFee: 1,
       },
       {
         currency: SupportedCurrencyEnum.BTC,
-        name: "Bitcoin",
-        logo: "btc.png",
         exchangePercentageFee: 0.015,
         maxExchangeFee: 30,
         transferFee: 10,
       },
       {
         currency: SupportedCurrencyEnum.AUD,
-        name: "Australian Dollar",
-        logo: "aud.png",
         exchangePercentageFee: 0.03,
         maxExchangeFee: 35,
         transferFee: 3,
       },
       {
         currency: SupportedCurrencyEnum.MXN,
-        name: "Mexican Peso",
-        logo: "mxn.png",
         exchangePercentageFee: 0.035,
         maxExchangeFee: 25,
         transferFee: 17,
@@ -163,15 +141,13 @@ export class WalletService {
       currencyData.map(
         async ({
           currency,
-          name,
           exchangePercentageFee,
           transferFee,
           maxExchangeFee,
-          logo,
         }) => {
           await this.walletCurrencyModel.findOneAndUpdate(
             { currency },
-            { name, exchangePercentageFee, maxExchangeFee, transferFee, logo },
+            { exchangePercentageFee, maxExchangeFee, transferFee },
             { upsert: true, new: true }
           );
         }

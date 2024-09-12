@@ -303,13 +303,11 @@
           />
 
           <div class="flex flex-col text-left">
-            <span class="md:text-sm text-xs line-clamp-1"
+            <span class="font-bold"
               >{{ wallet.currency }}
               {{ formatMoney(wallet.availableBalance, 10) }}</span
             >
-            <span class="md:text-sm text-xs line-clamp-1">{{
-              wallet.walletCurrency.name
-            }}</span>
+            <span>{{ wallet.walletCurrency.name }}</span>
           </div>
         </div>
       </div>

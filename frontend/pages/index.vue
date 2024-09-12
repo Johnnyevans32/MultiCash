@@ -94,7 +94,7 @@
         class="cursor-pointer py-5 md:px-5 px-2 flex mb-2 items-center h-16 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base"
         @click="openTransactionDetailModal(txn)"
       >
-        <div class="flex md:space-x-2 space-x-1 items-center">
+        <div class="flex md:gap-4 gap-1 items-center w-[70%]">
           <div class="text-sm transform translate-y-0">
             <CommonImage
               type="icon"
@@ -120,22 +120,24 @@
           </div>
 
           <div class="flex flex-col text-left">
-            <span class="truncate line-clamp-1">{{ txn.description }}</span>
-            <span class="text-xs">{{
+            <span class="line-clamp-1 md:text-tbase text-sm">{{
+              txn.description
+            }}</span>
+            <span class="md:text-sm text-tiny">{{
               txn?.purpose?.replaceAll("_", " ")
             }}</span>
           </div>
         </div>
         <div class="flex flex-col text-right">
           <span
-            class="md:text-tbase text-sm"
+            class="md:text-tbase text-xs"
             :class="txn?.type === 'credit' ? 'text-green-600' : 'text-red-600'"
-            >{{ txn.currency || txn.walletStateAfter.currency }}
-            {{ formatMoney(txn.amount) }}
+            >{{ getCurrencySign(txn.currency || txn.walletStateAfter.currency)
+            }}{{ formatMoney(txn.amount) }}
           </span>
           <span class="md:text-sm text-tiny"
-            >{{ txn.currency || txn.walletStateAfter.currency }}
-            {{ formatMoney(txn.walletStateAfter.availableBalance) }}</span
+            >{{ getCurrencySign(txn.currency || txn.walletStateAfter.currency)
+            }}{{ formatMoney(txn.walletStateAfter.availableBalance) }}</span
           >
         </div>
       </div>

@@ -87,3 +87,19 @@ export const uploadFile = async (file: File) => {
   const resp = await $api.userService.uploadFile(payload);
   return resp.url;
 };
+
+export const getCurrencySign = (currency: string) => {
+  return {
+    NGN: "₦",
+    GHS: "₵",
+    KES: "KSh",
+    USD: "$",
+    GBP: "£",
+    EUR: "€",
+    USDC: "USDC",
+    BTC: "₿",
+    AUD: "A$",
+    MXN: "$",
+    ZAR: "R",
+  }[currency];
+};

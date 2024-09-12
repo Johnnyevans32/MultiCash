@@ -32,7 +32,7 @@
     <p class="text-left">Balance</p>
     <p v-show="!isLoadingWallets" class="text-right">
       {{ selectedWallet?.currency }}
-      {{ formatMoney(selectedWallet?.availableBalance) }}
+      {{ formatMoney(selectedWallet?.availableBalance, 8) }}
     </p>
     <div
       v-show="isLoadingWallets"

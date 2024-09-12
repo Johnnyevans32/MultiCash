@@ -250,6 +250,7 @@ export default defineComponent({
     const { withLoadingPromise } = useLoading();
 
     const isLoadingCreateExchange = ref(false);
+    const router = useRouter();
     const createExchange = async () => {
       if (selectedOffering.value && payinAmount.value) {
         await withLoadingPromise(
@@ -266,6 +267,7 @@ export default defineComponent({
                 type: "success",
                 title: `exchange is being processed`,
               });
+              router.push({ query: { tab: "history" } });
             }),
           isLoadingCreateExchange
         );

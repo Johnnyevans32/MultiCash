@@ -1,10 +1,10 @@
 <template>
-  <TabGroup>
+  <TabGroup :selectedIndex="activeTab" @change="changeTab">
     <TabList class="flex rounded-xl w-full bg-lightbase p-2">
       <Tab
         v-for="tab in tabs"
-        as="template"
         :key="tab.title"
+        as="template"
         v-slot="{ selected }"
       >
         <div
@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { TabGroup, TabList, Tab, TabPanels, TabPanel } from "@headlessui/vue";
+import { TabGroup, TabList, TabPanels, TabPanel, Tab } from "@headlessui/vue";
 
 export default defineComponent({
   components: {
@@ -38,12 +38,33 @@ export default defineComponent({
   },
   props: {
     tabs: {
-      type: Array<{ title: string; content: any }>,
-      default: [],
+      type: Array,
+      default: () => [],
+    },
+    modelValue: {
+      type: Number,
+      default: null,
     },
   },
-  setup() {
-    return {};
+  setup(props, { emit }) {
+    const activeTabInternal = ref(0);
+
+    const activeTab = computed({
+      get: () =>
+        props.modelValue !== null ? props.modelValue : activeTabInternal.value,
+      set: (value) => {
+        if (props.modelValue !== null) {
+          emit("update:modelValue", value);
+        } else {
+          activeTabInternal.value = value;
+        }
+      },
+    });
+    function changeTab(index: number) {
+      activeTab.value = index;
+    }
+
+    return { activeTab, changeTab };
   },
 });
 </script>

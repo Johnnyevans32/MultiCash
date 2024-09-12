@@ -7,12 +7,19 @@
       @btn-action="handleFundWalletBtnClick"
       customCss="justify-self-end"
     />
-    <CommonListbox
-      v-if="!isLoadingWallets"
-      :selected="selectedCurrency"
-      :options="walletCurrencies"
-      @change-option="handleCurrencyChange"
-    />
+    <div class="flex gap-2">
+      <CommonListbox
+        v-if="!isLoadingWallets"
+        :selected="selectedCurrency"
+        :options="walletCurrencies"
+        @change-option="handleCurrencyChange"
+      />
+      <CommonButton
+        text="Manage Wallets"
+        @btn-action="walletsModal = true"
+        customCss="justify-self-end"
+      />
+    </div>
   </div>
   <div
     class="flex items-center justify-between p-5 font-bold rounded-xl border-[1px] bg-lightbase border-base md:text-3xl text-xl"
@@ -272,6 +279,50 @@
       />
     </template>
   </CommonModal>
+
+  <CommonModal
+    v-if="wallets.length"
+    :open="walletsModal"
+    title="Wallets"
+    @change-modal-status="
+      (newVal) => {
+        walletsModal = newVal;
+      }
+    "
+  >
+    <template v-slot:content>
+      <div class="flex flex-col gap-2">
+        <div
+          v-for="wallet in wallets"
+          :key="wallet.id"
+          class="flex items-center h-12 gap-4"
+        >
+          <CommonImage
+            :image="wallet.walletCurrency.logo"
+            :alt="wallet.currency"
+          />
+
+          <div class="flex flex-col text-left">
+            <span class="md:text-sm text-xs line-clamp-1"
+              >{{ wallet.currency }}
+              {{ formatMoney(wallet.availableBalance) }}</span
+            >
+            <span class="md:text-sm text-xs line-clamp-1">{{
+              wallet.walletCurrency.name
+            }}</span>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <template v-slot:footer>
+      <CommonButton
+        text="Close"
+        @btn-action="walletsModal = false"
+        custom-css="bg-base w-full text-base"
+      />
+    </template>
+  </CommonModal>
 </template>
 
 <script lang="ts">
@@ -435,6 +486,8 @@ export default defineComponent({
       transactionDetailsModal.value = true;
     };
 
+    const walletsModal = ref(false);
+
     return {
       walletCurrencies,
       selectedCurrency,
@@ -456,6 +509,8 @@ export default defineComponent({
       transactionDetailsModal,
       openTransactionDetailModal,
       modalTransaction,
+      walletsModal,
+      wallets,
     };
   },
 });

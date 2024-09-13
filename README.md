@@ -1,8 +1,8 @@
 # MultiCash: A Multi-Currency Digital Wallet
 
 <div>
-    <img src="https://i.ibb.co/2jP2Qjb/logo.png" width="80px" height="auto" class="rounded-xl logo" />
-    <img class="companyName" src="https://i.ibb.co/t8H5Xgd/name.png" alt="MultiCash" width="200px"
+    <img src="https://i.ibb.co/2jP2Qjb/logo.png" width="80px" height="auto" />
+    <img src="https://i.ibb.co/t8H5Xgd/name.png" width="200px"
     height="auto" />
 </div>
 
@@ -15,6 +15,11 @@ MultiCash aims to offer users the following core features:
 - Multi-currency wallets, allowing users to hold, fund, and withdraw various currencies.
 - A dynamic exchange system that finds the best exchange rates and lowest fees through different PFIs.
 - Future integration of physical and virtual credit card options for easy access to funds and seamless transactions.
+
+<div>
+    <h1>UML Sequence of MultiCash Exchange System</h1>
+    <img src="https://res.cloudinary.com/dfbjysygb/image/upload/v1726226345/lf2ng7zp3ab5kstcok2z.png" />
+</div>
 
 ## Design Considerations
 

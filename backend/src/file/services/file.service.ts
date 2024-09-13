@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { CloudinaryService } from "../cloudinary/cloudinary.service";
 import { Buffer } from "buffer";
 
@@ -14,13 +14,17 @@ export class FileService {
     const { file, fileName, fileType } = payload;
 
     if (!file || !fileName || !fileType) {
-      throw new Error("Invalid payload: Missing file, fileName, or fileType.");
+      throw new BadRequestException(
+        "Invalid payload: Missing file, fileName, or fileType."
+      );
     }
 
     const fileBuffer = this.decodeBase64File(file);
 
     if (!fileBuffer) {
-      throw new Error("Invalid file format: Unable to decode base64 file.");
+      throw new BadRequestException(
+        "Invalid file format: Unable to decode base64 file."
+      );
     }
 
     return await this.cloudinaryService.uploadFileToCloudinary(

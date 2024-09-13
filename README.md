@@ -1,8 +1,8 @@
-# MultiCash: A Multi-Currency Digital Wallet
-
 <div>
     <img src="https://i.ibb.co/2jP2Qjb/logo.png" width="80px" height="auto" />
     <img src="https://i.ibb.co/t8H5Xgd/name.png" width="200px"
+    height="auto" />
+    <img src="https://i.ibb.co/ysjfknF/slogan.png" width="200px"
     height="auto" />
 </div>
 
@@ -17,15 +17,15 @@ MultiCash aims to offer users the following core features:
 - Future integration of physical and virtual credit card options for easy access to funds and seamless transactions.
 
 <div>
-    <h1>UML Sequence of MultiCash Exchange System</h1>
-    <img src="https://res.cloudinary.com/dfbjysygb/image/upload/v1726226345/lf2ng7zp3ab5kstcok2z.png" />
+    <h1>UML Sequence Diagram of MultiCash Exchange System</h1>
+    <img src="https://res.cloudinary.com/dfbjysygb/image/upload/v1726227090/sw20rtumyitjpspqxu5d.png" />
 </div>
 
 ## Design Considerations
 
 ### 1. Profitability
 
-MultiCash collects **percentage-based exchange fees** on exchange transactions and **fixed transfer fees** on wallet withdrawals. The exact percentage depends on the currencies being exchanged, but there is also a **maximum fee cap** for each currency to prevent excessive costs for users. These fees are deducted **upfront** from the user’s paying currency before the transaction is executed. This transparent fee structure allows users to know exactly what they will pay in advance, ensuring clarity and fairness across the platform.
+MultiCash collects **percentage-based exchange fees** on exchange transactions and **fixed transfer fees** on wallet withdrawal transactions. The exact percentage depends on the currencies being exchanged, but there is also a **maximum fee cap** for each currency to prevent excessive costs for users. These fees are deducted **upfront** from the user’s paying currency before the transaction is executed. This transparent fee structure allows users to know exactly what they will pay in advance, ensuring clarity and fairness across the platform.
 
 In the future, MultiCash will explore additional revenue streams, such as:
 

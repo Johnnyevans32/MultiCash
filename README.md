@@ -25,7 +25,7 @@ MultiCash aims to offer users the following core features:
 
 ### 1. Profitability
 
-MultiCash collects **percentage-based exchange fees** on all transactions. The exact percentage depends on the currencies being exchanged, but there is also a **maximum fee cap** for each currency to prevent excessive costs for users. These fees are deducted **upfront** from the user’s paying currency before the transaction is executed. This transparent fee structure allows users to know exactly what they will pay in advance, ensuring clarity and fairness across the platform.
+MultiCash collects **percentage-based exchange fees** on exchange transactions and **fixed transfer fees** on wallet withdrawals. The exact percentage depends on the currencies being exchanged, but there is also a **maximum fee cap** for each currency to prevent excessive costs for users. These fees are deducted **upfront** from the user’s paying currency before the transaction is executed. This transparent fee structure allows users to know exactly what they will pay in advance, ensuring clarity and fairness across the platform.
 
 In the future, MultiCash will explore additional revenue streams, such as:
 

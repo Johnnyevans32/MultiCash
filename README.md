@@ -2,7 +2,9 @@
     <img src="https://i.ibb.co/2jP2Qjb/logo.png" width="80px" height="auto" />
     <img src="https://i.ibb.co/t8H5Xgd/name.png" width="200px"
     height="auto" />
-    <img src="https://i.ibb.co/ysjfknF/slogan.png" width="200px"
+</div>
+<div>
+     <img src="https://i.ibb.co/ysjfknF/slogan.png" width="200px"
     height="auto" />
 </div>
 

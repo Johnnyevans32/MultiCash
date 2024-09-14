@@ -141,7 +141,7 @@ export class WalletService {
     return { data, metadata };
   }
 
-  private async getOrCreateMutex(walletId: string) {
+  private getOrCreateMutex(walletId: string) {
     let mutex = this.locks.get(walletId);
     if (!mutex) {
       mutex = new Mutex();
@@ -222,7 +222,7 @@ export class WalletService {
     } = payload;
 
     const wallet = await this.fetchWallet(user, currency);
-    const mutex = await this.getOrCreateMutex(wallet.id);
+    const mutex = this.getOrCreateMutex(wallet.id);
     const release = await mutex.acquire();
     await this.validateDuplicateReference(user, reference, wallet.id);
 
@@ -296,7 +296,7 @@ export class WalletService {
     } = payload;
 
     const wallet = await this.fetchWallet(user, currency);
-    const mutex = await this.getOrCreateMutex(wallet.id);
+    const mutex = this.getOrCreateMutex(wallet.id);
     const release = await mutex.acquire();
     await this.validateDuplicateReference(user, reference, wallet.id);
 

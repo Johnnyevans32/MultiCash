@@ -87,6 +87,8 @@ export class Offering extends BaseSchema {
 
   @Prop({ type: SchemaTypes.String })
   cancellationReason?: string;
+  @Prop({ type: SchemaTypes.Boolean })
+  isRefunded: boolean;
 }
 
 export const OfferingSchema = SchemaFactory.createForClass(Offering);

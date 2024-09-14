@@ -75,7 +75,7 @@ export class ExchangeService extends RequestService {
     this.locks = new Map();
   }
 
-  private async getOrCreateMutex(service: string) {
+  private getOrCreateMutex(service: string) {
     let mutex = this.locks.get(service);
     if (!mutex) {
       mutex = new Mutex();
@@ -85,7 +85,7 @@ export class ExchangeService extends RequestService {
   }
 
   private async loadTbdexModules() {
-    const module = await eval(`import("@tbdex/http-client")`);
+    const module = await eval('import("@tbdex/http-client")');
     return {
       tbdexHttpClient: module.TbdexHttpClient,
       rfq: module.Rfq,
@@ -557,9 +557,19 @@ export class ExchangeService extends RequestService {
       await rfq.verifyOfferingRequirements(pfiOffering);
       await rfq.sign(did);
       await this.tbdexHttpClient.createExchange(rfq);
-      offering.pfiExchangeId = rfq.exchangeId;
-      offering.status = OfferingStatus.Processing;
-      offering.transactionStartDate = moment().toDate();
+      await this.offeringModel.findOneAndUpdate(
+        {
+          _id: offering.id,
+          status: OfferingStatus.Pending,
+        },
+        {
+          $set: {
+            pfiExchangeId: rfq.exchangeId,
+            status: OfferingStatus.Processing,
+            transactionStartDate: moment().toDate(),
+          },
+        }
+      );
       exchange.status = ExchangeStatus.Processing;
       await exchange.save();
       await offering.save();
@@ -570,8 +580,9 @@ export class ExchangeService extends RequestService {
 
   @Cron(CronExpression.EVERY_10_MINUTES)
   async checkStatusOfOfferingsFromPFIs(ids?: string[]) {
-    const mutex = await this.getOrCreateMutex("checkStatusOfOfferingsFromPFIs");
+    const mutex = this.getOrCreateMutex("checkStatusOfOfferingsFromPFIs");
     const release = await mutex.acquire();
+    console.log("starting checkStatusOfOfferingsFromPFIs");
     try {
       const query: any = {
         status: {
@@ -682,9 +693,11 @@ export class ExchangeService extends RequestService {
                 }))
               );
 
-              this.processPendingExchanges(exchangesToBeProcessed);
-              this.refundCancelledOffering(offeringsToBeRefunded);
-              this.createOrder(offeringsToCreateOrder);
+              await Promise.all([
+                this.processPendingExchanges(exchangesToBeProcessed),
+                this.refundCancelledOffering(offeringsToBeRefunded),
+                this.createOrder(offeringsToCreateOrder),
+              ]);
             } catch (err) {
               console.log(
                 "Error checking message thread from pfi",
@@ -698,6 +711,7 @@ export class ExchangeService extends RequestService {
       );
     } finally {
       release();
+      console.log("done checkStatusOfOfferingsFromPFIs");
     }
   }
 
@@ -707,6 +721,7 @@ export class ExchangeService extends RequestService {
         _id: { $in: offeringIds },
         isDeleted: false,
         status: OfferingStatus.Cancelled,
+        isRefunded: { $ne: true },
       })
       .populate("exchange");
 
@@ -723,8 +738,10 @@ export class ExchangeService extends RequestService {
           meta: { exchangeId: exchange.id },
           purpose: TransactionPurpose.CURRENCY_EXCHANGE,
         });
+        offering.isRefunded = true;
 
         exchange.status = ExchangeStatus.PartiallyCompleted;
+        await offering.save();
         await exchange.save();
       })
     );

@@ -614,41 +614,52 @@ export class ExchangeService extends RequestService {
 
               switch (kind) {
                 case "quote":
-                  offering.pfiQuoteExpiresAt = moment(
-                    (lastMessage.data as any).expiresAt
-                  ).toDate();
-                  offering.status = OfferingStatus.AwaitingOrder;
-                  offering.pfiFee = Number(
-                    (lastMessage.data as any).payin.fee || 0
-                  );
-                  offeringsToCreateOrder.push(offering.id);
+                  if (
+                    [
+                      OfferingStatus.Processing,
+                      OfferingStatus.AwaitingOrder,
+                    ].includes(offering.status)
+                  ) {
+                    offering.pfiQuoteExpiresAt = moment(
+                      (lastMessage.data as any).expiresAt
+                    ).toDate();
+                    offering.status = OfferingStatus.AwaitingOrder;
+                    offering.pfiFee = Number(
+                      (lastMessage.data as any).payin.fee || 0
+                    );
+                    offeringsToCreateOrder.push(offering.id);
+                  }
                   break;
 
                 case "order":
                   break;
 
                 case "close":
-                  const isSuccessful = (lastMessage.data as any).success;
-                  offering.status = isSuccessful
-                    ? OfferingStatus.Completed
-                    : OfferingStatus.Cancelled;
-                  if (isSuccessful) {
-                    exchangesToBeProcessed.push(offering.exchange);
+                  if ([OfferingStatus.OrderPlaced].includes(offering.status)) {
+                    const isSuccessful = (lastMessage.data as any).success;
+                    offering.status = isSuccessful
+                      ? OfferingStatus.Completed
+                      : OfferingStatus.Cancelled;
                     offering.transactionEndDate = moment(
                       lastMessage.metadata.createdAt
                     ).toDate();
-                  } else {
-                    offering.cancellationReason = (
-                      lastMessage.data as any
-                    ).reason;
-                    offeringsToBeRefunded.push(offering.id);
+                    if (isSuccessful) {
+                      exchangesToBeProcessed.push(offering.exchange);
+                    } else {
+                      offering.cancellationReason = (
+                        lastMessage.data as any
+                      ).reason;
+                      offeringsToBeRefunded.push(offering.id);
+                    }
                   }
                   break;
 
                 case "orderstatus":
-                  offering.pfiOrderStatus = (
-                    lastMessage.data as any
-                  ).orderStatus;
+                  if ([OfferingStatus.OrderPlaced].includes(offering.status)) {
+                    offering.pfiOrderStatus = (
+                      lastMessage.data as any
+                    ).orderStatus;
+                  }
                   break;
 
                 default:
@@ -685,6 +696,7 @@ export class ExchangeService extends RequestService {
       .find({
         _id: { $in: offeringIds },
         isDeleted: false,
+        status: OfferingStatus.Cancelled,
       })
       .populate("exchange");
 

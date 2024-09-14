@@ -183,7 +183,7 @@
                       'text-yellow-600': offering.status === 'pending',
                     }"
                   >
-                    {{ offering.status }}
+                    {{ offering.status.replace("_", " ") }}
                   </span>
                 </span>
               </div>

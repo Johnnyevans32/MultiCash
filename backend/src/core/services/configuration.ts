@@ -1,5 +1,5 @@
 export interface Configuration {
-  app: { name: string; uiUrl: string };
+  app: { name: string; uiUrl: string; portableDidInBase64: string };
   database: {
     uri: string;
   };
@@ -30,7 +30,11 @@ export interface Configuration {
 }
 
 export default (): Configuration => ({
-  app: { name: process.env.APP_NAME, uiUrl: process.env.UI_URL },
+  app: {
+    name: process.env.APP_NAME,
+    uiUrl: process.env.UI_URL,
+    portableDidInBase64: process.env.PORTABLE_DID_BASE64,
+  },
   database: {
     uri: process.env.DATABASE_URI,
   },

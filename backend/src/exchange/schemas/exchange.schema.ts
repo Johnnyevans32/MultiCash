@@ -16,6 +16,7 @@ export enum ExchangeStatus {
   Completed = "completed",
   Failed = "failed",
   Cancelled = "cancelled",
+  PartiallyCompleted = "partially_completed",
 }
 export type ExchangeDocument = HydratedDocument<Exchange>;
 

@@ -40,7 +40,6 @@ export class AuthService {
   }
 
   async signup(payload: any) {
-    throw new BadRequestException("try again after september 15th");
     return this.userService.signup(payload);
   }
 

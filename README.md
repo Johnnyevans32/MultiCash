@@ -1,13 +1,10 @@
-<div>
-    <img src="https://i.ibb.co/2jP2Qjb/logo.png" width="80px" height="auto" />
-    <img src="https://i.ibb.co/t8H5Xgd/name.png" width="200px"
-    height="auto" />
-  
+
+<div style="display: flex; align-items: end;">
+  <img src="https://i.ibb.co/2jP2Qjb/logo.png" width="80px" height="auto" />
+  <img src="https://i.ibb.co/t8H5Xgd/name.png" width="200px" height="auto" />
+  <img src="https://i.ibb.co/ysjfknF/slogan.png" width="400px" height="auto" />
 </div>
-<div>
-    <img src="https://i.ibb.co/ysjfknF/slogan.png" width="600px"
-    height="auto" />
-</div>
+
 
 ## Overview
 
@@ -20,8 +17,8 @@ MultiCash aims to offer users the following core features:
 - Future integration of physical and virtual credit card options for easy access to funds and seamless transactions.
 
 <div>
-    <h1>UML Sequence Diagram of MultiCash Exchange System</h1>
-    <img src="https://res.cloudinary.com/dfbjysygb/image/upload/v1726227090/sw20rtumyitjpspqxu5d.png" />
+    <h1>MultiCash Exchange Flow via tbDEX SDK</h1>
+    <img src="https://res.cloudinary.com/dfbjysygb/image/upload/v1726266142/j3387hlpaawvhz3shxhw.png" />
 </div>
 
 ## Design Considerations

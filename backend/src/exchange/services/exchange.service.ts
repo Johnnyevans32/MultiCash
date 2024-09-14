@@ -12,15 +12,10 @@ import { Cache } from "cache-manager";
 import * as moment from "moment";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { PresentationExchange } from "@web5/credentials";
-import { DidDht } from "@web5/dids";
+import { BearerDid, DidDht } from "@web5/dids";
 import { groupBy, keyBy, min } from "lodash";
 
-import {
-  EXCHANGE,
-  OFFERING,
-  PFI,
-  portableDid,
-} from "@/core/constants/schema.constants";
+import { EXCHANGE, OFFERING, PFI } from "@/core/constants/schema.constants";
 import { PfiDocument } from "../schemas/pfi.schema";
 import { CreateExchangeDTO, OfferingDTO, UserKycInfoDTO } from "../types";
 import { RequestService } from "@/core/services/request.service";
@@ -39,6 +34,7 @@ import { EmailService } from "@/notification/email/email.service";
 import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import { UtilityService } from "@/core/services/util.service";
+import configuration from "@/core/services/configuration";
 
 @Injectable()
 export class ExchangeService extends RequestService {
@@ -90,6 +86,8 @@ export class ExchangeService extends RequestService {
       order: this.order,
       close: this.close,
     } = await this.loadTbdexModules());
+
+    await this.getDid();
   }
 
   async rateExchange(
@@ -603,6 +601,7 @@ export class ExchangeService extends RequestService {
             );
 
             const exchangesToBeProcessed = [];
+            const offeringsToBeRefunded = [];
 
             // Process each exchange and update offerings accordingly
             exchanges.forEach((messages) => {
@@ -641,6 +640,7 @@ export class ExchangeService extends RequestService {
                     offering.cancellationReason = (
                       lastMessage.data as any
                     ).reason;
+                    offeringsToBeRefunded.push(offering.id);
                   }
                   break;
 
@@ -654,7 +654,6 @@ export class ExchangeService extends RequestService {
                   break;
               }
             });
-            // Bulk save offerings
             await this.offeringModel.bulkWrite(
               pfiOfferings.map((offering) => ({
                 updateOne: {
@@ -665,6 +664,7 @@ export class ExchangeService extends RequestService {
             );
 
             this.processPendingExchanges(exchangesToBeProcessed);
+            this.refundCancelledOffering(offeringsToBeRefunded);
           } catch (err) {
             console.log(
               "Error checking message thread from pfi",
@@ -675,6 +675,34 @@ export class ExchangeService extends RequestService {
           }
         }
       )
+    );
+  }
+
+  async refundCancelledOffering(offeringIds: string[]) {
+    const offerings = await this.offeringModel
+      .find({
+        _id: { $in: offeringIds },
+        isDeleted: false,
+      })
+      .populate("exchange");
+
+    await Promise.all(
+      offerings.map(async (offering) => {
+        const exchange = offering.exchange as ExchangeDocument;
+        await this.walletService.creditWallet({
+          amount: offering.expectedPayinAmount,
+          currency: offering.payinCurrency,
+          balanceKeys: [AVAILABLE_BALANCE],
+          description: `refund of canceled exchange`,
+          reference: `credit_${exchange.id}`,
+          user: offering.user as string,
+          meta: { exchangeId: exchange.id },
+          purpose: TransactionPurpose.CURRENCY_EXCHANGE,
+        });
+
+        exchange.status = ExchangeStatus.PartiallyCompleted;
+        await exchange.save();
+      })
     );
   }
 
@@ -755,7 +783,21 @@ export class ExchangeService extends RequestService {
   }
 
   private async getDid() {
-    return DidDht.import({ portableDid: portableDid });
+    const cacheKey = "portableDid";
+    let did = await this.cacheManager.get<BearerDid>(cacheKey);
+    if (did) {
+      return did;
+    }
+
+    const decodedDidJson = JSON.parse(
+      Buffer.from(configuration().app.portableDidInBase64, "base64").toString(
+        "utf-8"
+      )
+    );
+    did = await DidDht.import({ portableDid: decodedDidJson });
+
+    await this.cacheManager.set(cacheKey, did, 24 * 60 * 60 * 1000);
+    return did;
   }
 
   private async getUserKycVcJtwt(user: UserDocument) {

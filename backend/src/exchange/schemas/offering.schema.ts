@@ -14,8 +14,8 @@ import { ExchangeDocument } from "./exchange.schema";
 export enum OfferingStatus {
   Pending = "pending",
   Processing = "processing",
-  AwaitingOrder = "awaitingOrder",
-  OrderPlaced = "orderPlaced",
+  AwaitingOrder = "awaiting_order",
+  OrderPlaced = "order_placed",
   Cancelled = "cancelled",
   Completed = "completed",
 }

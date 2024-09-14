@@ -40,7 +40,7 @@
     <div
       v-for="beneficiary in beneficiaries"
       :key="beneficiary.id"
-      class="cursor-pointer py-5 md:px-5 px-2 flex items-center h-16 justify-between rounded-xl bg-lightbase"
+      class="cursor-pointer p-5 flex items-center h-16 justify-between rounded-xl bg-lightbase"
       @click="openWithdrawalModal(beneficiary)"
     >
       <div class="flex space-x-3 items-center">

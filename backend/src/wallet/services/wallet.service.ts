@@ -392,12 +392,13 @@ export class WalletService {
         amount: amount + transferFee,
         currency,
         balanceKeys: [AVAILABLE_BALANCE],
-        description: `Withdrew money to ${accountNumber} of ${bank.name}`,
+        description: `Withdrew money to beneficiary`,
         reference: UtilityService.generateRandomHex(12),
         user: user.id,
         purpose: TransactionPurpose.WITHDRAWAL,
         fee: transferFee,
         note,
+        meta: { accountName, accountNumber, bankName: bank.name },
       });
 
       await this.paymentService.transferToAccount({

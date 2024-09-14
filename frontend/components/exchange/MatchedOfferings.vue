@@ -140,22 +140,43 @@
           <span class="border-b-[1px] border-base">Summary:</span>
 
           <div class="flex justify-between border-b-[1px] border-base">
+            <span>Exchange rate:</span>
+            <span class="font-bold"
+              >1 {{ selectedOffering.payinCurrency }} =
+              {{
+                formatMoney(
+                  selectedOffering.cumulativePayoutUnitsPerPayinUnit,
+                  5
+                )
+              }}
+              {{ selectedOffering.payoutCurrency }} or 1
+              {{ selectedOffering.payoutCurrency }} =
+              {{
+                formatMoney(
+                  1 / selectedOffering.cumulativePayoutUnitsPerPayinUnit,
+                  5
+                )
+              }}
+              {{ selectedOffering.payinCurrency }}
+            </span>
+          </div>
+          <div class="flex justify-between border-b-[1px] border-base">
             <span>Platform fee:</span>
-            <span
+            <span class="font-bold"
               >{{ formatMoney(calculatedPlatformFeeAmount) }}
               {{ selectedOffering.payinCurrency }}
             </span>
           </div>
           <div class="flex justify-between border-b-[1px] border-base">
             <span>PFI(s) fee:</span>
-            <span
+            <span class="font-bold"
               >{{ formatMoney(selectedOffering.cumulativeFee) }}
               {{ selectedOffering.payinCurrency }}</span
             >
           </div>
           <div class="flex justify-between border-b-[1px] border-base">
             <span>Total fee:</span>
-            <span
+            <span class="font-bold"
               >{{
                 formatMoney(
                   selectedOffering.cumulativeFee + calculatedPlatformFeeAmount
@@ -166,14 +187,14 @@
           </div>
           <div class="flex justify-between border-b-[1px] border-base">
             <span>You will receive:</span>
-            <span
+            <span class="font-bold"
               >{{ formatMoney(calculatedPayoutAmount) }}
               {{ selectedOffering.payoutCurrency }}</span
             >
           </div>
           <div class="flex justify-between">
             <span>Estimated settlement time:</span>
-            <span>
+            <span class="font-bold">
               {{
                 convertTime(
                   selectedOffering.cumulativeSettlementTimeInSecs,

@@ -23,7 +23,7 @@ MultiCash aims to offer users the following core features:
     <img src="https://res.cloudinary.com/dfbjysygb/image/upload/v1726307315/ry44ctmlasn22yku44sd.png" />
 </div>
 
-## Design Considerations# MultiCash: A Multi-Currency Digital Wallet
+## Design Considerations
 
 ### 1. Profitability
 

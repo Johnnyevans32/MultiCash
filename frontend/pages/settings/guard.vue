@@ -25,6 +25,7 @@
       placeholder="Enter timeout in minutes"
       :min="1"
       :max="10"
+      @keyup.enter="saveInactivityTimeout"
     />
     <CommonButton
       text="Save changes"

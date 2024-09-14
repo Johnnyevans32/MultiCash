@@ -7,6 +7,7 @@
       inputType="text"
       v-model="tag"
       :title="`Your ${config.public.appName} tag`"
+      @keyup.enter="updateTag"
     />
 
     <CommonButton

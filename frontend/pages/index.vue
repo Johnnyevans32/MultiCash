@@ -169,6 +169,7 @@
             placeholder="Enter amount"
             title="Enter amount to fund"
             :currency="selectedCurrency"
+            @keyup.enter="fundWallet"
           />
         </div>
       </template>

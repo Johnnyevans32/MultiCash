@@ -32,7 +32,7 @@
     </div>
   </div>
   <div v-else-if="!beneficiaries.length">
-    <font-awesome-icon class="text-7xl mb-5" icon="university" />
+    <font-awesome-icon class="text-7xl mb-5" icon="user-group" />
     <p>Nothing to see here</p>
     <p>your beneficiaries will appear here once added.</p>
   </div>
@@ -119,6 +119,7 @@
             placeholder="Enter account number"
             title="Enter account number"
             input-type="text"
+            @keyup.enter="createBeneficiary"
           />
         </div>
         <CommonFormInput
@@ -127,6 +128,7 @@
           placeholder="Enter user tag"
           title="Enter user tag"
           input-type="text"
+          @keyup.enter="createBeneficiary"
         />
         <span v-if="accountName" class="text-sm text-red-600"
           >Account Name: {{ accountName }}</span

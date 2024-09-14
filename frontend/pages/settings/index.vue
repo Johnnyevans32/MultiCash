@@ -78,7 +78,7 @@ export default defineComponent({
       {
         logo: "at",
         action: `${config.public.appName} tag`,
-        value: user.value?.tag ? `@${user.value?.tag}` : "@",
+        value: user.value?.tag ? `@${user.value?.tag}` : "Not set",
         logoType: "icon",
         href: "/settings/tag",
       },
@@ -120,18 +120,19 @@ export default defineComponent({
         href: generateMailToLink(),
       },
       {
+        logo: "right-from-bracket",
+        action: "Logout",
+        value: "You will be signed out of your account.",
+        logoType: "icon",
+        settingAction: logout,
+      },
+      {
         logo: "radiation",
         action: "Deactivate your account",
         value: "This will deactivate your account.",
         logoType: "icon",
         customCss: "bg-red-400",
         settingAction: () => (confirmDeletionModal.value = true),
-      },
-      {
-        logo: "right-from-bracket",
-        action: "Logout",
-        logoType: "icon",
-        settingAction: logout,
       },
     ]);
 

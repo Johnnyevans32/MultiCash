@@ -133,6 +133,7 @@
             :balance="wallet?.availableBalance"
             :max="wallet?.availableBalance"
             :min="0"
+            @keyup.enter="createExchange"
           />
         </div>
 

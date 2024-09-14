@@ -10,7 +10,7 @@
       >
         <!-- Front Side of the Card -->
         <div
-          class="absolute inset-0 bg-black text-white rounded-3xl flex flex-col justify-between p-6 border-[1px] border-base backface-hidden"
+          class="card absolute inset-0 text-white rounded-3xl flex flex-col justify-between p-6 border-[1px] border-base backface-hidden"
         >
           <div class="flex items-center justify-between">
             <CommonImage
@@ -28,13 +28,13 @@
 
           <div class="self-start text-left">
             <p class="text-sm">NAME ON CARD</p>
-            <p class="text-sm">XXXX</p>
+            <p class="text-tiny">{{ user.name }}</p>
           </div>
         </div>
 
         <!-- Back Side of the Card -->
         <div
-          class="absolute inset-0 bg-black text-white rounded-3xl flex flex-col justify-between p-6 border-[1px] border-base backface-hidden transform rotate-y-180"
+          class="card absolute inset-0 text-white rounded-3xl flex flex-col justify-between p-6 border-[1px] border-base backface-hidden transform rotate-y-180"
         >
           <h1 class="md:text-3xl text-lg">Coming Soon</h1>
           <CommonImage
@@ -48,15 +48,17 @@
 </template>
 
 <script lang="ts">
+import { useUserStore } from "~/store/user";
 export default defineComponent({
   setup() {
     const isFlipped = ref(false);
+    const { user } = storeToRefs(useUserStore());
 
     const flipCard = () => {
       isFlipped.value = !isFlipped.value;
     };
 
-    return { isFlipped, flipCard };
+    return { isFlipped, flipCard, user };
   },
 });
 </script>
@@ -76,5 +78,11 @@ export default defineComponent({
 
 .rotate-y-180 {
   transform: rotateY(180deg);
+}
+
+.card {
+  background-image: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'><defs><pattern id='subtleGrid' patternUnits='userSpaceOnUse' width='20' height='20'><rect width='20' height='20' fill='black'/><path d='M0 0 L20 0 M0 20 L20 20 M0 0 L0 20 M20 0 L20 20' stroke='gray' stroke-width='1'/></pattern></defs><rect width='100%' height='100%' fill='url(%23subtleGrid)' /></svg>");
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
 }
 </style>

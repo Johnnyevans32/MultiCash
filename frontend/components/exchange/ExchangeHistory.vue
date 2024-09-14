@@ -78,7 +78,7 @@
   </div>
 
   <div v-else>
-    <font-awesome-icon class="text-7xl mb-5" icon="sack-xmark" />
+    <font-awesome-icon class="text-7xl mb-5" icon="money-bill-transfer" />
     <p>Nothing to see here</p>
     <p>your currency exchanges will appear here once they arrive.</p>
   </div>
@@ -240,6 +240,7 @@
           v-model="comment"
           placeholder="Add comment"
           title="Add comment"
+          @keyup.enter="dropFeedbackOnExchange"
         />
       </div>
     </template>

@@ -602,6 +602,7 @@ export class ExchangeService extends RequestService {
 
             const exchangesToBeProcessed = [];
             const offeringsToBeRefunded = [];
+            const offeringsToCreateOrder = [];
 
             // Process each exchange and update offerings accordingly
             exchanges.forEach((messages) => {
@@ -620,7 +621,7 @@ export class ExchangeService extends RequestService {
                   offering.pfiFee = Number(
                     (lastMessage.data as any).payin.fee || 0
                   );
-                  this.createOrder([offering.id]);
+                  offeringsToCreateOrder.push(offering.id);
                   break;
 
                 case "order":
@@ -665,6 +666,7 @@ export class ExchangeService extends RequestService {
 
             this.processPendingExchanges(exchangesToBeProcessed);
             this.refundCancelledOffering(offeringsToBeRefunded);
+            this.createOrder(offeringsToCreateOrder);
           } catch (err) {
             console.log(
               "Error checking message thread from pfi",

@@ -81,7 +81,7 @@ export default defineComponent({
 }
 
 .card {
-  background-image: url("data:image/svg+xml;charset=utf-8,<svg xmlns='http://www.w3.org/2000/svg' width='100%' height='100%'><defs><pattern id='subtleGrid' patternUnits='userSpaceOnUse' width='20' height='20'><rect width='20' height='20' fill='black'/><path d='M0 0 L20 0 M0 20 L20 20 M0 0 L0 20 M20 0 L20 20' stroke='gray' stroke-width='1'/></pattern></defs><rect width='100%' height='100%' fill='url(%23subtleGrid)' /></svg>");
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100%25' height='100%25'%3E%3Cdefs%3E%3Cpattern id='subtleGrid' patternUnits='userSpaceOnUse' width='20' height='20'%3E%3Crect width='20' height='20' fill='black'/%3E%3Cpath d='M0 0 L20 0 M0 20 L20 20 M0 0 L0 20 M20 0 L20 20' stroke='gray' stroke-width='1'/%3E%3C/pattern%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23subtleGrid)' /%3E%3C/svg%3E");
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(10px);
 }

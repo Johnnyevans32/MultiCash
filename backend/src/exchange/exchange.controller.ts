@@ -111,4 +111,16 @@ export class ExchangeController {
       HttpStatusCode.Ok
     );
   }
+
+  @Public()
+  @Get("process")
+  async processPendingExchanges(@Res() res: Response) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.exchangeService,
+      "processPendingExchanges",
+      HttpStatusCode.Ok
+    );
+  }
 }

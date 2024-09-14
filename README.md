@@ -1,4 +1,6 @@
 
+# MultiCash: Your Multi-Currency Digital Wallet
+
 <div style="display: flex; align-items: end;">
   <img src="https://i.ibb.co/2jP2Qjb/logo.png" width="80px" height="auto" />
   <img src="https://i.ibb.co/t8H5Xgd/name.png" width="200px" height="auto" />
@@ -18,10 +20,10 @@ MultiCash aims to offer users the following core features:
 
 <div>
     <h1>MultiCash Exchange Flow via tbDEX SDK</h1>
-    <img src="https://res.cloudinary.com/dfbjysygb/image/upload/v1726266142/j3387hlpaawvhz3shxhw.png" />
+    <img src="https://res.cloudinary.com/dfbjysygb/image/upload/v1726307315/ry44ctmlasn22yku44sd.png" />
 </div>
 
-## Design Considerations
+## Design Considerations# MultiCash: A Multi-Currency Digital Wallet
 
 ### 1. Profitability
 

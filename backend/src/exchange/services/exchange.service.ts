@@ -14,6 +14,7 @@ import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { PresentationExchange } from "@web5/credentials";
 import { BearerDid, DidDht } from "@web5/dids";
 import { groupBy, keyBy, min } from "lodash";
+import { Mutex, MutexInterface } from "async-mutex";
 
 import { EXCHANGE, OFFERING, PFI } from "@/core/constants/schema.constants";
 import { PfiDocument } from "../schemas/pfi.schema";
@@ -25,7 +26,7 @@ import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 import { WalletService } from "@/wallet/services/wallet.service";
 import { AVAILABLE_BALANCE } from "@/wallet/dtos/wallet.dto";
 import { TransactionPurpose } from "@/wallet/schemas/wallet-transaction.schema";
-import { Interval } from "@nestjs/schedule";
+import { Cron, CronExpression } from "@nestjs/schedule";
 import { ExchangeDocument, ExchangeStatus } from "../schemas/exchange.schema";
 import { PaginateDTO } from "@/core/services/response.service";
 import { RevenueService } from "@/revenue/services/revenue.service";
@@ -38,6 +39,8 @@ import configuration from "@/core/services/configuration";
 
 @Injectable()
 export class ExchangeService extends RequestService {
+  private locks: Map<string, MutexInterface>;
+
   private tbdexHttpClient: typeof TbdexHttpClient;
   private rfq: typeof Rfq;
   private order: typeof Order;
@@ -69,7 +72,18 @@ export class ExchangeService extends RequestService {
     private emailService: EmailService
   ) {
     super();
+    this.locks = new Map();
   }
+
+  private async getOrCreateMutex(service: string) {
+    let mutex = this.locks.get(service);
+    if (!mutex) {
+      mutex = new Mutex();
+      this.locks.set(service, mutex);
+    }
+    return mutex;
+  }
+
   private async loadTbdexModules() {
     const module = await eval(`import("@tbdex/http-client")`);
     return {
@@ -86,8 +100,6 @@ export class ExchangeService extends RequestService {
       order: this.order,
       close: this.close,
     } = await this.loadTbdexModules());
-
-    await this.getDid();
   }
 
   async rateExchange(
@@ -433,7 +445,7 @@ export class ExchangeService extends RequestService {
     return { data, metadata };
   }
 
-  @Interval("processPendingExchanges", 60 * 100 * 10)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async processPendingExchanges(ids = []) {
     const exchanges = await this.exchangeModel.find({
       ...(ids.length && { _id: { $in: ids } }),
@@ -542,153 +554,151 @@ export class ExchangeService extends RequestService {
         },
       });
 
-      try {
-        await rfq.verifyOfferingRequirements(pfiOffering);
-        await rfq.sign(did);
-        await this.tbdexHttpClient.createExchange(rfq);
-        offering.pfiExchangeId = rfq.exchangeId;
-        offering.status = OfferingStatus.Processing;
-        offering.transactionStartDate = moment().toDate();
-        exchange.status = ExchangeStatus.Processing;
-        await exchange.save();
-        await offering.save();
-      } catch (e) {
-        console.log("error verifyOfferingRequirements", e);
-      }
+      await rfq.verifyOfferingRequirements(pfiOffering);
+      await rfq.sign(did);
+      await this.tbdexHttpClient.createExchange(rfq);
+      offering.pfiExchangeId = rfq.exchangeId;
+      offering.status = OfferingStatus.Processing;
+      offering.transactionStartDate = moment().toDate();
+      exchange.status = ExchangeStatus.Processing;
+      await exchange.save();
+      await offering.save();
     } catch (err) {
       console.log("Error processing exchange", exchange.id, err);
     }
   }
 
-  @Interval("checkStatusOfOfferingsFromPFIs", 60 * 100 * 2) //every 2mins
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async checkStatusOfOfferingsFromPFIs(ids?: string[]) {
-    const query: any = {
-      status: {
-        $in: [
-          OfferingStatus.Processing,
-          OfferingStatus.AwaitingOrder,
-          OfferingStatus.OrderPlaced,
-        ],
-      },
-      isDeleted: false,
-      ...(ids && ids.length && { _id: { $in: ids } }),
-    };
+    const mutex = await this.getOrCreateMutex("checkStatusOfOfferingsFromPFIs");
+    const release = await mutex.acquire();
+    try {
+      const query: any = {
+        status: {
+          $in: [
+            OfferingStatus.Processing,
+            OfferingStatus.AwaitingOrder,
+            OfferingStatus.OrderPlaced,
+          ],
+        },
+        isDeleted: false,
+        ...(ids && ids.length && { _id: { $in: ids } }),
+      };
 
-    const offerings = await this.offeringModel.find(query).populate("pfi");
-    if (!offerings.length) {
-      return;
-    }
-    const offeringsGroupByPfiDid = groupBy(offerings, "pfi.did");
+      const offerings = await this.offeringModel.find(query).populate("pfi");
+      if (!offerings.length) {
+        return;
+      }
+      const offeringsGroupByPfiDid = groupBy(offerings, "pfi.did");
 
-    const did = await this.getDid();
+      const did = await this.getDid();
 
-    // Process each PFI group in parallel
-    await Promise.all(
-      Object.entries(offeringsGroupByPfiDid).map(
-        async ([pfiDid, pfiOfferings]) => {
-          try {
-            const exchanges = await this.tbdexHttpClient.getExchanges({
-              did,
-              pfiDid,
-              filter: {
-                id: pfiOfferings.map((i) => i.pfiExchangeId),
-              },
-            });
-
-            const offeringKeyedByExchangeId = keyBy(
-              pfiOfferings,
-              (o) => o.pfiExchangeId
-            );
-
-            const exchangesToBeProcessed = [];
-            const offeringsToBeRefunded = [];
-            const offeringsToCreateOrder = [];
-
-            // Process each exchange and update offerings accordingly
-            exchanges.forEach((messages) => {
-              const lastMessage = messages.at(-1);
-              const { kind } = lastMessage.metadata;
-              const offering =
-                offeringKeyedByExchangeId[lastMessage.metadata.exchangeId];
-              if (!offering) return;
-
-              switch (kind) {
-                case "quote":
-                  if (
-                    [
-                      OfferingStatus.Processing,
-                      OfferingStatus.AwaitingOrder,
-                    ].includes(offering.status)
-                  ) {
-                    offering.pfiQuoteExpiresAt = moment(
-                      (lastMessage.data as any).expiresAt
-                    ).toDate();
-                    offering.status = OfferingStatus.AwaitingOrder;
-                    offering.pfiFee = Number(
-                      (lastMessage.data as any).payin.fee || 0
-                    );
-                    offeringsToCreateOrder.push(offering.id);
-                  }
-                  break;
-
-                case "order":
-                  break;
-
-                case "close":
-                  if ([OfferingStatus.OrderPlaced].includes(offering.status)) {
-                    const isSuccessful = (lastMessage.data as any).success;
-                    offering.status = isSuccessful
-                      ? OfferingStatus.Completed
-                      : OfferingStatus.Cancelled;
-                    offering.transactionEndDate = moment(
-                      lastMessage.metadata.createdAt
-                    ).toDate();
-                    if (isSuccessful) {
-                      exchangesToBeProcessed.push(offering.exchange);
-                    } else {
-                      offering.cancellationReason = (
-                        lastMessage.data as any
-                      ).reason;
-                      offeringsToBeRefunded.push(offering.id);
-                    }
-                  }
-                  break;
-
-                case "orderstatus":
-                  if ([OfferingStatus.OrderPlaced].includes(offering.status)) {
-                    offering.pfiOrderStatus = (
-                      lastMessage.data as any
-                    ).orderStatus;
-                  }
-                  break;
-
-                default:
-                  break;
-              }
-            });
-            await this.offeringModel.bulkWrite(
-              pfiOfferings.map((offering) => ({
-                updateOne: {
-                  filter: { _id: offering.id },
-                  update: offering.toObject(),
+      await Promise.all(
+        Object.entries(offeringsGroupByPfiDid).map(
+          async ([pfiDid, pfiOfferings]) => {
+            try {
+              const exchanges = await this.tbdexHttpClient.getExchanges({
+                did,
+                pfiDid,
+                filter: {
+                  id: pfiOfferings.map((i) => i.pfiExchangeId),
                 },
-              }))
-            );
+              });
 
-            this.processPendingExchanges(exchangesToBeProcessed);
-            this.refundCancelledOffering(offeringsToBeRefunded);
-            this.createOrder(offeringsToCreateOrder);
-          } catch (err) {
-            console.log(
-              "Error checking message thread from pfi",
-              pfiDid,
-              pfiOfferings.length,
-              err
-            );
+              const offeringKeyedByExchangeId = keyBy(
+                pfiOfferings,
+                (o) => o.pfiExchangeId
+              );
+
+              const exchangesToBeProcessed = [];
+              const offeringsToBeRefunded = [];
+              const offeringsToCreateOrder = [];
+
+              exchanges.forEach((messages) => {
+                const lastMessage = messages.at(-1);
+                const { kind } = lastMessage.metadata;
+                const offering =
+                  offeringKeyedByExchangeId[lastMessage.metadata.exchangeId];
+                if (!offering) return;
+                switch (kind) {
+                  case "quote":
+                    if ([OfferingStatus.Processing].includes(offering.status)) {
+                      offering.pfiQuoteExpiresAt = moment(
+                        (lastMessage.data as any).expiresAt
+                      ).toDate();
+                      offering.status = OfferingStatus.AwaitingOrder;
+                      offering.pfiFee = Number(
+                        (lastMessage.data as any).payin.fee || 0
+                      );
+                      offeringsToCreateOrder.push(offering.id);
+                    }
+                    break;
+
+                  case "order":
+                    break;
+
+                  case "close":
+                    if (
+                      [OfferingStatus.OrderPlaced].includes(offering.status)
+                    ) {
+                      const isSuccessful = (lastMessage.data as any).success;
+                      offering.status = isSuccessful
+                        ? OfferingStatus.Completed
+                        : OfferingStatus.Cancelled;
+                      offering.transactionEndDate = moment(
+                        lastMessage.metadata.createdAt
+                      ).toDate();
+                      if (isSuccessful) {
+                        exchangesToBeProcessed.push(offering.exchange);
+                      } else {
+                        offering.cancellationReason = (
+                          lastMessage.data as any
+                        ).reason;
+                        offeringsToBeRefunded.push(offering.id);
+                      }
+                    }
+                    break;
+
+                  case "orderstatus":
+                    if (
+                      [OfferingStatus.OrderPlaced].includes(offering.status)
+                    ) {
+                      offering.pfiOrderStatus = (
+                        lastMessage.data as any
+                      ).orderStatus;
+                    }
+                    break;
+
+                  default:
+                    break;
+                }
+              });
+              await this.offeringModel.bulkWrite(
+                pfiOfferings.map((offering) => ({
+                  updateOne: {
+                    filter: { _id: offering.id },
+                    update: offering.toObject(),
+                  },
+                }))
+              );
+
+              this.processPendingExchanges(exchangesToBeProcessed);
+              this.refundCancelledOffering(offeringsToBeRefunded);
+              this.createOrder(offeringsToCreateOrder);
+            } catch (err) {
+              console.log(
+                "Error checking message thread from pfi",
+                pfiDid,
+                pfiOfferings.length,
+                err
+              );
+            }
           }
-        }
-      )
-    );
+        )
+      );
+    } finally {
+      release();
+    }
   }
 
   async refundCancelledOffering(offeringIds: string[]) {
@@ -747,7 +757,7 @@ export class ExchangeService extends RequestService {
         } catch (error) {
           console.error(
             `Failed to process order for offering ${offering.id}:`,
-            error
+            JSON.stringify(error)
           );
           // Optionally, handle the error further, e.g., log it, send a notification, etc.
         }

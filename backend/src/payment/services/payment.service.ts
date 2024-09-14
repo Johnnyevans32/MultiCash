@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { Interval } from "@nestjs/schedule";
+import { Cron, CronExpression } from "@nestjs/schedule";
 
 import {
   BANK,
@@ -322,7 +322,7 @@ export class PaymentService {
     }
   }
 
-  @Interval(60 * 100)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async checkTransferStatus(ids = []) {
     const query = {
       ...(ids.length && { _id: { $in: ids } }),

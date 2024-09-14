@@ -465,6 +465,7 @@ export class ExchangeService extends RequestService {
       const user = exchange.user as UserDocument;
       if (!offering) {
         exchange.status = ExchangeStatus.Completed;
+        await exchange.save();
         const description = `exchange from ${exchange.payinCurrency}`;
         await this.walletService.creditWallet({
           amount: exchange.payoutAmount,
@@ -476,7 +477,7 @@ export class ExchangeService extends RequestService {
           meta: { exchangeId: exchange.id },
           purpose: TransactionPurpose.CURRENCY_EXCHANGE,
         });
-        await exchange.save();
+
         this.revenueService.createRevenue({
           amount: exchange.platformFee,
           source: RevenueSource.CURRENCY_EXCHANGE,

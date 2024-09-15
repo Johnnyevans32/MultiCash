@@ -68,15 +68,21 @@ export default defineComponent({
       }
     }
 
-    async function setToken() {
+    async function setToken(isFromRetry = false) {
       console.log("saving token");
-      const { $messaging, $api } = useNuxtApp();
-      const token = await getToken($messaging, {
-        vapidKey:
-          "BIARmEHojCDE1iSgKRLzAZveSlZf2RhzNFjlV0MSuUv66AKeNiP5_bTdbz4vCHXLpvwGnvhtZ3C3Pu_hRnReKI8",
-      });
+      try {
+        const { $messaging, $api } = useNuxtApp();
+        const token = await getToken($messaging, {
+          vapidKey:
+            "BIARmEHojCDE1iSgKRLzAZveSlZf2RhzNFjlV0MSuUv66AKeNiP5_bTdbz4vCHXLpvwGnvhtZ3C3Pu_hRnReKI8",
+        });
 
-      await $api.userService.saveDeviceFcmToken(token);
+        await $api.userService.saveDeviceFcmToken(token);
+      } catch (err) {
+        if (!isFromRetry) {
+          await setToken(true);
+        }
+      }
     }
 
     return {

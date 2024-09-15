@@ -55,6 +55,7 @@ export default defineComponent({
     });
 
     function requestPermission() {
+      console.log("requesting permision");
       if (!window.Notification) return;
       if (window.Notification.permission === "granted") {
         setToken();
@@ -68,6 +69,7 @@ export default defineComponent({
     }
 
     async function setToken() {
+      console.log("saving token");
       const { $messaging, $api } = useNuxtApp();
       const token = await getToken($messaging, {
         vapidKey:

@@ -276,9 +276,9 @@
     </template>
     <template v-slot:footer>
       <CommonButton
-        text="Done"
+        text="Close"
         @btn-action="successModal = false"
-        custom-css="!bg-blue-600 w-full text-white"
+        custom-css="bg-base w-full text-base"
       />
     </template>
   </CommonModal>

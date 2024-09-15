@@ -13,26 +13,28 @@ export function useAppVueUtils() {
       async onResponseError({ response }) {
         notify({
           type: "error",
-          title: response._data?.message || "an error occured",
+          title: response?._data?.message || "an error occured",
         });
         if (response.status === 401) {
           const { path } = route;
-          if (path === "/signin") {
-            return;
+          if (path !== "/signin") {
+            setAccessToken(null);
+            return navigateTo(`/signin?redirect=${encodeURIComponent(path)}`);
           }
-          setAccessToken(null);
-          await navigateTo(`/signin?redirect=${path}`);
-          return;
         }
       },
       async onRequest({ request, options }) {
         options.baseURL = config.public.apiUrl;
         options.headers = {
           ...options.headers,
-          Authorization: `Bearer ${accessToken.value}`,
+          ...(accessToken.value && {
+            Authorization: `Bearer ${accessToken.value}`,
+          }),
         };
       },
-      async onRequestError({ request, options, error }) {},
+      async onRequestError({ request, options, error }) {
+        console.error("Request error:", error);
+      },
     });
 
     return res as T;

@@ -128,7 +128,10 @@
           <span class="font-bold">
             1 {{ modalExchange?.payinCurrency }} =
             {{ modalExchange?.payoutUnitsPerPayinUnit }}
-            {{ modalExchange?.payoutCurrency }}
+            {{ modalExchange?.payoutCurrency }} or 1
+            {{ modalExchange.payoutCurrency }} =
+            {{ formatMoney(1 / modalExchange.payoutUnitsPerPayinUnit, 8) }}
+            {{ modalExchange.payinCurrency }}
           </span>
         </div>
 

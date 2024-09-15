@@ -5,71 +5,68 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#c9fe00" />
+    <meta name="theme-color" content="#FFFFFF" />
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             background: white;
             animation: fadeInUp 2s ease forwards;
         }
-
+        
         .h-full {
             height: 100vh;
         }
-
+        
         .w-full {
             width: 100vw;
         }
-
+        
         .flex {
             display: flex;
             align-items: end;
         }
-
+        
         .flex-col {
             flex-direction: column;
             gap: 2rem;
         }
-
+        
         .items-center {
             align-items: center;
         }
-
+        
         .justify-center {
             justify-content: center;
         }
-
         /* Keyframe animations */
-
+        
         @keyframes fadeInUp {
             from {
                 opacity: 0;
                 transform: translateY(20px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-
+        
         @keyframes fadeOutDown {
             from {
                 opacity: 1;
                 transform: translateY(0);
             }
-
             to {
                 opacity: 0;
                 transform: translateY(20px);
             }
         }
-
+        
         .fade-out {
             animation: fadeOutDown 2s ease forwards;
         }

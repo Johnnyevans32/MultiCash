@@ -21,17 +21,17 @@
         >
           <font-awesome-icon
             v-if="props.item.type === 'success'"
-            icon="fa-solid fa-thumbs-up"
+            icon="check-circle"
             class="text-green-500"
           />
           <font-awesome-icon
             v-else-if="props.item.type === 'info'"
-            icon="fa-solid fa-circle-exclamation"
+            icon="circle-exclamation"
             class="text-blue-500"
           />
           <font-awesome-icon
             v-else
-            icon="fa-solid fa-circle-exclamation"
+            icon="circle-exclamation"
             class="text-red-500"
           />
           <div class="ml-3 text-sm font-medium">

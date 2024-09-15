@@ -23,9 +23,9 @@ export default defineNuxtConfig({
     registerType: "autoUpdate",
     manifest: {
       background_color: "#F4F4F4",
-      name: process.env.APP_NAME,
-      description: process.env.APP_DESCRIPTION,
-      short_name: process.env.APP_NAME,
+      name: "MultiCash",
+      description: "Your Multi-Currency Digital Wallet",
+      short_name: "MultiCash",
       theme_color: "#F4F4F4",
       display: "standalone",
       icons: [

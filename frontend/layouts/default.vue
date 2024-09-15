@@ -50,7 +50,7 @@ export default defineComponent({
       });
     };
 
-    onMounted(() => {
+    onBeforeMount(() => {
       requestPermission();
     });
 

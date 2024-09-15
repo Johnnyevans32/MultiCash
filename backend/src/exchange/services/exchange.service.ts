@@ -507,11 +507,11 @@ export class ExchangeService extends RequestService {
         presentationDefinition: pfiOffering.data.requiredClaims,
       });
 
-      const payinPaymentDetails = this.generatePaymentDetails(
+      const payinPaymentDetails = this.generateDummyPaymentDetails(
         pfiOffering.data.payin.methods[0]
       );
 
-      const payoutPaymentDetails = this.generatePaymentDetails(
+      const payoutPaymentDetails = this.generateDummyPaymentDetails(
         pfiOffering.data.payout.methods[0]
       );
 
@@ -836,7 +836,7 @@ export class ExchangeService extends RequestService {
     return vcJwt;
   }
 
-  private generatePaymentDetails(
+  private generateDummyPaymentDetails(
     method: PayinMethod | PayoutMethod
   ): Record<string, any> {
     const defaultTypeToValueMap: Record<string, any> = {

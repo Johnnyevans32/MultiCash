@@ -215,7 +215,7 @@
       />
       <CommonButton
         v-if="!modalExchange.rating && !modalExchange.comment"
-        text="Drop feedback"
+        text="Give feedback"
         @btn-action="
           () => {
             updateExchangeModal = false;
@@ -229,7 +229,7 @@
 
   <CommonModal
     :open="feedbackModal"
-    title="Drop feedback on exchange"
+    title="Give feedback on exchange"
     @change-modal-status="
       (value) => {
         feedbackModal = value;
@@ -243,7 +243,7 @@
           v-model="comment"
           placeholder="Add comment"
           title="Add comment"
-          @keyup.enter="dropFeedbackOnExchange"
+          @keyup.enter="giveFeedbackOnExchange"
         />
       </div>
     </template>
@@ -255,9 +255,9 @@
       />
       <CommonButton
         text="Send"
-        @btn-action="dropFeedbackOnExchange"
+        @btn-action="giveFeedbackOnExchange"
         custom-css="!bg-blue-600 w-full text-white"
-        :loading="isLoadingDropFeedbackOnExchange"
+        :loading="isLoadingGiveFeedbackOnExchange"
       />
     </template>
   </CommonModal>
@@ -309,11 +309,11 @@ export default defineComponent({
       updateExchangeModal.value = true;
     };
 
-    const isLoadingDropFeedbackOnExchange = ref(false);
+    const isLoadingGiveFeedbackOnExchange = ref(false);
     const comment = ref(modalExchange.value?.comment);
     const rating = ref(modalExchange.value?.rating || 0);
     const feedbackModal = ref(false);
-    const dropFeedbackOnExchange = async () => {
+    const giveFeedbackOnExchange = async () => {
       if (!modalExchange.value) {
         return;
       }
@@ -328,7 +328,7 @@ export default defineComponent({
               title: `acknowledged`,
             });
           }),
-        isLoadingDropFeedbackOnExchange
+        isLoadingGiveFeedbackOnExchange
       );
     };
 
@@ -343,8 +343,8 @@ export default defineComponent({
       modalExchange,
       feedbackModal,
       comment,
-      isLoadingDropFeedbackOnExchange,
-      dropFeedbackOnExchange,
+      isLoadingGiveFeedbackOnExchange,
+      giveFeedbackOnExchange,
       rating,
     };
   },

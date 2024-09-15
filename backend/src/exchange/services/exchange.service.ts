@@ -15,7 +15,7 @@ import * as moment from "moment";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { PresentationExchange } from "@web5/credentials";
 import { BearerDid, DidDht } from "@web5/dids";
-import { groupBy, isEmpty, keyBy, min } from "lodash";
+import { groupBy, keyBy, min } from "lodash";
 import { Mutex, MutexInterface } from "async-mutex";
 
 import { EXCHANGE, OFFERING, PFI } from "@/core/constants/schema.constants";
@@ -38,6 +38,7 @@ import { plainToInstance } from "class-transformer";
 import { validate } from "class-validator";
 import { UtilityService } from "@/core/services/util.service";
 import configuration from "@/core/services/configuration";
+import { FcmService } from "@/notification/fcm/fcm.service";
 
 @Injectable()
 export class ExchangeService extends RequestService {
@@ -61,7 +62,8 @@ export class ExchangeService extends RequestService {
     private cacheManager: Cache,
     private walletService: WalletService,
     private revenueService: RevenueService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private fcmService: FcmService
   ) {
     super();
     this.locks = new Map();
@@ -397,7 +399,7 @@ export class ExchangeService extends RequestService {
 
       await this.offeringModel.insertMany(updatedOfferings, { session });
 
-      const description = `exchange to ${exchange.payoutCurrency}`;
+      const description = `Exchange to ${exchange.payoutCurrency}`;
       await this.walletService.debitWallet({
         amount: payinAmount,
         currency: exchange.payinCurrency,
@@ -458,7 +460,7 @@ export class ExchangeService extends RequestService {
       if (!offering) {
         exchange.status = ExchangeStatus.Completed;
         await exchange.save();
-        const description = `exchange from ${exchange.payinCurrency}`;
+        const description = `Exchange from ${exchange.payinCurrency}`;
         await this.walletService.creditWallet({
           amount: exchange.payoutAmount,
           currency: exchange.payoutCurrency,
@@ -484,6 +486,10 @@ export class ExchangeService extends RequestService {
           exchange.payoutAmount,
           exchange.payoutCurrency
         );
+        this.fcmService.sendPushNotification(user, {
+          title: "Currency Exchange Completed",
+          body: `You have successfully exchanged ${UtilityService.formatMoney(exchange.payinAmount, exchange.payinCurrency)} to ${UtilityService.formatMoney(exchange.payoutAmount, exchange.payoutCurrency)}.`,
+        });
         return;
       }
       if (offering.status === OfferingStatus.Processing) {
@@ -714,7 +720,7 @@ export class ExchangeService extends RequestService {
           amount: offering.expectedPayinAmount,
           currency: offering.payinCurrency,
           balanceKeys: [AVAILABLE_BALANCE],
-          description: `refund of canceled exchange`,
+          description: `Refund of Canceled Exchange`,
           reference: `credit_${exchange.id}`,
           user: offering.user as string,
           meta: { exchangeId: exchange.id },

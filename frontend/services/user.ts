@@ -56,4 +56,12 @@ export class UserService {
     );
     return data;
   }
+
+  async saveDeviceFcmToken(token: string) {
+    const { useCustomFetch } = useAppVueUtils();
+    return useCustomFetch(`/api/users/device-fcm-token`, {
+      method: "put",
+      body: { token },
+    });
+  }
 }

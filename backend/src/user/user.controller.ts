@@ -98,4 +98,21 @@ export class UserController {
       payload.tag
     );
   }
+
+  @Put("device-fcm-token")
+  async saveDeviceFcmToken(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument,
+    @Body("token") token: string
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "update successful",
+      this.userService,
+      "saveDeviceFcmToken",
+      HttpStatusCode.Ok,
+      user,
+      token
+    );
+  }
 }

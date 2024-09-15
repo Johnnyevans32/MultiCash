@@ -16,13 +16,15 @@ import { USER } from "@/core/constants/schema.constants";
 import { EmailService } from "@/notification/email/email.service";
 import { UtilityService } from "@/core/services/util.service";
 import configuration from "@/core/services/configuration";
+import { FcmService } from "@/notification/fcm/fcm.service";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(USER)
     private userModel: Model<UserDocument>,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private fcmService: FcmService
   ) {}
 
   async me(user: UserDocument) {
@@ -94,11 +96,12 @@ export class UserService {
     user.jwtTokenVersion += 1;
     await user.save();
 
-    this.emailService.sendEmail(
-      user,
-      "Password Resetted",
-      "password-update.njk"
-    );
+    this.emailService.sendEmail(user, "Password Reset", "password-update.njk");
+
+    this.fcmService.sendPushNotification(user, {
+      title: "Password Reset",
+      body: `You have successfully updated your password.`,
+    });
   }
 
   async updatePassword(user: UserDocument, payload: UpdatePasswordDTO) {
@@ -120,6 +123,11 @@ export class UserService {
       "Password Updated",
       "password-update.njk"
     );
+
+    this.fcmService.sendPushNotification(user, {
+      title: "Password Update",
+      body: `You have successfully updated your password.`,
+    });
   }
 
   async updateUser(user: UserDocument, payload: UpdateUserDTO) {
@@ -145,5 +153,19 @@ export class UserService {
     }
 
     await this.userModel.updateOne({ _id: user.id }, { $set: { tag } });
+  }
+
+  async saveDeviceFcmToken(user: UserDocument, token: string) {
+    if (token && user.deviceFcmTokens.includes(token)) {
+      return;
+    }
+
+    await this.userModel.findOneAndUpdate(
+      { _id: user.id },
+      {
+        $push: { deviceFcmTokens: token },
+      },
+      { new: true }
+    );
   }
 }

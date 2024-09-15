@@ -2,6 +2,7 @@
   <Loading />
   <div class="min-h-screen">
     <Navbar />
+
     <div class="grid grid-cols-4 gap-y-4">
       <div class="col-span-4 md:col-start-2 md:col-span-2">
         <div class="grid grid-cols-1 gap-4 p-5 md:mb-0 mb-20 text-center">
@@ -22,17 +23,18 @@
 </template>
 
 <script lang="ts">
+import { getToken } from "firebase/messaging";
 import { notify } from "@kyvg/vue3-notification";
 import { useConfigStore } from "~/store/config";
 import { useUserStore } from "~/store/user";
 export default defineComponent({
   setup() {
-    const route = useRoute();
-    const { setAccessToken } = useUserStore();
     const { autoLogoutTimeoutInMins, autoLogoutEnabled } = storeToRefs(
       useConfigStore()
     );
     const onidle = async () => {
+      const route = useRoute();
+      const { setAccessToken } = useUserStore();
       setAccessToken(null);
       await navigateTo(`/signin?redirect=${route.fullPath}`);
       notify({
@@ -47,11 +49,40 @@ export default defineComponent({
         title: `We care about your security! To ensure the safety of your account, you will be automatically logged out if there is no activity detected for ${time} seconds. Please stay active to avoid being logged out.`,
       });
     };
+
+    onMounted(() => {
+      requestPermission();
+    });
+
+    function requestPermission() {
+      if (!window.Notification) return;
+      if (window.Notification.permission === "granted") {
+        setToken();
+      } else {
+        window.Notification.requestPermission((value) => {
+          if (value === "granted") {
+            setToken();
+          }
+        });
+      }
+    }
+
+    async function setToken() {
+      const { $messaging, $api } = useNuxtApp();
+      const token = await getToken($messaging, {
+        vapidKey:
+          "BIARmEHojCDE1iSgKRLzAZveSlZf2RhzNFjlV0MSuUv66AKeNiP5_bTdbz4vCHXLpvwGnvhtZ3C3Pu_hRnReKI8",
+      });
+
+      await $api.userService.saveDeviceFcmToken(token);
+    }
+
     return {
       onremind,
       onidle,
       autoLogoutTimeoutInMins,
       autoLogoutEnabled,
+      requestPermission,
     };
   },
 });

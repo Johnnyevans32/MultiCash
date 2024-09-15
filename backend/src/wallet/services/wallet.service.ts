@@ -44,6 +44,7 @@ import { RevenueService } from "@/revenue/services/revenue.service";
 import { RevenueSource } from "@/revenue/schemas/revenue.schema";
 import { EmailService } from "@/notification/email/email.service";
 import { UserService } from "@/user/services/user.service";
+import { FcmService } from "@/notification/fcm/fcm.service";
 
 @Injectable()
 export class WalletService {
@@ -62,7 +63,8 @@ export class WalletService {
     private readonly paymentService: PaymentService,
     private readonly revenueService: RevenueService,
     private emailService: EmailService,
-    private userService: UserService
+    private userService: UserService,
+    private fcmService: FcmService
   ) {
     this.locks = new Map();
   }
@@ -255,6 +257,10 @@ export class WalletService {
           amount,
           currency
         );
+        this.fcmService.sendPushNotification(userObj, {
+          title: "Wallet Funding",
+          body: `You have successfully funded your wallet with ${UtilityService.formatMoney(amount, currency)}.`,
+        });
       }
 
       if ([TransactionPurpose.TRANSFER_CREDIT].includes(purpose)) {
@@ -271,6 +277,10 @@ export class WalletService {
             sender: senderObj,
           }
         );
+        this.fcmService.sendPushNotification(userObj, {
+          title: "Wallet Transfer",
+          body: `You have received ${UtilityService.formatMoney(amount, currency)} from ${senderObj.tag}.`,
+        });
       }
       return txn;
     } finally {
@@ -345,6 +355,10 @@ export class WalletService {
             receiver: receiverObj,
           }
         );
+        this.fcmService.sendPushNotification(userObj, {
+          title: "Wallet Transfer",
+          body: `You have sent ${UtilityService.formatMoney(amount, currency)} to ${receiverObj.tag}.`,
+        });
       }
       return txn;
     } finally {
@@ -420,6 +434,12 @@ export class WalletService {
         reference: `rev_${txn.id}`,
         meta: { walletTransactionId: txn.id },
       });
+
+      this.emailService.sendWithdrawalNotification(user, amount, currency);
+      this.fcmService.sendPushNotification(user, {
+        title: "Wallet Withdrawal",
+        body: `You have successfully withdrew ${UtilityService.formatMoney(amount, currency)} from wallet.`,
+      });
     }
 
     if (beneficiary.type === BeneficiaryType.Platform) {
@@ -448,8 +468,6 @@ export class WalletService {
         sender: user.id,
       });
     }
-
-    this.emailService.sendWithdrawalNotification(user, amount, currency);
   }
 
   async createBeneficiary(user: UserDocument, payload: CreateBeneficiaryDTO) {

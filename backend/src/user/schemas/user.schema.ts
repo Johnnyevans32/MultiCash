@@ -62,6 +62,14 @@ export class User extends BaseSchema {
 
   @Prop({ type: String, unique: true })
   tag?: string;
+
+  @Prop([
+    {
+      type: String,
+      default: [],
+    },
+  ])
+  deviceFcmTokens: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

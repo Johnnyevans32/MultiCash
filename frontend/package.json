@@ -29,6 +29,7 @@
     "@pinia/nuxt": "^0.5.1",
     "@vite-pwa/nuxt": "^0.10.5",
     "axios": "^1.6.7",
+    "firebase": "^10.13.1",
     "moment": "^2.29.4",
     "node-fetch-native": "^1.6.4",
     "pinia": "^2.1.7",

@@ -45,7 +45,10 @@ To give users even more **optionality**, MultiCash employs an **algorithm using 
 
 To comply with international KYC (Know Your Customer) standards, MultiCash collects user information, including their **name**, **country**, and **decentralized identifier (DID)**, during the signup process. This information is securely stored and used to generate verifiable credentials that can be shared with PFIs during exchange transactions.
 
-MultiCash does not directly manage customers’ verifiable credentials but rather acts as an intermediary, verifying and sharing users' DID information with PFIs for seamless exchanges. The platform securely stores and transmits the users’ verifiable credentials, ensuring privacy and compliance.
+As part of MultiCash's intermediary role in the exchange process, the platform acts as the **Signer DID**, signing requests for quotes (RFQs), orders, and other relevant documents as it facilitates the sending and receiving of funds between users and Payment Financial Institutions (PFIs). Since MultiCash serves as a custodian of users’ funds within their wallets, it securely manages this signing process, ensuring that all transactions are authenticated and compliant with regulatory standards.
+
+While MultiCash does not directly manage customers’ verifiable credentials, it acts as an intermediary, verifying and sharing users' DID information with PFIs to ensure seamless exchanges. The platform securely stores and transmits users' verifiable credentials, maintaining privacy and compliance with global financial regulations.
+
 
 ### 4. Customer Satisfaction (Tracking Satisfaction with PFIs)
 

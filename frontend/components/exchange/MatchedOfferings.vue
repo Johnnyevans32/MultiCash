@@ -224,6 +224,58 @@
       />
     </template>
   </CommonModal>
+  <CommonModal
+    :open="showSuccessModal"
+    title="Exchange Successful"
+    @change-modal-status="
+      (val) => {
+        showSuccessModal = val;
+      }
+    "
+  >
+    <template v-slot:content>
+      <div class="flex flex-col gap-4 items-center">
+        <font-awesome-icon
+          icon="check-circle"
+          class="text-7xl text-green-600"
+        />
+
+        <div class="text-xl font-bold">
+          🎉 Your exchange was successfully initiated!
+        </div>
+        <div>
+          You have successfully created an exchange of {{}}
+          <strong
+            >{{ formatMoney(payinAmount) }}
+            {{ selectedOffering.payinCurrency }}</strong
+          >
+          to
+          <strong>{{ selectedOffering.payoutCurrency }}</strong
+          >.
+        </div>
+        <div class="text-sm text-gray-600 text-center mt-4">
+          Please note: Credits for exchanges typically settle into the payout
+          currency within 1 to 3 minutes, which is the estimated time to process
+          quotes and orders via tbDEX. Settlement may occur faster or take
+          longer, depending on the number of exchange routes, as these are
+          processed sequentially.
+        </div>
+      </div>
+    </template>
+
+    <template v-slot:footer>
+      <CommonButton
+        text="Close"
+        @btn-action="showSuccessModal = false"
+        custom-css="bg-base w-full text-base"
+      />
+      <CommonButton
+        text="Go to History"
+        @btn-action="goToHistory"
+        custom-css="!bg-green-600 w-full text-white"
+      />
+    </template>
+  </CommonModal>
 </template>
 
 <script lang="ts">
@@ -273,6 +325,7 @@ export default defineComponent({
 
     const isLoadingCreateExchange = ref(false);
     const router = useRouter();
+    const showSuccessModal = ref(false);
     const createExchange = async () => {
       if (selectedOffering.value && payinAmount.value) {
         await withLoadingPromise(
@@ -285,11 +338,11 @@ export default defineComponent({
             })
             .then(() => {
               exchangeModal.value = false;
+              showSuccessModal.value = true;
               notify({
                 type: "success",
                 title: `exchange is being processed`,
               });
-              router.push({ query: { tab: "history" } });
             }),
           isLoadingCreateExchange
         );
@@ -318,6 +371,12 @@ export default defineComponent({
           : curr
       );
     });
+
+    const goToHistory = () => {
+      router.push({ query: { tab: "history" } });
+      showSuccessModal.value = false;
+    };
+
     return {
       selectedOffering,
       exchangeModal,
@@ -332,6 +391,8 @@ export default defineComponent({
       fastestOffering,
       cheapestOffering,
       highestPayoutOffering,
+      goToHistory,
+      showSuccessModal,
     };
   },
 });

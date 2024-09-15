@@ -251,6 +251,37 @@
       />
     </template>
   </CommonModal>
+
+  <CommonModal
+    :open="successModal"
+    title="Withdrawal Successful"
+    @change-modal-status="
+      (value) => {
+        successModal = value;
+      }
+    "
+  >
+    <template v-slot:content>
+      <div class="flex flex-col gap-4 items-center">
+        <font-awesome-icon
+          icon="check-circle"
+          class="text-7xl text-green-600"
+        />
+        <p class="text-xl font-bold">Your withdrawal was successful!</p>
+        <p class="text-sm">
+          You have successfully withdrawn {{ formatMoney(amount) }}
+          {{ selectedCurrency }} to your beneficiary.
+        </p>
+      </div>
+    </template>
+    <template v-slot:footer>
+      <CommonButton
+        text="Done"
+        @btn-action="successModal = false"
+        custom-css="!bg-blue-600 w-full text-white"
+      />
+    </template>
+  </CommonModal>
 </template>
 
 <script lang="ts">
@@ -371,6 +402,7 @@ export default defineComponent({
     const selectedBeneficiary = ref<IBeneficiary>();
     const password = ref("");
     const isWithdrawLoading = ref(false);
+    const successModal = ref(false);
     const withdraw = async () => {
       if (!selectedBeneficiary.value) {
         return;
@@ -386,6 +418,7 @@ export default defineComponent({
           })
           .then(() => {
             withdrawalModal.value = false;
+            successModal.value = true;
             notify({
               type: "success",
               title: "withdraw successful",
@@ -424,6 +457,7 @@ export default defineComponent({
       withdraw,
       openWithdrawalModal,
       wallet,
+      successModal,
       accountName,
       beneficiaryType,
       beneficiaryTag,

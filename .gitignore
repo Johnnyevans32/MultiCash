@@ -101,3 +101,4 @@ lerna-debug.log*
 # Ignore public files from Next.js or Nuxt.js
 
 
+backend/service_account.json

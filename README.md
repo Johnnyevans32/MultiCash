@@ -12,7 +12,7 @@
 
 **MultiCash** is a multi-currency digital wallet designed to give users the ability to seamlessly manage, exchange, fund, and withdraw various currencies. MultiCash leverages the **tbdex SDK** to connect with multiple **PFIs (Participating Financial Institutions)** to provide users with competitive rates and low fees for currency exchanges. While designed to be global, MultiCash primarily targets African markets, where liquidity is a common issue, by offering users the ability to exchange both African and international currencies efficiently.
 
-**Note:** At present, MultiCash supports funding only in Nigerian Naira (NGN) via Paystack, as it is the sole Payment Service Provider (PSP) integration implemented during the competition. Our focus was on perfecting the exchange feature, and due to time constraints, we couldn't integrate additional PSPs for other regions yet.
+**Note:** At present, MultiCash supports funding and bank account withdrawals only in Nigerian Naira (NGN) via Paystack, as it is the sole Payment Service Provider (PSP) integration implemented during the competition. Our focus was on perfecting the exchange feature, and due to time constraints, we couldn't integrate additional PSPs for other regions yet.
 
 MultiCash aims to offer users the following core features:
 

@@ -48,8 +48,8 @@ export interface UpdatePasswordDTO {
 }
 
 export const SupportedCountries = [
-  { name: "Nigeria", code: "NGN" },
-  { name: "Ghana", code: "GHS" },
-  { name: "Kenya", code: "KES" },
-  { name: "South Africa", code: "ZAR" },
+  { name: "Nigeria", code: "NG" },
+  { name: "Ghana", code: "GH" },
+  { name: "Kenya", code: "KE" },
+  { name: "South Africa", code: "ZA" },
 ];

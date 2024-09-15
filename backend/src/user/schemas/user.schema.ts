@@ -10,10 +10,10 @@ import { UtilityService } from "@/core/services/util.service";
 export type UserDocument = HydratedDocument<User>;
 
 export enum SupportedCountry {
-  NGN = "NGN",
-  GHS = "GHS",
-  KES = "KES",
-  ZAR = "ZAR",
+  NG = "NG",
+  GH = "GH",
+  KE = "KE",
+  ZA = "ZA",
 }
 @BaseSchemaDecorator({
   toJSON: {

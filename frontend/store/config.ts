@@ -4,8 +4,6 @@ export enum AppThemeEnum {
   DARK = "dark",
   MIDNIGHT = "midnight",
   COFFEE = "coffee",
-  // FOREST = "forest",
-  // OCEAN = "ocean",
   LAVENDER_DREAM = "lavender-dream",
   LEMON = "lemon",
 }

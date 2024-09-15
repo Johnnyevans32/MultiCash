@@ -21,12 +21,16 @@ export class FcmService {
     notification: { title: string; body: string }
   ) {
     if (isEmpty(user.deviceFcmTokens)) return;
-    await firebase.messaging().sendEachForMulticast({
+    const resp = await firebase.messaging().sendEachForMulticast({
       tokens: user.deviceFcmTokens,
-      notification,
+      notification: {
+        ...notification,
+        imageUrl: "https://i.ibb.co/2jP2Qjb/logo.png",
+      },
       data: {
         url: configuration().app.uiUrl,
       },
     });
+    console.log(resp);
   }
 }

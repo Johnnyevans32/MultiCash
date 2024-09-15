@@ -7,13 +7,15 @@ import {
   Rfq,
   TbdexHttpClient,
   Close,
+  PayinMethod,
+  PayoutMethod,
 } from "@tbdex/http-client";
 import { Cache } from "cache-manager";
 import * as moment from "moment";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { PresentationExchange } from "@web5/credentials";
 import { BearerDid, DidDht } from "@web5/dids";
-import { groupBy, keyBy, min } from "lodash";
+import { groupBy, isEmpty, keyBy, min } from "lodash";
 import { Mutex, MutexInterface } from "async-mutex";
 
 import { EXCHANGE, OFFERING, PFI } from "@/core/constants/schema.constants";
@@ -45,16 +47,6 @@ export class ExchangeService extends RequestService {
   private rfq: typeof Rfq;
   private order: typeof Order;
   private close: typeof Close;
-
-  private paymentDetailsMap: Record<string, any> = {
-    DEBIT_CARD: { cardNumber: "", expiryDate: "", cardHolderName: "", cvv: "" },
-    BTC_ADDRESS: { btcAddress: "" },
-    KES_BANK_TRANSFER: { accountNumber: "" },
-    USD_BANK_TRANSFER: { accountNumber: "", routingNumber: "" },
-    EUR_BANK_TRANSFER: { accountNumber: "", IBAN: "" },
-    BTC_WALLET_ADDRESS: { address: "" },
-    NGN_BANK_TRANSFER: {},
-  };
 
   constructor(
     @InjectConnection()
@@ -515,25 +507,14 @@ export class ExchangeService extends RequestService {
         presentationDefinition: pfiOffering.data.requiredClaims,
       });
 
-      const payinPaymentDetails =
-        this.paymentDetailsMap[pfiOffering.data.payin.methods[0].kind];
-      const payoutPaymentDetails =
-        this.paymentDetailsMap[pfiOffering.data.payout.methods[0].kind];
+      const payinPaymentDetails = this.generatePaymentDetails(
+        pfiOffering.data.payin.methods[0]
+      );
 
-      if (!payinPaymentDetails) {
-        console.log(
-          `missing payin payment details for kind: ${pfiOffering.data.payin.methods[0].kind}`
-        );
-        return;
-      }
+      const payoutPaymentDetails = this.generatePaymentDetails(
+        pfiOffering.data.payout.methods[0]
+      );
 
-      if (!payoutPaymentDetails) {
-        console.log(
-          `missing payin payment details for kind: ${pfiOffering.data.payout.methods[0].kind}`,
-          pfiOffering.data.payout.methods[0].requiredPaymentDetails
-        );
-        return;
-      }
       const rfq = this.rfq.create({
         metadata: {
           to: pfiOffering.metadata.from,
@@ -853,5 +834,30 @@ export class ExchangeService extends RequestService {
     user.kycVcJwt = vcJwt;
     await user.save();
     return vcJwt;
+  }
+
+  private generatePaymentDetails(
+    method: PayinMethod | PayoutMethod
+  ): Record<string, any> {
+    const defaultTypeToValueMap: Record<string, any> = {
+      string: "",
+      number: 0,
+      boolean: false,
+    };
+
+    const { requiredPaymentDetails } = method;
+    if (!requiredPaymentDetails || !requiredPaymentDetails["properties"]) {
+      return {};
+    }
+
+    const paymentDetails: Record<string, any> = {};
+    for (const [key, property] of Object.entries(
+      requiredPaymentDetails["properties"]
+    )) {
+      paymentDetails[key] =
+        defaultTypeToValueMap[(property as any).type] ?? null;
+    }
+
+    return paymentDetails;
   }
 }

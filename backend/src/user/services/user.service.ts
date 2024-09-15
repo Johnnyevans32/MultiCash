@@ -16,15 +16,13 @@ import { USER } from "@/core/constants/schema.constants";
 import { EmailService } from "@/notification/email/email.service";
 import { UtilityService } from "@/core/services/util.service";
 import configuration from "@/core/services/configuration";
-import { FcmService } from "@/notification/fcm/fcm.service";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(USER)
     private userModel: Model<UserDocument>,
-    private emailService: EmailService,
-    private fcmService: FcmService
+    private emailService: EmailService
   ) {}
 
   async me(user: UserDocument) {
@@ -97,11 +95,6 @@ export class UserService {
     await user.save();
 
     this.emailService.sendEmail(user, "Password Reset", "password-update.njk");
-
-    this.fcmService.sendPushNotification(user, {
-      title: "Password Reset",
-      body: `You have successfully updated your password.`,
-    });
   }
 
   async updatePassword(user: UserDocument, payload: UpdatePasswordDTO) {
@@ -123,11 +116,6 @@ export class UserService {
       "Password Updated",
       "password-update.njk"
     );
-
-    this.fcmService.sendPushNotification(user, {
-      title: "Password Update",
-      body: `You have successfully updated your password.`,
-    });
   }
 
   async updateUser(user: UserDocument, payload: UpdateUserDTO) {

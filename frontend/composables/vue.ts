@@ -21,7 +21,7 @@ export function useAppVueUtils() {
             return;
           }
           setAccessToken(null);
-          await navigateTo("/signin");
+          await navigateTo(`/signin?redirect=${path}`);
           return;
         }
       },

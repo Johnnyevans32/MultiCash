@@ -23,10 +23,7 @@ export class FcmService {
     if (isEmpty(user.deviceFcmTokens)) return;
     const resp = await firebase.messaging().sendEachForMulticast({
       tokens: user.deviceFcmTokens,
-      notification: {
-        ...notification,
-        imageUrl: "https://i.ibb.co/2jP2Qjb/logo.png",
-      },
+      notification,
       data: {
         url: configuration().app.uiUrl,
       },

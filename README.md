@@ -38,7 +38,7 @@ In the future, MultiCash will explore additional revenue streams, such as:
 
 ### 2. Functionality (Handling PFI Offerings)
 
-The primary functionality of MultiCash is its exchange feature, powered by the tbdex SDK, which handles the matching of offerings from various PFIs. When a user initiates an exchange between two currencies (e.g., Nigerian Naira to Kenyan Shilling), MultiCash queries its network of PFIs to retrieve exchange offers. The app displays the matched offerings, showing users the exchange rate, applicable fees, and time required to complete the exchange.
+The primary functionality of MultiCash is its exchange feature, powered by the tbdex SDK, which handles the fetching of offerings from various PFIs. When a user initiates an exchange between two currencies (e.g., Nigerian Naira to Kenyan Shilling), MultiCash queries its network of PFIs to retrieve exchange offers. The app displays the matched offerings, showing users the exchange rate, applicable fees, and time required to complete the exchange.
 
 To give users even more **optionality**, MultiCash employs an **algorithm using the Breadth-First Search (BFS)** approach. This algorithm searches through possible **chained offerings** to find alternative exchange paths. For example, if there isn’t a direct Naira to USD conversion available, the algorithm checks if a chain of conversions (e.g., Naira to Kenyan Shilling and then Kenyan Shilling to USD) is possible. By doing so, users may have the chance to find **indirect conversion chains** that offer better rates or lower fees, further enhancing the flexibility of the platform.
 

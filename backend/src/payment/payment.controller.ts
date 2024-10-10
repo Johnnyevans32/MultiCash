@@ -12,7 +12,12 @@ import { Request, Response } from "express";
 import { PaymentService } from "@/payment/services/payment.service";
 import { UtilityService } from "@/core/services/util.service";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
-import { VerifyAccountNumbertDTO } from "./types/payment.type";
+import {
+  CreatePaymentIntentDTO,
+  VerifyAccountNumbertDTO,
+} from "./types/payment.type";
+import { UserDocument } from "@/user/schemas/user.schema";
+import { CurrentUser } from "@/auth/decorators/user.decorator";
 
 @Controller("payments")
 export class PaymentController {
@@ -44,6 +49,23 @@ export class PaymentController {
       this.paymentService,
       "verifyAccountNumber",
       HttpStatus.OK,
+      payload
+    );
+  }
+
+  @Post("session")
+  async createCheckoutSession(
+    @Res() res: Response,
+    @Body() payload: CreatePaymentIntentDTO,
+    @CurrentUser() user: UserDocument
+  ): Promise<any> {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.paymentService,
+      "createCheckoutSession",
+      HttpStatus.OK,
+      user,
       payload
     );
   }

@@ -15,12 +15,12 @@ import * as moment from "moment";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import { PresentationExchange } from "@web5/credentials";
 import { BearerDid, DidDht } from "@web5/dids";
-import { groupBy, keyBy, min } from "lodash";
+import { groupBy, keyBy, max, min } from "lodash";
 import { Mutex, MutexInterface } from "async-mutex";
 
 import { EXCHANGE, OFFERING, PFI } from "@/core/constants/schema.constants";
 import { PfiDocument } from "../schemas/pfi.schema";
-import { CreateExchangeDTO, OfferingDTO, UserKycInfoDTO } from "../types";
+import { ExchangeRequestDTO, OfferingDTO, UserKycInfoDTO } from "../types";
 import { RequestService } from "@/core/services/request.service";
 import { UserDocument } from "@/user/schemas/user.schema";
 import { OfferingDocument, OfferingStatus } from "../schemas/offering.schema";
@@ -154,7 +154,6 @@ export class ExchangeService extends RequestService {
     const { payinCurrency, payoutCurrency } = payload;
 
     const pfiOfferings = await this.getOfferingsFromPFIs();
-
     if (pfiOfferings.length === 0) {
       return [];
     }
@@ -170,42 +169,17 @@ export class ExchangeService extends RequestService {
       cumulativeFee: number;
       payinCurrency: SupportedCurrencyEnum;
       payoutCurrency: SupportedCurrencyEnum;
-      id: string;
     }[] = [];
-    const queue: {
-      chain: OfferingDTO[];
-      lastCurrency: SupportedCurrencyEnum;
-      cumulativePayoutUnitsPerPayinUnit: number;
-      cumulativeFee: number;
-      cumulativeSettlementTimeInSecs: number;
-    }[] = [];
-    const visited = new Set<SupportedCurrencyEnum>();
 
-    // Initialize the queue with offerings that match the payinCurrency
-    for (const offering of offerings) {
-      if (offering.payinCurrency === payinCurrency) {
-        queue.push({
-          chain: [offering],
-          lastCurrency: offering.payoutCurrency,
-          cumulativePayoutUnitsPerPayinUnit: offering.payoutUnitsPerPayinUnit,
-          cumulativeFee: offering.fee,
-          cumulativeSettlementTimeInSecs:
-            offering.estimatedSettlementTimeInSecs,
-        });
-        visited.add(offering.payoutCurrency);
-      }
-    }
-
-    // Perform BFS to find conversion paths
-    while (queue.length > 0) {
-      const {
-        chain,
-        lastCurrency,
-        cumulativeFee,
-        cumulativePayoutUnitsPerPayinUnit,
-        cumulativeSettlementTimeInSecs,
-      } = queue.shift()!;
-
+    // Perform DFS to find conversion paths
+    const dfs = (
+      chain: OfferingDTO[],
+      lastCurrency: SupportedCurrencyEnum,
+      cumulativePayoutUnitsPerPayinUnit: number,
+      cumulativeFee: number,
+      cumulativeSettlementTimeInSecs: number,
+      visitedInChain: Set<SupportedCurrencyEnum>
+    ) => {
       // Check if we reached the desired payoutCurrency
       if (lastCurrency === payoutCurrency) {
         matchedOfferings.push({
@@ -215,32 +189,45 @@ export class ExchangeService extends RequestService {
           payinCurrency,
           payoutCurrency,
           cumulativeSettlementTimeInSecs,
-          id: UtilityService.generateRandomHex(5),
         });
-        continue;
+        return;
       }
 
-      // Look for next possible offerings in the chain
+      // Explore next possible offerings in the chain
       for (const nextOffering of offerings) {
         const nextPayoutCurrency = nextOffering.payoutCurrency;
         const nextPayinCurrency = nextOffering.payinCurrency;
+
+        // Only proceed if we haven't visited the nextPayoutCurrency within this chain
         if (
           nextPayinCurrency === lastCurrency &&
-          !visited.has(nextPayoutCurrency)
+          !visitedInChain.has(nextPayoutCurrency)
         ) {
-          queue.push({
-            chain: [...chain, nextOffering],
-            lastCurrency: nextPayoutCurrency,
-            cumulativePayoutUnitsPerPayinUnit:
-              cumulativePayoutUnitsPerPayinUnit *
+          dfs(
+            [...chain, nextOffering],
+            nextPayoutCurrency,
+            cumulativePayoutUnitsPerPayinUnit *
               nextOffering.payoutUnitsPerPayinUnit,
-            cumulativeFee: cumulativeFee + nextOffering.fee,
-            cumulativeSettlementTimeInSecs:
-              cumulativeSettlementTimeInSecs +
+            cumulativeFee + nextOffering.fee,
+            cumulativeSettlementTimeInSecs +
               nextOffering.estimatedSettlementTimeInSecs,
-          });
-          visited.add(nextPayoutCurrency);
+            new Set([...visitedInChain, nextPayoutCurrency]) // Track visited currencies in this chain
+          );
         }
+      }
+    };
+
+    // Initialize DFS with offerings that match the payinCurrency
+    for (const offering of offerings) {
+      if (offering.payinCurrency === payinCurrency) {
+        dfs(
+          [offering],
+          offering.payoutCurrency,
+          offering.payoutUnitsPerPayinUnit,
+          offering.fee,
+          offering.estimatedSettlementTimeInSecs,
+          new Set([offering.payinCurrency, offering.payoutCurrency])
+        );
       }
     }
 
@@ -287,13 +274,16 @@ export class ExchangeService extends RequestService {
     amount: number
   ) {
     const walletCurrency = await this.walletService.getWalletCurrency(currency);
-    return min([
-      walletCurrency.exchangePercentageFee * amount,
-      walletCurrency.maxExchangeFee,
+    return max([
+      walletCurrency.minExchangeFee,
+      min([
+        walletCurrency.exchangePercentageFee * amount,
+        walletCurrency.maxExchangeFee,
+      ]),
     ]);
   }
 
-  async createExchange(user: UserDocument, payload: CreateExchangeDTO) {
+  async createExchange(user: UserDocument, payload: ExchangeRequestDTO) {
     const fields = plainToInstance(UserKycInfoDTO, {
       country: user.country,
       did: user.did,
@@ -309,6 +299,85 @@ export class ExchangeService extends RequestService {
         .join("; ");
       throw new Error(`Validation failed: ${errorMessages}`);
     }
+
+    const {
+      payinAmount,
+      payoutAmount,
+      totalPayinAmount,
+      platformFee,
+      providerFee,
+      totalFee,
+      payinCurrency,
+      payoutCurrency,
+      payoutUnitsPerPayinUnit,
+      offerings: formattedOfferings,
+    } = await this.fetchExchangeSummary(payload);
+
+    let exchange: ExchangeDocument;
+    const session = await this.connection.startSession();
+
+    await session.withTransaction(async () => {
+      [exchange] = await this.exchangeModel.create(
+        [
+          {
+            user: user.id,
+            payinAmount,
+            payoutAmount,
+            platformFee,
+            providerFee,
+            totalFee,
+            payinCurrency,
+            payoutCurrency,
+            payoutUnitsPerPayinUnit,
+            totalPayinAmount,
+          },
+        ],
+        { session }
+      );
+
+      await this.offeringModel.insertMany(
+        formattedOfferings.map(
+          ({
+            pfiOfferingId,
+            pfi,
+            description,
+            payoutUnitsPerPayinUnit,
+            payinCurrency,
+            payoutCurrency,
+            expectedPayinAmount,
+            expectedPayoutAmount,
+          }) => ({
+            pfiOfferingId,
+            user: user.id,
+            exchange: exchange.id,
+            pfi,
+            description,
+            payoutUnitsPerPayinUnit,
+            payinCurrency,
+            payoutCurrency,
+            expectedPayinAmount,
+            expectedPayoutAmount,
+          })
+        ),
+        { session }
+      );
+
+      await this.walletService.debitWallet({
+        amount: totalPayinAmount,
+        currency: payinCurrency,
+        balanceKeys: [AVAILABLE_BALANCE],
+        description: `Exchange to ${payoutCurrency}`,
+        reference: `debit_${exchange.id}`,
+        user: user.id,
+        meta: { exchangeId: exchange.id },
+        purpose: TransactionPurpose.CURRENCY_EXCHANGE,
+      });
+    });
+
+    if (exchange) this.processExchange(exchange);
+  }
+
+  async fetchExchangeSummary(payload: ExchangeRequestDTO) {
     const { offerings, payinAmount } = payload;
 
     const [pfis, pfisOfferings] = await Promise.all([
@@ -321,97 +390,74 @@ export class ExchangeService extends RequestService {
       pfisOfferings.map((offering) => [offering.metadata.id, offering])
     );
 
-    let exchange: ExchangeDocument;
-    const session = await this.connection.startSession();
-
-    await session.withTransaction(async () => {
-      const offeringDetails = offerings.map((pfiOfferingId) => {
-        const pfiOffering = pfisOfferingsKeyedById.get(pfiOfferingId);
-        if (!pfiOffering) {
-          throw new BadRequestException("offering not found");
-        }
-        return this.formatOffering(pfiOffering);
-      });
-
-      const { payinCurrency } = offeringDetails.at(0);
-      const { payoutCurrency } = offeringDetails.at(-1);
-      const platformFee = await this.calculateExchangeFee(
-        payinCurrency,
-        payinAmount
-      );
-      const providerFee = 0;
-      const totalFee = platformFee + providerFee;
-      const netPayinAmount = payinAmount - totalFee;
-      const payoutUnitsPerPayinUnit = offeringDetails.reduce(
-        (acc, o) => acc * o.payoutUnitsPerPayinUnit,
-        1
-      );
-      const payoutAmount = netPayinAmount * payoutUnitsPerPayinUnit;
-      [exchange] = await this.exchangeModel.create(
-        [
-          {
-            user: user.id,
-            payinAmount,
-            payoutAmount,
-            netPayinAmount,
-            platformFee,
-            providerFee,
-            totalFee,
-            payinCurrency,
-            payoutCurrency,
-            payoutUnitsPerPayinUnit,
-          },
-        ],
-        { session }
-      );
-
-      let currentPayinAmount = netPayinAmount;
-      const updatedOfferings = offeringDetails.map((offering) => {
-        const {
-          payoutUnitsPerPayinUnit,
-          pfiDid,
-          payinCurrency,
-          payoutCurrency,
-          description,
-          pfiOfferingId,
-        } = offering;
-
-        const expectedPayoutAmount =
-          currentPayinAmount * payoutUnitsPerPayinUnit;
-
-        const updatedOffering: Partial<OfferingDocument> = {
-          pfiOfferingId,
-          user: user.id,
-          exchange: exchange.id,
-          pfi: pfisGroupedByDid.get(pfiDid),
-          description,
-          payoutUnitsPerPayinUnit,
-          payinCurrency,
-          payoutCurrency,
-          expectedPayinAmount: currentPayinAmount,
-          expectedPayoutAmount,
-        };
-
-        currentPayinAmount = expectedPayoutAmount;
-
-        return updatedOffering;
-      });
-
-      await this.offeringModel.insertMany(updatedOfferings, { session });
-
-      const description = `Exchange to ${exchange.payoutCurrency}`;
-      await this.walletService.debitWallet({
-        amount: payinAmount,
-        currency: exchange.payinCurrency,
-        balanceKeys: [AVAILABLE_BALANCE],
-        description,
-        reference: `debit_${exchange.id}`,
-        user: user.id,
-        meta: { exchangeId: exchange.id },
-        purpose: TransactionPurpose.CURRENCY_EXCHANGE,
-      });
+    const offeringDetails = offerings.map((pfiOfferingId) => {
+      const pfiOffering = pfisOfferingsKeyedById.get(pfiOfferingId);
+      if (!pfiOffering) {
+        throw new BadRequestException(
+          `invalid offering passed: ${pfiOfferingId}`
+        );
+      }
+      return this.formatOffering(pfiOffering);
     });
-    if (exchange) this.processExchange(exchange);
+
+    this.validateOfferingChain(offeringDetails);
+
+    const { payinCurrency } = offeringDetails.at(0);
+    const { payoutCurrency } = offeringDetails.at(-1);
+    const platformFee = await this.calculateExchangeFee(
+      payinCurrency,
+      payinAmount
+    );
+    const providerFee = 0;
+    const totalFee = platformFee + providerFee;
+    const totalPayinAmount = payinAmount + totalFee;
+    const payoutUnitsPerPayinUnit = offeringDetails.reduce(
+      (acc, o) => acc * o.payoutUnitsPerPayinUnit,
+      1
+    );
+    const payoutAmount = payinAmount * payoutUnitsPerPayinUnit;
+
+    let currentPayinAmount = payinAmount;
+    const formattedOfferings = offeringDetails.map((offering) => {
+      const {
+        payoutUnitsPerPayinUnit,
+        pfiDid,
+        payinCurrency,
+        payoutCurrency,
+        description,
+        pfiOfferingId,
+      } = offering;
+
+      const expectedPayoutAmount = currentPayinAmount * payoutUnitsPerPayinUnit;
+
+      const formattedOffering = {
+        pfiOfferingId,
+        pfi: pfisGroupedByDid.get(pfiDid),
+        description,
+        payoutUnitsPerPayinUnit,
+        payinCurrency,
+        payoutCurrency,
+        expectedPayinAmount: currentPayinAmount,
+        expectedPayoutAmount,
+      };
+
+      currentPayinAmount = expectedPayoutAmount;
+
+      return formattedOffering;
+    });
+
+    return {
+      offerings: formattedOfferings,
+      payinAmount,
+      payoutAmount,
+      totalPayinAmount,
+      platformFee,
+      providerFee,
+      totalFee,
+      payinCurrency,
+      payoutCurrency,
+      payoutUnitsPerPayinUnit,
+    };
   }
 
   async fetchExchanges(user: UserDocument, query: PaginateDTO) {
@@ -427,7 +473,7 @@ export class ExchangeService extends RequestService {
         limit,
         pagination: !all,
         select:
-          "payinAmount payoutAmount payinCurrency payoutCurrency payoutUnitsPerPayinUnit totalFee status createdAt rating comment",
+          "payinAmount payoutAmount payinCurrency payoutCurrency payoutUnitsPerPayinUnit totalFee status createdAt rating comment completionDate",
         populate: {
           path: "offerings",
           select:
@@ -459,13 +505,13 @@ export class ExchangeService extends RequestService {
       const user = exchange.user as UserDocument;
       if (!offering) {
         exchange.status = ExchangeStatus.Completed;
+        exchange.completionDate = moment().toDate();
         await exchange.save();
-        const description = `Exchange from ${exchange.payinCurrency}`;
         await this.walletService.creditWallet({
           amount: exchange.payoutAmount,
           currency: exchange.payoutCurrency,
           balanceKeys: [AVAILABLE_BALANCE],
-          description,
+          description: `Exchange from ${exchange.payinCurrency}`,
           reference: `credit_${exchange.id}`,
           user: user.id,
           meta: { exchangeId: exchange.id },
@@ -561,12 +607,16 @@ export class ExchangeService extends RequestService {
       exchange.status = ExchangeStatus.Processing;
       await exchange.save();
       await offering.save();
+      this.fcmService.sendPushNotification(user, {
+        title: "Exchange Route Update",
+        body: `Exchange route ${offering.payinCurrency} to ${offering.payoutCurrency} is now awaiting quote.`,
+      });
     } catch (err) {
       console.log("Error processing exchange", exchange.id, err);
     }
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async checkStatusOfOfferingsFromPFIs(ids?: string[]) {
     const mutex = this.getOrCreateMutex("checkStatusOfOfferingsFromPFIs");
     const release = await mutex.acquire();
@@ -584,7 +634,9 @@ export class ExchangeService extends RequestService {
         ...(ids && ids.length && { _id: { $in: ids } }),
       };
 
-      const offerings = await this.offeringModel.find(query).populate("pfi");
+      const offerings = await this.offeringModel
+        .find(query)
+        .populate("pfi user");
       if (!offerings.length) {
         return;
       }
@@ -614,11 +666,13 @@ export class ExchangeService extends RequestService {
               const offeringsToCreateOrder = [];
 
               exchanges.forEach((messages) => {
+                console.log(JSON.stringify(messages));
                 const lastMessage = messages.at(-1);
                 const { kind } = lastMessage.metadata;
                 const offering =
                   offeringKeyedByExchangeId[lastMessage.metadata.exchangeId];
                 if (!offering) return;
+                const user = offering.user as UserDocument;
                 switch (kind) {
                   case "quote":
                     if ([OfferingStatus.Processing].includes(offering.status)) {
@@ -630,10 +684,18 @@ export class ExchangeService extends RequestService {
                         (lastMessage.data as any).payin.fee || 0
                       );
                       offeringsToCreateOrder.push(offering.id);
+                      this.fcmService.sendPushNotification(user, {
+                        title: "Exchange Route Update",
+                        body: `Exchange route ${offering.payinCurrency} to ${offering.payoutCurrency} is now awaiting order.`,
+                      });
                     }
                     break;
 
                   case "order":
+                    this.fcmService.sendPushNotification(user, {
+                      title: "Exchange Route Update",
+                      body: `Exchange route ${offering.payinCurrency} to ${offering.payoutCurrency} order has been placed.`,
+                    });
                     break;
 
                   case "close":
@@ -649,11 +711,20 @@ export class ExchangeService extends RequestService {
                       ).toDate();
                       if (isSuccessful) {
                         exchangesToBeProcessed.push(offering.exchange);
+
+                        this.fcmService.sendPushNotification(user, {
+                          title: "Exchange Route Update",
+                          body: `Exchange route ${offering.payinCurrency} to ${offering.payoutCurrency} has been completed.`,
+                        });
                       } else {
                         offering.cancellationReason = (
                           lastMessage.data as any
                         ).reason;
                         offeringsToBeRefunded.push(offering.id);
+                        this.fcmService.sendPushNotification(user, {
+                          title: "Exchange Route Update",
+                          body: `Exchange route ${offering.payinCurrency} to ${offering.payoutCurrency} has been cancelled.`,
+                        });
                       }
                     }
                     break;
@@ -662,9 +733,12 @@ export class ExchangeService extends RequestService {
                     if (
                       [OfferingStatus.OrderPlaced].includes(offering.status)
                     ) {
-                      offering.pfiOrderStatus = (
-                        lastMessage.data as any
-                      ).orderStatus;
+                      const orderStatus = (lastMessage.data as any).orderStatus;
+                      offering.pfiOrderStatus = orderStatus;
+                      this.fcmService.sendPushNotification(user, {
+                        title: "Exchange Route Update",
+                        body: `Exchange route ${offering.payinCurrency} to ${offering.payoutCurrency} order status is ${orderStatus}.`,
+                      });
                     }
                     break;
 
@@ -770,45 +844,55 @@ export class ExchangeService extends RequestService {
     );
   }
 
-  async closeOffering(ids?: string[], reason?: string) {
+  async closeOffering(user: UserDocument, offeringId: string, reason: string) {
     const did = await this.getDid();
-    const offerings = await this.offeringModel
-      .find({
-        ...(ids && ids.length && { _id: { $in: ids } }),
+    const offering = await this.offeringModel
+      .findOne({
+        _id: offeringId,
+        user: user.id,
         status: {
           $in: [OfferingStatus.Processing, OfferingStatus.AwaitingOrder],
         },
         isDeleted: false,
       })
-      .populate("pfi");
-    await Promise.all(
-      offerings.map(async (offering) => {
-        try {
-          const close = this.close.create({
-            metadata: {
-              from: did.uri,
-              to: (offering.pfi as PfiDocument).did,
-              exchangeId: offering.pfiExchangeId,
-              protocol: "1.0",
-            },
-            data: {
-              reason,
-            },
-          });
-          await close.sign(did);
-          await this.tbdexHttpClient.submitClose(close);
-          offering.status = OfferingStatus.Cancelled;
-          await offering.save();
-          await this.exchangeModel.updateOne(
-            { _id: offering.exchange },
-            { $set: { status: ExchangeStatus.Cancelled } }
-          );
-        } catch (error) {
-          console.error(`Failed to close offering ${offering.id}:`, error);
-          // Optionally, handle the error further, e.g., log it, send a notification, etc.
-        }
-      })
+      .populate("pfi exchange");
+    if (!offering) throw new BadRequestException("offering is invalid");
+
+    const close = this.close.create({
+      metadata: {
+        from: did.uri,
+        to: (offering.pfi as PfiDocument).did,
+        exchangeId: offering.pfiExchangeId,
+        protocol: "1.0",
+      },
+      data: {
+        reason,
+      },
+    });
+    await close.sign(did);
+    await this.tbdexHttpClient.submitClose(close);
+    offering.status = OfferingStatus.Cancelled;
+    await offering.save();
+    const exchange = offering.exchange as ExchangeDocument;
+    await this.exchangeModel.updateOne(
+      { _id: exchange.id },
+      { $set: { status: ExchangeStatus.Cancelled } }
     );
+    await this.walletService.creditWallet({
+      amount: offering.expectedPayinAmount,
+      currency: offering.payinCurrency,
+      balanceKeys: [AVAILABLE_BALANCE],
+      description: `Canceled Exchange of ${exchange.payinCurrency} to ${exchange.payoutCurrency}`,
+      reference: `credit_${exchange.id}`,
+      user: offering.user as string,
+      meta: { exchangeId: exchange.id },
+      purpose: TransactionPurpose.CURRENCY_EXCHANGE,
+    });
+
+    this.fcmService.sendPushNotification(user, {
+      title: "Exchange Route Update",
+      body: `Exchange route ${offering.payinCurrency} to ${offering.payoutCurrency} has been cancelled.`,
+    });
   }
 
   private async getDid() {
@@ -865,5 +949,30 @@ export class ExchangeService extends RequestService {
     }
 
     return paymentDetails;
+  }
+
+  /**
+   * Validates that the `payinCurrency` of each offering correctly connects to the `payoutCurrency` of the previous one.
+   * If there's a mismatch, it throws a `BadRequestException`.
+   *
+   * @param offerings List of offerings to validate.
+   * @throws BadRequestException If there is a currency mismatch in the chain.
+   */
+  private validateOfferingChain(
+    offerings: Array<{
+      payinCurrency: SupportedCurrencyEnum;
+      payoutCurrency: SupportedCurrencyEnum;
+    }>
+  ): void {
+    if (offerings.length < 2) return; // No chain to validate
+
+    offerings.reduce((prev, current, index) => {
+      if (prev.payoutCurrency !== current.payinCurrency) {
+        throw new BadRequestException(
+          `Invalid currency flow at step ${index + 1}: Expected ${prev.payoutCurrency} but received ${current.payinCurrency}.`
+        );
+      }
+      return current;
+    });
   }
 }

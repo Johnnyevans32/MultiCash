@@ -1,4 +1,6 @@
 import moment from "moment";
+import { getToken } from "firebase/messaging";
+import { notify } from "@kyvg/vue3-notification";
 
 export const formatMoney = (value?: number, maxFractionDigits = 2) =>
   value?.toLocaleString(undefined, {
@@ -30,20 +32,10 @@ export const groupByDate = <T>(
   }, {});
 };
 
-export const truncateString = (data: string) =>
-  `${data.substring(0, 7)}...${data.slice(data.length - 4)}`;
-
 export const generateMailToLink = () => {
   const config = useRuntimeConfig();
   const subject = encodeURIComponent(`issue with ${config.public.appName}`);
   return `mailto:${config.public.email}?subject=${subject}`;
-};
-
-export const shortenString = (str: string, maxLength = 20) => {
-  if (str.length <= maxLength) {
-    return str;
-  }
-  return str.substring(0, maxLength) + "...";
 };
 
 export const groupBy = <T extends Record<string | number, any>>(
@@ -60,10 +52,6 @@ export const groupBy = <T extends Record<string | number, any>>(
   }, {} as Record<string | number, T[]>);
 };
 
-export const generateRandomDigits = (length = 6) => {
-  return Array.from({ length }, () => Math.floor(Math.random() * 10)).join("");
-};
-
 export const convertFileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -73,11 +61,11 @@ export const convertFileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-export const uploadFile = async (file: File) => {
-  const base64File = await convertFileToBase64(file);
-  const fileType = file.type;
-  const fileName = file.name;
-
+export const uploadFile = async (
+  base64File: string,
+  fileType: string,
+  fileName: string
+) => {
   const payload = {
     file: base64File,
     fileName,
@@ -103,3 +91,49 @@ export const getCurrencySign = (currency: string) => {
     ZAR: "R",
   }[currency];
 };
+
+export async function requestNotificationPermission() {
+  if (!window.Notification) {
+    notify({
+      title: "This browser does not support web notification",
+      type: "info",
+    });
+    return false;
+  }
+
+  if (window.Notification.permission === "granted") {
+    setToken();
+    return true;
+  }
+  const permissionResult = await window.Notification.requestPermission();
+  if (permissionResult === "granted") {
+    notify({
+      title:
+        "You've enabled notifications. You'll now receive push notification updates.",
+      type: "info",
+    });
+    setToken();
+    return true;
+  }
+  notify({
+    title: `You have denied notification permission. To re-enable, go to browser settings > Notifications.`,
+    type: "info",
+  });
+  return false;
+}
+
+export async function setToken(isFromRetry = false) {
+  try {
+    const { $messaging, $api } = useNuxtApp();
+    const token = await getToken($messaging, {
+      vapidKey:
+        "BIARmEHojCDE1iSgKRLzAZveSlZf2RhzNFjlV0MSuUv66AKeNiP5_bTdbz4vCHXLpvwGnvhtZ3C3Pu_hRnReKI8",
+    });
+
+    await $api.userService.saveDeviceFcmToken(token);
+  } catch (err) {
+    if (!isFromRetry) {
+      await setToken(true);
+    }
+  }
+}

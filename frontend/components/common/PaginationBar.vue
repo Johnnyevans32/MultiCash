@@ -34,6 +34,14 @@ export default defineComponent({
   },
   setup(props, ctx) {
     const selectedOption = ref(props.currentPage || 1);
+
+    watch(
+      () => props.currentPage,
+      (newVal) => {
+        selectedOption.value = newVal;
+      }
+    );
+
     watch(selectedOption, (newVal, prevVal) => {
       ctx.emit("changeOption", newVal);
     });

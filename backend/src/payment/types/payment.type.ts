@@ -19,7 +19,7 @@ export interface IPaymentProvider {
   name(): PaymentProvider;
   verifyAccountNumber(
     payload: VerifyAccountNumbertDTO
-  ): Promise<IVerifyAccountNumberResponse>;
+  ): Promise<IVerifyAccountNumberResponse | void>;
   checkTransferStatus(
     payload: CheckTransferStatusDTO
   ): Promise<ICheckTransferStatusResponse>;
@@ -27,7 +27,11 @@ export interface IPaymentProvider {
     payload: TransferToAccountDTO
   ): Promise<ITransferToAccountResponse>;
 
-  validateWebhook(headers: any, payload: any): boolean;
+  createCheckoutSession?(payload: CreatePaymentIntentDTO): Promise<{
+    sessionId: string;
+  }>;
+
+  validateWebhook(headers: any, payload: any, rawBody?: any): boolean;
   transformWebhook(payload: any): IWebhookResponse<any>;
 }
 
@@ -91,6 +95,9 @@ export class TransferToAccountDTO {
 
   @IsOptional()
   meta: any;
+
+  @IsOptional()
+  stripeAccountId?: string;
 }
 
 export class VerifyAccountNumbertDTO {
@@ -122,4 +129,22 @@ export interface IVerifyAccountNumberResponse {
 export interface ITransferToAccountResponse {
   status: TransferStatus;
   providerResponse: any;
+}
+
+export class CreatePaymentIntentDTO {
+  @IsNumber()
+  @IsPositive()
+  amount: number;
+
+  @IsEnum(SupportedCurrencyEnum)
+  currency: SupportedCurrencyEnum;
+
+  @IsOptional()
+  meta: any;
+
+  @IsOptional()
+  email: string;
+
+  @IsOptional()
+  description: string;
 }

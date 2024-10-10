@@ -9,6 +9,7 @@ import {
 } from "class-validator";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 import { SupportedCountry } from "@/user/schemas/user.schema";
+import { Transform } from "class-transformer";
 
 export class GetOfferingsDTO {
   @IsEnum(SupportedCurrencyEnum)
@@ -53,13 +54,20 @@ export class OfferingDTO extends CreateOfferingDTO {
   fee: number;
 }
 
-export class CreateExchangeDTO {
+export class ExchangeRequestDTO {
   @IsNumber()
   @IsPositive()
+  @Transform(({ value }) => parseFloat(value))
   payinAmount: number;
 
   @IsArray()
   @ArrayMinSize(1)
+  @Transform(({ value }) => {
+    if (typeof value === "string") {
+      return [value];
+    }
+    return value;
+  })
   offerings: string[];
 }
 

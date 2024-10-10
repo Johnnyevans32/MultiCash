@@ -13,6 +13,7 @@ import { PaystackService } from "./providers/paystack/paystack.service";
 import { PaymentController } from "./payment.controller";
 import { WalletModule } from "@/wallet/wallet.module";
 import { ChargeRecordSchema } from "./schemas/charge-record.schema";
+import { StripeService } from "./providers/stripe/stripe.service";
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { ChargeRecordSchema } from "./schemas/charge-record.schema";
     forwardRef(() => WalletModule),
   ],
   controllers: [PaymentController],
-  providers: [PaymentService, PaystackService],
+  providers: [PaymentService, PaystackService, StripeService],
   exports: [PaymentService],
 })
 export class PaymentModule {}

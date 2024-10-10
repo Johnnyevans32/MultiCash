@@ -11,10 +11,16 @@ export const useWalletStore = defineStore("walletStore", () => {
     banks.value = data;
   }
 
+  function resetStore() {
+    wallets.value = [];
+    banks.value = [];
+  }
+
   return {
     wallets,
     banks,
     setWallets,
     setBanks,
+    resetStore,
   };
 });

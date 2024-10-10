@@ -8,7 +8,10 @@ import {
   IsMongoId,
 } from "class-validator";
 import { SupportedCurrencyEnum } from "../schemas/wallet.schema";
-import { TransactionPurpose } from "../schemas/wallet-transaction.schema";
+import {
+  TransactionPurpose,
+  TransactionStatus,
+} from "../schemas/wallet-transaction.schema";
 import { BeneficiaryType } from "../schemas/beneficiary.schema";
 
 export class CreateWalletTxnDTO {
@@ -48,6 +51,10 @@ export class CreateWalletTxnDTO {
 
   @IsOptional()
   receiver?: string;
+
+  @IsOptional()
+  @IsEnum(TransactionStatus)
+  status?: TransactionStatus;
 }
 
 export const AVAILABLE_BALANCE = "availableBalance";

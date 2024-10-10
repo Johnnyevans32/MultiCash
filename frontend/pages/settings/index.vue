@@ -104,6 +104,13 @@ export default defineComponent({
         href: "/settings/guard",
       },
       {
+        logo: "bell",
+        action: "Push Notification",
+        value: "Enable push notification for real time updates.",
+        logoType: "icon",
+        href: "/settings/notification",
+      },
+      {
         logo: "fa-solid fa-palette",
         action: "Theme",
         value: appThemeColor.value,
@@ -140,11 +147,12 @@ export default defineComponent({
       await withLoading(async () => {
         try {
           await $api.userService.deleteUser();
-
+          const { resetStore } = useConfigStore();
           setAccessToken(null);
+          resetStore();
           notify({
             type: "success",
-            title: "data deleted",
+            title: "user deactivated",
           });
           await navigateTo("/signin");
         } finally {

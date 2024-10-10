@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getMessaging, onMessage } from "firebase/messaging";
 import { notify } from "@kyvg/vue3-notification";
+import { useRouter } from "vue-router";
 
 export default defineNuxtPlugin(() => {
   const app = initializeApp({
@@ -14,11 +15,20 @@ export default defineNuxtPlugin(() => {
   });
 
   const messaging = getMessaging(app);
+  const router = useRouter();
 
-  onMessage(messaging, (payload) => {
+  onMessage(messaging, async (payload) => {
     notify({
-      type: "success",
+      type: "info",
       title: payload.notification?.body,
+    });
+
+    router.replace({
+      path: router.currentRoute.value.path,
+      query: {
+        ...router.currentRoute.value.query,
+        r: new Date().getTime(),
+      },
     });
   });
 

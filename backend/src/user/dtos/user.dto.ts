@@ -8,6 +8,7 @@ import {
   Matches,
   IsEnum,
   Length,
+  IsBoolean,
 } from "class-validator";
 import { SupportedCountry } from "../schemas/user.schema";
 
@@ -96,6 +97,10 @@ export class UpdateUserDTO {
   @IsOptional()
   @IsString()
   readonly did: string;
+
+  @IsOptional()
+  @IsBoolean()
+  pushNotificationIsEnabled: boolean;
 }
 
 export class ForgotPasswordDTO {

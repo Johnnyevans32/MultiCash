@@ -9,6 +9,7 @@
       title="Enter your name"
       placeholder="name"
     />
+
     <CommonFormSelect
       title="Select your country"
       :selected="country"

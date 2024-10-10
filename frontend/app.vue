@@ -5,17 +5,18 @@
       <NuxtPage />
     </NuxtLayout>
 
-    <NuxtPwaManifest />
     <notifications position="top center" width="100%" animation-type="css">
       <template #body="props">
         <div
           :class="[
-            'flex items-center p-5 md:mx-[30vw] font-semibold bg-black border-l-4 text-white',
+            'flex items-center p-5 md:mx-[30vw] font-semibold border-l-4 rounded-xl',
             {
               'border-green-500': props.item.type === 'success',
               'border-blue-500': props.item.type === 'info',
               'border-red-500':
                 props.item.type !== 'success' && props.item.type !== 'info',
+              'bg-black text-white': !isDarkThemed,
+              'bg-white text-black': isDarkThemed,
             },
           ]"
         >
@@ -45,9 +46,10 @@
           <button
             type="button"
             @click="props.close"
-            class="ml-auto -mx-1.5 -my-1.5 text-white w-6 h-6 p-2 rounded-xl flex items-center justify-center"
+            :class="isDarkThemed ? 'text-black' : 'text-white'"
+            class="ml-auto -mx-1.5 -my-1.5 w-6 h-6 p-2 rounded-xl flex items-center justify-center"
           >
-            <font-awesome-icon icon="fa-solid fa-xmark" />
+            <font-awesome-icon icon="xmark" />
           </button>
         </div>
       </template>
@@ -63,6 +65,9 @@ export default defineComponent({
     const config = useRuntimeConfig();
     const { appThemeColor } = storeToRefs(useConfigStore());
 
+    const isDarkThemed = computed(() =>
+      ["dark", "midnight"].includes(appThemeColor.value)
+    );
     const browserThemeMap: any = {
       light: "244, 244, 244",
       cherry: "255, 255, 255",
@@ -111,6 +116,7 @@ export default defineComponent({
 
     return {
       appThemeColor,
+      isDarkThemed,
     };
   },
 });

@@ -75,7 +75,7 @@
   </div>
   <CommonModal
     :open="addAccountModal"
-    title="Add a beneficiary account"
+    title="Add a beneficiary"
     @change-modal-status="
       (value) => {
         addAccountModal = value;
@@ -116,7 +116,7 @@
           />
           <CommonFormInput
             v-model="accountNumber"
-            placeholder="Enter account number"
+            placeholder="1234567890"
             title="Enter account number"
             input-type="text"
             @keyup.enter="createBeneficiary"
@@ -125,7 +125,7 @@
         <CommonFormInput
           v-if="beneficiaryType === 'platform'"
           v-model="beneficiaryTag"
-          placeholder="Enter user tag"
+          placeholder="Enter user tag (e.g., john_doe)"
           title="Enter user tag"
           input-type="text"
           @keyup.enter="createBeneficiary"
@@ -163,45 +163,42 @@
       <div class="flex flex-col gap-4">
         <div
           v-if="selectedBeneficiary?.type === 'bankaccount'"
-          class="flex flex-col gap-4"
+          class="flex items-center gap-2"
         >
+          <CommonImage
+            :image="selectedBeneficiary.bank?.logo"
+            :alt="selectedBeneficiary.bank?.name"
+            type="image"
+          />
           <div>
-            <span class="text-sm">Beneficiary Account Name:</span>
-            <p class="md:text-sm text-xs">
+            <p class="text-sm md:text-xs">
               {{ selectedBeneficiary?.accountName }}
             </p>
-          </div>
-
-          <div>
-            <span class="text-sm">Beneficiary Account Number:</span>
-            <p class="md:text-sm text-xs">
-              {{ selectedBeneficiary?.accountNumber }}
-            </p>
-          </div>
-
-          <div>
-            <span class="text-sm">Beneficiary Bank Name:</span>
-            <p class="md:text-sm text-xs">
-              {{ selectedBeneficiary?.bank.name }}
+            <p class="text-xs md:text-sm">
+              {{ selectedBeneficiary?.accountNumber }} ({{
+                selectedBeneficiary?.bank.name
+              }})
             </p>
           </div>
         </div>
 
-        <div v-if="selectedBeneficiary?.type === 'platform'">
-          <div>
-            <span class="text-sm">Beneficiary</span>
-            <div class="flex items-center gap-2">
-              <CommonImage
-                :image="selectedBeneficiary.beneficiaryUser?.profileImage"
-                alt="avatar"
-                type="image"
-              />
-              <div>
-                <p>
-                  {{ selectedBeneficiary?.beneficiaryUser.name }}
-                </p>
-                <p>@{{ selectedBeneficiary?.beneficiaryUser.tag }}</p>
-              </div>
+        <div
+          v-if="selectedBeneficiary?.type === 'platform'"
+          class="flex flex-col gap-4"
+        >
+          <div class="flex items-center gap-2">
+            <CommonImage
+              :image="selectedBeneficiary.beneficiaryUser?.profileImage"
+              alt="avatar"
+              type="image"
+            />
+            <div>
+              <p class="text-sm md:text-xs">
+                {{ selectedBeneficiary?.beneficiaryUser.name }}
+              </p>
+              <p class="text-xs md:text-sm">
+                @{{ selectedBeneficiary?.beneficiaryUser.tag }}
+              </p>
             </div>
           </div>
 
@@ -216,9 +213,8 @@
 
         <CommonAmountInput
           v-model="amount"
-          placeholder="Enter amount"
           title="Enter amount"
-          :currency="selectedBeneficiary?.bank?.currency || selectedCurrency"
+          :currency="wallet?.currency"
           :balance="wallet?.availableBalance"
           :max="wallet?.availableBalance"
           :min="0"
@@ -232,7 +228,7 @@
         />
         <CommonTextArea
           v-model="note"
-          placeholder="Add note"
+          placeholder="e.g., Payment for services"
           title="Add note"
         />
       </div>
@@ -254,7 +250,7 @@
 
   <CommonModal
     :open="successModal"
-    title="Withdrawal Successful"
+    title="Withdrawal Submitted"
     @change-modal-status="
       (value) => {
         successModal = value;
@@ -267,10 +263,10 @@
           icon="check-circle"
           class="text-7xl text-green-600"
         />
-        <p class="text-xl font-bold">Your withdrawal was successful!</p>
+        <p class="text-xl font-bold">Your withdrawal has been submitted!</p>
         <p class="text-sm">
-          You have successfully withdrawn {{ formatMoney(amount) }}
-          {{ selectedCurrency }} to your beneficiary.
+          You have successfully placed a withdrawal of
+          {{ formatMoney(amount) }} {{ wallet?.currency }} to your beneficiary.
         </p>
       </div>
     </template>
@@ -319,10 +315,6 @@ export default defineComponent({
     const allCurrencies = computed(() => wallets.value.map((i) => i.currency));
 
     const selectedCurrency = ref("");
-
-    const wallet = computed(() =>
-      wallets.value.find((w) => w.currency === selectedCurrency.value)
-    );
 
     const isFetchWalletLoading = ref(false);
     const fetchWallets = async () => {
@@ -419,10 +411,6 @@ export default defineComponent({
           .then(() => {
             withdrawalModal.value = false;
             successModal.value = true;
-            notify({
-              type: "success",
-              title: "withdraw successful",
-            });
           }),
         isWithdrawLoading
       );
@@ -433,6 +421,12 @@ export default defineComponent({
       selectedBeneficiary.value = _selectedBeneficiary;
       withdrawalModal.value = true;
     };
+
+    const wallet = computed(() => {
+      const targetCurrency =
+        selectedBeneficiary.value?.bank?.currency || selectedCurrency.value;
+      return wallets.value.find((w) => w.currency === targetCurrency);
+    });
 
     return {
       selectedCurrency,

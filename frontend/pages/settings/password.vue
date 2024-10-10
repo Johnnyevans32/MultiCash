@@ -6,7 +6,7 @@
     <CommonFormInput
       inputType="password"
       v-model="oldPassword"
-      title="Enter your old password"
+      title="Enter your current password"
       placeholder="password"
     />
     <CommonFormInput

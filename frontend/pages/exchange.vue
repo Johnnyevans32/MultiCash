@@ -41,7 +41,7 @@ export default defineComponent({
 
     watch(
       () => route.query.tab,
-      (newTab) => {
+      (newTab: string) => {
         activeTab.value = getTabIndex(newTab as string);
       }
     );

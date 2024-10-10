@@ -7,36 +7,38 @@ export function useAppVueUtils() {
   const { accessToken } = storeToRefs(useUserStore());
   const { setAccessToken } = useUserStore();
 
-  const useCustomFetch = async <T>(url: string, options?: any): Promise<T> => {
+  const useCustomFetch = async <T>(
+    url: string,
+    options?: Record<string, any>
+  ): Promise<T> => {
     const res = await $fetch<T>(url, {
       ...options,
+      baseURL: config.public.apiUrl,
+      headers: {
+        ...options?.headers,
+        ...(accessToken.value && {
+          Authorization: `Bearer ${accessToken.value}`,
+        }),
+      },
       async onResponseError({ response }) {
+        const errorMessage = response?._data?.message || "An error occurred";
         notify({
           type: "error",
-          title: response?._data?.message || "an error occured",
+          title: errorMessage,
         });
-        if (response.status === 401) {
+
+        if (response?.status === 401) {
           const { path } = route;
           if (path !== "/signin") {
             setAccessToken(null);
-            return navigateTo(`/signin?redirect=${encodeURIComponent(path)}`);
+            await navigateTo(`/signin?redirect=${encodeURIComponent(path)}`);
           }
         }
       },
-      async onRequest({ request, options }) {
-        options.baseURL = config.public.apiUrl;
-        options.headers = {
-          ...options.headers,
-          ...(accessToken.value && {
-            Authorization: `Bearer ${accessToken.value}`,
-          }),
-        };
-      },
-      async onRequestError({ request, options, error }) {
+      async onRequestError({ error }) {
         console.error("Request error:", error);
       },
     });
-
     return res as T;
   };
 

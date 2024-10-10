@@ -30,4 +30,16 @@ export class PaymentService {
     );
     return data;
   }
+
+  async createCheckoutSession(payload: { amount: number; currency: string }) {
+    const { useCustomFetch } = useAppVueUtils();
+    const { data } = await useCustomFetch<IResponse<{ sessionId: string }>>(
+      `/api/payments/session`,
+      {
+        method: "post",
+        body: payload,
+      }
+    );
+    return data;
+  }
 }

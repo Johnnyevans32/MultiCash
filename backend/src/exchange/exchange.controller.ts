@@ -13,7 +13,7 @@ import { HttpStatusCode } from "axios";
 
 import { UtilityService } from "@/core/services/util.service";
 import { ExchangeService } from "./services/exchange.service";
-import { CreateExchangeDTO, GetOfferingsDTO } from "./types";
+import { ExchangeRequestDTO, GetOfferingsDTO } from "./types";
 import { CurrentUser, Public } from "@/auth/decorators/user.decorator";
 import { UserDocument } from "@/user/schemas/user.schema";
 import { PaginateDTO } from "@/core/services/response.service";
@@ -50,7 +50,7 @@ export class ExchangeController {
   @Post("")
   async createExchange(
     @Res() res: Response,
-    @Body() payload: CreateExchangeDTO,
+    @Body() payload: ExchangeRequestDTO,
     @CurrentUser() user: UserDocument
   ) {
     return UtilityService.handleRequest(
@@ -60,6 +60,22 @@ export class ExchangeController {
       "createExchange",
       HttpStatusCode.Created,
       user,
+      payload
+    );
+  }
+
+  @Public()
+  @Get("summary")
+  async fetchExchangeSummary(
+    @Res() res: Response,
+    @Query() payload: ExchangeRequestDTO
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.exchangeService,
+      "fetchExchangeSummary",
+      HttpStatusCode.Ok,
       payload
     );
   }
@@ -97,6 +113,25 @@ export class ExchangeController {
       user,
       exchangeId,
       payload
+    );
+  }
+
+  @Put("offerings/:id/close")
+  async closeOffering(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument,
+    @Param("id") offeringId: string,
+    @Body("reason") reason: string
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.exchangeService,
+      "closeOffering",
+      HttpStatusCode.Ok,
+      user,
+      offeringId,
+      reason
     );
   }
 

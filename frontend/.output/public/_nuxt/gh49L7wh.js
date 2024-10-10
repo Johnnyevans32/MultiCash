@@ -1,0 +1,1 @@
+import{r as n}from"./CDC5foPa.js";function s(){const a=n(!1);return{loading:a,withLoading:async t=>{a.value=!0;try{await t()}finally{a.value=!1}},withLoadingPromise:async(t,i)=>{i.value=!0;try{return await t}finally{i.value=!1}}}}export{s as u};

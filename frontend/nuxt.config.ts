@@ -16,23 +16,58 @@ export default defineNuxtConfig({
         },
         { name: "format-detection", content: "telephone=no" },
       ],
-      link: [],
+      link: [
+        { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+        { rel: "icon", href: "/logo.svg", sizes: "any", type: "image/svg+xml" },
+        { rel: "apple-touch-icon", href: "/apple-touch-icon-180x180.png" },
+      ],
     },
   },
   pwa: {
     registerType: "autoUpdate",
     manifest: {
-      background_color: "#F4F4F4",
       name: process.env.APP_NAME,
-      description: process.env.APP_DESCRIPTION,
       short_name: process.env.APP_NAME,
+      description: process.env.APP_DESCRIPTION,
       theme_color: "#F4F4F4",
+      background_color: "#F4F4F4",
       display: "standalone",
+      start_url: "/",
       icons: [
         {
-          src: "logo.png",
+          src: "pwa-64x64.png",
+          sizes: "64x64",
+          type: "image/png",
+        },
+        {
+          src: "pwa-192x192.png",
+          sizes: "192x192",
+          type: "image/png",
+        },
+        {
+          src: "pwa-512x512.png",
           sizes: "512x512",
           type: "image/png",
+        },
+        {
+          src: "maskable-icon-512x512.png",
+          sizes: "512x512",
+          type: "image/png",
+          purpose: "maskable",
+        },
+      ],
+      screenshots: [
+        {
+          src: "screenshot-desktop.png",
+          sizes: "1280x640",
+          type: "image/png",
+          form_factor: "wide",
+        },
+        {
+          src: "screenshot-mobile.png",
+          sizes: "591x1279",
+          type: "image/png",
+          form_factor: "narrow",
         },
       ],
     },
@@ -75,7 +110,8 @@ export default defineNuxtConfig({
       description: process.env.APP_DESCRIPTION,
       email: process.env.APP_EMAIL,
       apiUrl: process.env.API_URL,
-      paystackPK: process.env.PAYSTACK_PK,
+      paystackPublickKey: process.env.PAYSTACK_PUBLIC_KEY,
+      stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
     },
   },
 

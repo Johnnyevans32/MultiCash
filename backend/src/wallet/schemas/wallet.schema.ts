@@ -13,14 +13,16 @@ export enum SupportedCurrencyEnum {
   NGN = "NGN",
   GHS = "GHS",
   KES = "KES",
+  ZAR = "ZAR",
+
   USD = "USD",
   GBP = "GBP",
   EUR = "EUR",
-  USDC = "USDC",
-  BTC = "BTC",
   AUD = "AUD",
   MXN = "MXN",
-  ZAR = "ZAR",
+
+  USDC = "USDC",
+  BTC = "BTC",
 }
 
 export type WalletDocument = HydratedDocument<Wallet>;

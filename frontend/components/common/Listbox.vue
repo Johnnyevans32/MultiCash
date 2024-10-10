@@ -1,12 +1,13 @@
 <template>
   <div>
     <span v-if="title" class="text-sm text-left"> {{ title }}:</span>
-    <div :class="customCss" class="relative">
+    <div class="relative">
       <Listbox v-model="selectedOption" :by="getOptionKey">
         <ListboxButton
-          class="relative w-full rounded-xl border-[1px] border-base bg-lightbase text-base pl-4 pr-8 py-2 cursor-pointer"
+          :class="customCss"
+          class="relative w-full text-left rounded-xl border-[1px] border-base bg-lightbase text-base pl-4 pr-8 py-2 cursor-pointer"
         >
-          <span>{{ getOptionLabel(selectedOption) || placeholder }}</span>
+          <span>{{ getOptionLabel(selectedOption) }}</span>
           <span
             class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none"
           >
@@ -15,14 +16,15 @@
         </ListboxButton>
 
         <ListboxOptions
-          class="absolute w-full mt-1 rounded-xl border-[1px] border-base"
+          :class="customCss"
+          class="absolute w-full mt-1 rounded-xl border border-base"
         >
           <ListboxOption
             v-if="placeholder"
             :key="placeholder"
             :value="''"
             disabled
-            class="cursor-default py-2 bg-lightbase"
+            class="cursor-default py-2 px-4 bg-lightbase"
           >
             {{ placeholder }}
           </ListboxOption>
@@ -31,7 +33,7 @@
             :key="getOptionKey(option)"
             :value="option"
             :class="[
-              'cursor-pointer py-2 bg-lightbase hover:bg-base border-b-[1px] border-base',
+              'cursor-pointer py-2 px-4 bg-lightbase hover:bg-base border-b border-base',
               index === 0 ? 'rounded-t-xl' : '',
               index === options.length - 1 ? 'rounded-b-xl border-b-0' : '',
             ]"

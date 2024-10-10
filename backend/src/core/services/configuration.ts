@@ -32,6 +32,11 @@ export interface Configuration {
     clientEmail: string;
     privateKey: string;
   };
+  stripe: {
+    baseurl: string;
+    secretKey: string;
+    webhookSecret: string;
+  };
 }
 
 export default (): Configuration => ({
@@ -71,5 +76,10 @@ export default (): Configuration => ({
     projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
     privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+  },
+  stripe: {
+    baseurl: process.env.STRIPE_BASE_URL,
+    secretKey: process.env.STRIPE_SECRET_KEY,
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   },
 });

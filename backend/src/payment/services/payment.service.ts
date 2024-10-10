@@ -15,6 +15,7 @@ import {
 } from "@/core/constants/schema.constants";
 import {
   PaymentProvider,
+  TransferPurpose,
   TransferRecordDocument,
   TransferStatus,
 } from "../schemas/transfer-record.schema";
@@ -27,13 +28,14 @@ import {
   WebhookEventEnum,
   VerifyAccountNumbertDTO,
   IWebhookCharge,
+  CreatePaymentIntentDTO,
 } from "../types/payment.type";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 import { PaystackService } from "../providers/paystack/paystack.service";
 import { ChargeRecordDocument } from "../schemas/charge-record.schema";
 import { WalletService } from "@/wallet/services/wallet.service";
-import { AVAILABLE_BALANCE } from "@/wallet/dtos/wallet.dto";
-import { TransactionPurpose } from "@/wallet/schemas/wallet-transaction.schema";
+import { StripeService } from "../providers/stripe/stripe.service";
+import { UserDocument } from "@/user/schemas/user.schema";
 
 @Injectable()
 export class PaymentService {
@@ -48,6 +50,7 @@ export class PaymentService {
     @InjectModel(BANK)
     private bankModel: Model<BankDocument>,
     private paystackService: PaystackService,
+    private stripeService: StripeService,
     @Inject(forwardRef(() => WalletService))
     private walletService: WalletService
   ) {
@@ -56,6 +59,7 @@ export class PaymentService {
 
   private _registerServices(): void {
     this.services.set(PaymentProvider.Paystack, this.paystackService);
+    this.services.set(PaymentProvider.Stripe, this.stripeService);
 
     this.registerCurrencyService(
       SupportedCurrencyEnum.NGN,
@@ -73,6 +77,12 @@ export class PaymentService {
       SupportedCurrencyEnum.ZAR,
       this.paystackService
     );
+
+    this.registerCurrencyService(SupportedCurrencyEnum.USD, this.stripeService);
+    this.registerCurrencyService(SupportedCurrencyEnum.EUR, this.stripeService);
+    this.registerCurrencyService(SupportedCurrencyEnum.GBP, this.stripeService);
+    this.registerCurrencyService(SupportedCurrencyEnum.AUD, this.stripeService);
+    this.registerCurrencyService(SupportedCurrencyEnum.MXN, this.stripeService);
   }
 
   private registerCurrencyService(
@@ -180,11 +190,33 @@ export class PaymentService {
       });
 
       transferRecord.status = transferResponse.status;
+      transferRecord.providerResponse.push(transferResponse);
     } catch (error) {
+      transferRecord.providerResponse.push(JSON.parse(JSON.stringify(error)));
       transferRecord.status = TransferStatus.Failed;
-      throw error;
     } finally {
+      transferRecord.markModified("providerResponse");
       await transferRecord.save();
+    }
+    if (
+      [TransferStatus.Failed, TransferStatus.Successful].includes(
+        transferRecord.status
+      )
+    ) {
+      this.handleTransferHook({
+        event:
+          transferRecord.status === TransferStatus.Failed
+            ? WebhookEventEnum.TransferFailed
+            : WebhookEventEnum.TransferSuccess,
+        data: {
+          status: transferRecord.status,
+          amount: transferRecord.amount,
+          meta: transferRecord.meta,
+          reference: transferRecord.reference,
+        },
+        provider: transferRecord.paymentProvider,
+        originalPayload: {},
+      });
     }
 
     return transferRecord;
@@ -238,32 +270,35 @@ export class PaymentService {
   }
 
   async handleWebhook(
-    payload: { event: any; headers: any },
+    payload: { event: any; headers: any; rawBody: any },
     paymentProvider: PaymentProvider
   ): Promise<any> {
     try {
       const service = this.services.get(paymentProvider);
       const isValidWebhook = service.validateWebhook(
         payload.headers,
-        payload.event
+        payload.event,
+        payload.rawBody
       );
       if (!isValidWebhook) {
         throw new BadRequestException("webhook is invalid");
       }
 
       const transformedData = service.transformWebhook(payload.event);
-      switch (transformedData.event) {
-        case WebhookEventEnum.TransferFailed:
-        case WebhookEventEnum.TransferSuccess:
-          await this.handleTransferHook(transformedData);
-          break;
+      if (transformedData) {
+        switch (transformedData.event) {
+          case WebhookEventEnum.TransferFailed:
+          case WebhookEventEnum.TransferSuccess:
+            await this.handleTransferHook(transformedData);
+            break;
 
-        case WebhookEventEnum.ChargeSuccess:
-          await this.handleChargeHook(transformedData);
-          break;
+          case WebhookEventEnum.ChargeSuccess:
+            await this.handleChargeHook(transformedData);
+            break;
 
-        default:
-          break;
+          default:
+            break;
+        }
       }
     } catch (e) {
       console.log(e);
@@ -287,7 +322,17 @@ export class PaymentService {
 
     transferRecord.webhookResponse.push(payload);
     transferRecord.status = data.status;
+    transferRecord.markModified("webhookResponse");
     await transferRecord.save();
+
+    switch (transferRecord.purpose) {
+      case TransferPurpose.WALLET_WITHDRAWAL:
+        this.walletService.handleTransferHook(payload);
+        break;
+
+      default:
+        break;
+    }
   }
 
   async handleChargeHook(payload: IWebhookResponse<IWebhookCharge>) {
@@ -308,18 +353,7 @@ export class PaymentService {
       { upsert: true, new: true }
     );
 
-    if (meta.user && status === TransferStatus.Successful) {
-      await this.walletService.creditWallet({
-        amount,
-        balanceKeys: [AVAILABLE_BALANCE],
-        currency,
-        description: `funded wallet from ${channel}`,
-        purpose: TransactionPurpose.DEPOSIT,
-        reference,
-        user: meta.user,
-        meta,
-      });
-    }
+    await this.walletService.handleChargeHook(payload);
   }
 
   @Cron(CronExpression.EVERY_30_MINUTES)
@@ -350,7 +384,7 @@ export class PaymentService {
           data: {
             status,
             amount: transferRecord.amount,
-            meta: {},
+            meta: transferRecord.meta,
             reference: transferRecord.reference,
           },
           provider: transferRecord.paymentProvider,
@@ -362,5 +396,18 @@ export class PaymentService {
     );
 
     return pendingOrProccesingTransfers;
+  }
+
+  async createCheckoutSession(
+    user: UserDocument,
+    payload: CreatePaymentIntentDTO
+  ) {
+    const service = this.getCurrencyService(payload.currency);
+    const resp = await service.createCheckoutSession({
+      ...payload,
+      meta: { user: user.id },
+      email: user.email,
+    });
+    return resp;
   }
 }

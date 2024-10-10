@@ -26,6 +26,14 @@ export enum TransactionPurpose {
   TRANSFER_DEBIT = "transfer_debit",
   PENDING_CURRENCY_EXCHANGE_CREDIT = "pending_currency_exchange_credit",
   PENDING_CURRENCY_EXCHANGE_DEBIT = "pending_currency_exchange_debit",
+  REFUND = "refund",
+}
+
+export enum TransactionStatus {
+  Pending = "pending",
+  Processing = "processing",
+  Successful = "successful",
+  Failed = "failed",
 }
 
 export type WalletTransactionDocument = HydratedDocument<WalletTransaction>;
@@ -85,6 +93,13 @@ export class WalletTransaction extends BaseSchema {
 
   @Prop({ type: SchemaTypes.String })
   note?: string;
+
+  @Prop({
+    type: SchemaTypes.String,
+    enum: Object.values(TransactionStatus),
+    default: TransactionStatus.Successful,
+  })
+  status: TransactionStatus;
 }
 
 export const WalletTransactionSchema =

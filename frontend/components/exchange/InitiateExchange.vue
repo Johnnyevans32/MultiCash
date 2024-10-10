@@ -3,7 +3,7 @@
     <CommonFormSelect
       title="Choose Pay In Currency"
       :selected="payinCurrency"
-      :options="payinOptions"
+      :options="exchangeCurrencies"
       @change-option="
         (newValue) => {
           payinCurrency = newValue;
@@ -12,17 +12,10 @@
       placeholder="-- Please choose the currency you want to convert from --"
     />
 
-    <!-- <div
-      class="text-2xl bg-blue-600 p-5 h-10 w-10 flex justify-center items-center rounded-full text-white self-center"
-      @click="switchCurrencies"
-    >
-      <font-awesome-icon icon="fa-solid fa-retweet" />
-    </div> -->
-
     <CommonFormSelect
       title="Choose Pay Out Currency"
       :selected="payoutCurrency"
-      :options="payoutOptions"
+      :options="exchangeCurrencies"
       @change-option="
         (newValue) => {
           payoutCurrency = newValue;
@@ -39,11 +32,15 @@
     />
 
     <div v-if="isLoadingOfferings">
-      <div class="h-2 w-28 bg-base rounded mb-2"></div>
+      <div class="flex justify-between items-center">
+        <div class="h-2 w-28 bg-base rounded mb-2"></div>
+
+        <div class="h-4 w-28 bg-base rounded mb-2"></div>
+      </div>
       <div
         v-for="i in 2"
         :key="i"
-        class="cursor-progress p-5 flex mb-2 items-center h-32 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base animate-pulse"
+        class="cursor-progress p-5 flex mb-2 items-center h-24 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base animate-pulse"
       ></div>
     </div>
     <ExchangeMatchedOfferings
@@ -52,7 +49,7 @@
     />
     <div v-else>
       <font-awesome-icon class="text-7xl mb-5" icon="box-open" />
-      <p>No matched offerings found as of now</p>
+      <p>No matched offerings found yet</p>
     </div>
   </div>
 </template>
@@ -75,15 +72,8 @@ export default defineComponent({
     const payinCurrency = ref("");
     const payoutCurrency = ref("");
 
-    const payinOptions = computed(() =>
-      wallets.value
-        .map((i: { currency: string }) => i.currency)
-        .filter((currency) => currency !== payoutCurrency.value)
-    );
-    const payoutOptions = computed(() =>
-      wallets.value
-        .map((i: { currency: string }) => i.currency)
-        .filter((currency) => currency !== payinCurrency.value)
+    const exchangeCurrencies = computed(() =>
+      wallets.value.map((i: { currency: string }) => i.currency)
     );
 
     const isLoadingWallets = ref(false);
@@ -109,21 +99,13 @@ export default defineComponent({
       );
     };
 
-    const switchCurrencies = () => {
-      const temp = payinCurrency.value;
-      payinCurrency.value = payoutCurrency.value;
-      payoutCurrency.value = temp;
-    };
-
     return {
       payinCurrency,
       payoutCurrency,
-      payinOptions,
-      payoutOptions,
+      exchangeCurrencies,
       isLoadingWallets,
       getOfferings,
       isLoadingOfferings,
-      switchCurrencies,
       matchedOfferings,
     };
   },

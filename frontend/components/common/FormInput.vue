@@ -6,7 +6,7 @@
       :value="modelValue"
       @input="handleModelValueChangeAction($event)"
       :placeholder="placeholder"
-      :class="`${customCss} rounded-xl px-5 py-2 bg-lightbase w-full border-[1px]
+      :class="`${customCss} rounded-xl px-4 py-2 bg-lightbase w-full border-[1px]
     border-base`"
       :disabled="disabled"
       :min="min"

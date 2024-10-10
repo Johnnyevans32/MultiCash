@@ -146,7 +146,7 @@ export class PaystackService
       },
     });
 
-    return data.recipient_code as string;
+    return data.recipient_code;
   }
 
   validateWebhook(headers: any, payload: any): boolean {

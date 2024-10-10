@@ -6,12 +6,14 @@ export interface IUser {
   country: string;
   did: string;
   tag: string;
+  pushNotificationIsEnabled: boolean;
 }
 
 export interface UpdateUserDTO {
   name?: string;
   profileImage?: string;
   did?: string;
+  pushNotificationIsEnabled?: boolean;
 }
 export interface IResponse<T> {
   code?: string;
@@ -40,6 +42,7 @@ export interface SigninDTO {
 export interface SignupDTO extends SigninDTO {
   name: string;
   country: string;
+  did?: string;
 }
 
 export interface UpdatePasswordDTO {

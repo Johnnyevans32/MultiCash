@@ -13,7 +13,12 @@ export class WalletService {
     return data;
   }
 
-  async fetchWalletTransactions(walletId: string, page = 1, search = "") {
+  async fetchWalletTransactions(payload: {
+    walletId: string;
+    page?: number;
+    search?: string;
+  }) {
+    const { walletId, page = 1, search } = payload;
     const query = new URLSearchParams({
       page: page.toString(),
       ...(search && { search }),

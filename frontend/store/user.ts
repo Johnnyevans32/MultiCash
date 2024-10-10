@@ -1,4 +1,5 @@
 import type { IUser } from "~/types/user";
+import { useWalletStore } from "./wallet";
 
 export const useUserStore = defineStore(
   "userStore",
@@ -9,11 +10,12 @@ export const useUserStore = defineStore(
     function setUser(_user: any) {
       user.value = _user;
     }
-
     function setAccessToken(token: any) {
       accessToken.value = token;
       if (!token) {
+        const { resetStore: resetWalletStore } = useWalletStore();
         user.value = null;
+        resetWalletStore();
       }
     }
 

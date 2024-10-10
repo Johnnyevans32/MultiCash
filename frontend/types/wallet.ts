@@ -3,9 +3,6 @@ import type { IUser } from "./user";
 interface WalletCurrency {
   withdrawalEnabled: boolean;
   fundingEnabled: boolean;
-  transferFee: number;
-  exchangePercentageFee: number;
-  maxExchangeFee: number;
   currency: string;
   logo: string;
   name: string;
@@ -35,6 +32,7 @@ export interface IWalletTransaction {
   createdAt: string;
   currency: string;
   note: string;
+  status: string;
 }
 
 export interface IBank {

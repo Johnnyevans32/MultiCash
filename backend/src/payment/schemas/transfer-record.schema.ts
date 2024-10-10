@@ -23,6 +23,8 @@ export enum TransferStatus {
 
 export enum PaymentProvider {
   Paystack = "paystack",
+  Stripe = "stripe",
+  BitPay = "bitpay",
 }
 
 export type TransferRecordDocument = HydratedDocument<TransferRecord>;
@@ -74,6 +76,9 @@ export class TransferRecord extends BaseSchema {
 
   @Prop({ type: SchemaTypes.Mixed, default: [] })
   webhookResponse?: any[];
+
+  @Prop({ type: SchemaTypes.Mixed, default: [] })
+  providerResponse?: any[];
 }
 
 export const TransferRecordSchema =

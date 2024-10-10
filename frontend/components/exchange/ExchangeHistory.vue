@@ -36,43 +36,23 @@
         @click="openExchangeModal(exchange)"
       >
         <div class="flex md:space-x-2 space-x-1 items-center">
-          <CommonImage type="icon" image="fa-solid fa-exchange" />
+          <font-awesome-icon icon="exchange" />
 
-          <div class="flex flex-col text-left">
-            <span class="truncate">
-              {{ exchange.payinCurrency }}
-              {{ formatMoney(exchange.payinAmount) }}
-              <font-awesome-icon icon="fas fa-arrow-right " class="mx-1" />
-              {{ exchange.payoutCurrency }}
-              {{ formatMoney(exchange.payoutAmount) }}
-            </span>
-            <span
-              class="md:hidden flex text-sm"
-              :class="
-                exchange?.status === 'completed'
-                  ? 'text-green-600'
-                  : exchange?.status === 'failed'
-                  ? 'text-red-600'
-                  : 'text-yellow-600'
-              "
-              >{{ exchange.status }}</span
-            >
-          </div>
+          <span class="truncate md:text-sm text-xs">
+            {{ exchange.payinCurrency }}
+            {{ formatMoney(exchange.payinAmount) }}
+            <font-awesome-icon icon="fas fa-arrow-right " class="mx-1" />
+            {{ exchange.payoutCurrency }}
+            {{ formatMoney(exchange.payoutAmount) }}
+          </span>
         </div>
 
-        <div class="md:flex hidden flex-col text-right">
-          <span
-            class="md:text-tbase text-sm"
-            :class="
-              exchange?.status === 'completed'
-                ? 'text-green-600'
-                : exchange?.status === 'failed'
-                ? 'text-red-600'
-                : 'text-yellow-600'
-            "
-            >{{ exchange.status }}</span
-          >
-        </div>
+        <span
+          class="md:text-xs text-tiny py-1 px-2 rounded-lg"
+          :class="exchangeStatusStyles[exchange.status]"
+        >
+          {{ exchange?.status }}
+        </span>
       </div>
     </div>
   </div>
@@ -127,10 +107,12 @@
           <span>Exchange Rate:</span>
           <span class="font-bold">
             1 {{ modalExchange?.payinCurrency }} =
-            {{ modalExchange?.payoutUnitsPerPayinUnit }}
-            {{ modalExchange?.payoutCurrency }} or 1
-            {{ modalExchange.payoutCurrency }} =
-            {{ formatMoney(1 / modalExchange.payoutUnitsPerPayinUnit, 8) }}
+            {{ formatMoney(modalExchange?.payoutUnitsPerPayinUnit, 5) }}
+            {{ modalExchange?.payoutCurrency }}
+          </span>
+          <span class="font-bold">
+            1 {{ modalExchange.payoutCurrency }} =
+            {{ formatMoney(1 / modalExchange.payoutUnitsPerPayinUnit, 5) }}
             {{ modalExchange.payinCurrency }}
           </span>
         </div>
@@ -143,15 +125,11 @@
           >
         </div>
 
-        <div class="flex flex-col">
+        <div class="flex flex-col items-start">
           <span>Status:</span>
           <span
-            class="font-bold"
-            :class="{
-              'text-green-600': modalExchange?.status === 'completed',
-              'text-red-600': modalExchange?.status === 'failed',
-              'text-yellow-600': modalExchange?.status === 'pending',
-            }"
+            class="font-bold md:text-xs text-tiny py-1 px-2 rounded-lg"
+            :class="exchangeStatusStyles[modalExchange.status]"
           >
             {{ modalExchange?.status }}
           </span>
@@ -167,42 +145,70 @@
           </span>
         </div>
 
-        <div v-if="modalExchange?.offerings?.length" class="flex flex-col">
+        <div v-if="modalExchange.completionDate" class="flex flex-col">
+          <span>Completion Date:</span>
+          <span class="font-bold">
+            {{
+              formatDate(
+                modalExchange.completionDate,
+                "ddd, MMM Do YYYY, h:mm:ss a"
+              )
+            }}
+          </span>
+        </div>
+
+        <div
+          v-if="modalExchange?.offerings?.length"
+          class="flex flex-col gap-2 font-bold"
+        >
           <span>Exchange Route:</span>
-          <ul class="font-bold flex flex-col gap-4">
+          <ol>
             <li
-              v-for="offering in modalExchange.offerings"
+              v-for="(offering, index) in modalExchange.offerings"
               :key="offering.id"
-              class="border-t border-base py-2"
+              class="group relative pb-5 pl-7 last:pb-0"
             >
-              <div class="flex justify-between">
-                <span>PFI: {{ offering.pfi?.name }}</span>
-                <span
-                  >Status:
+              <!-- Vertical timeline line -->
+              <div
+                class="absolute bottom-0 left-[calc(0.25rem-0.5px)] top-0 w-px bg-base group-first:top-3"
+                v-if="index !== modalExchange.offerings.length - 1"
+              ></div>
+
+              <font-awesome-icon
+                :icon="
+                  offering.status === 'completed'
+                    ? 'check-circle'
+                    : 'dot-circle'
+                "
+                :class="offeringStatusStyles[offering.status]"
+                class="bg-lightbase absolute -left-1 top-1 rounded-full"
+              />
+
+              <div class="flex flex-col">
+                <div class="flex justify-between">
+                  <span>{{ offering.pfi?.name }}</span>
+
                   <span
-                    :class="{
-                      'text-green-600': offering.status === 'completed',
-                      'text-red-600': offering.status === 'failed',
-                      'text-yellow-600': offering.status === 'pending',
-                    }"
+                    :class="offeringStatusStyles[offering.status]"
+                    class="md:text-xs text-tiny py-1 px-2 rounded-lg"
                   >
                     {{ offering.status.replace("_", " ") }}
                   </span>
-                </span>
-              </div>
-              <div class="flex flex-col">
-                <span
-                  >1 {{ offering.payinCurrency }} =
+                </div>
+                <span>
+                  1 {{ offering.payinCurrency }} =
                   {{ formatMoney(offering.payoutUnitsPerPayinUnit, 5) }}
-                  {{ offering.payoutCurrency }}</span
-                >
-                <span
-                  >PFI fee: {{ offering.payinCurrency }}
-                  {{ formatMoney(offering.pfiFee || 0) }}</span
-                >
+                  {{ offering.payoutCurrency }}
+                </span>
+                <div class="flex justify-between">
+                  <span>
+                    PFI fee: {{ offering.payinCurrency }}
+                    {{ formatMoney(offering.pfiFee || 0) }}
+                  </span>
+                </div>
               </div>
             </li>
-          </ul>
+          </ol>
         </div>
       </div>
     </template>
@@ -214,7 +220,11 @@
         custom-css="bg-base w-full text-base"
       />
       <CommonButton
-        v-if="!modalExchange.rating && !modalExchange.comment"
+        v-if="
+          !modalExchange.rating &&
+          !modalExchange.comment &&
+          modalExchange.status === 'completed'
+        "
         text="Give feedback"
         @btn-action="
           () => {
@@ -223,6 +233,24 @@
           }
         "
         custom-css="!bg-blue-600 w-full text-white"
+      />
+
+      <CommonButton
+        v-if="
+          modalExchange.offerings.find((i) =>
+            ['awaiting_order', 'processing'].includes(i.status)
+          )
+        "
+        text="Cancel Exchange"
+        :loading="isLoadingCloseOffering"
+        @btn-action="
+          closeOffering(
+            modalExchange.offerings.find((i) =>
+              ['awaiting_order', 'processing'].includes(i.status)
+            )?.id || ''
+          )
+        "
+        custom-css="bg-red-600 text-white w-full"
       />
     </template>
   </CommonModal>
@@ -241,7 +269,7 @@
         <CommonRatingInput v-model="rating" :maxRating="5" />
         <CommonTextArea
           v-model="comment"
-          placeholder="Add comment"
+          placeholder="Your feedback helps us improve. Type here..."
           title="Add comment"
           @keyup.enter="giveFeedbackOnExchange"
         />
@@ -272,9 +300,17 @@ export default defineComponent({
 
     const { withLoadingPromise } = useLoading();
 
-    onBeforeMount(async () => {
-      await fetchExchanges();
+    onBeforeMount(() => {
+      fetchExchanges();
     });
+
+    const route = useRoute();
+    watch(
+      () => route.query.r,
+      () => {
+        fetchExchanges();
+      }
+    );
 
     const currentPage = ref(1);
     const handlePageChange = (newVal: number) => {
@@ -332,6 +368,39 @@ export default defineComponent({
       );
     };
 
+    const offeringStatusStyles = ref({
+      pending: "text-blue-700 bg-blue-100",
+      processing: "text-yellow-700 bg-yellow-100",
+      awaiting_order: "text-orange-700 bg-orange-100",
+      order_placed: "text-purple-700 bg-purple-100",
+      cancelled: "text-red-700 bg-red-100",
+      completed: "text-green-700 bg-green-100",
+    });
+
+    const exchangeStatusStyles = ref({
+      pending: "text-blue-700 bg-blue-100",
+      processing: "text-yellow-700 bg-yellow-100",
+      completed: "text-green-700 bg-green-100",
+      cancelled: "text-red-700 bg-red-100",
+      partially_completed: "text-orange-700 bg-orange-100",
+    });
+
+    const reason = ref("");
+    const isLoadingCloseOffering = ref(false);
+    const closeOffering = async (offeringId: string) => {
+      await withLoadingPromise(
+        $api.exchangeService
+          .closeOffering(offeringId, reason.value)
+          .then(() => {
+            fetchExchanges();
+            notify({
+              type: "success",
+              title: `acknowledged`,
+            });
+          }),
+        isLoadingCloseOffering
+      );
+    };
     return {
       exchanges,
       exchangesMetadata,
@@ -346,6 +415,10 @@ export default defineComponent({
       isLoadingGiveFeedbackOnExchange,
       giveFeedbackOnExchange,
       rating,
+      offeringStatusStyles,
+      exchangeStatusStyles,
+      closeOffering,
+      isLoadingCloseOffering,
     };
   },
 });

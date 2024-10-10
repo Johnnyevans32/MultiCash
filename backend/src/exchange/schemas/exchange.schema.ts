@@ -14,7 +14,6 @@ export enum ExchangeStatus {
   Pending = "pending",
   Processing = "processing",
   Completed = "completed",
-  Failed = "failed",
   Cancelled = "cancelled",
   PartiallyCompleted = "partially_completed",
 }
@@ -27,10 +26,10 @@ export class Exchange extends BaseSchema {
 
   @Prop({ type: SchemaTypes.Number, required: true })
   payinAmount: number;
+  @Prop({ type: SchemaTypes.Number })
+  totalPayinAmount: number;
   @Prop({ type: SchemaTypes.Number, required: true })
   payoutAmount: number;
-  @Prop({ type: SchemaTypes.Number, required: true })
-  netPayinAmount: number;
 
   @Prop({ enum: Object.values(SupportedCurrencyEnum), required: true })
   payinCurrency: SupportedCurrencyEnum;
@@ -57,6 +56,9 @@ export class Exchange extends BaseSchema {
   rating?: number;
   @Prop({ type: SchemaTypes.String })
   comment?: string;
+
+  @Prop({ type: SchemaTypes.Date })
+  completionDate?: Date;
 
   offeringToBeProcessed?: OfferingDocument;
   offerings?: OfferingDocument[];

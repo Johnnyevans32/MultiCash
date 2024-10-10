@@ -70,6 +70,12 @@ export class User extends BaseSchema {
     },
   ])
   deviceFcmTokens: string[];
+
+  @Prop({ type: Boolean, default: false })
+  pushNotificationIsEnabled: boolean;
+
+  @Prop({ type: Date })
+  lastLoggedIn: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

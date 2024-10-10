@@ -7,7 +7,7 @@
       inputType="email"
       v-model="email"
       title="Enter your email"
-      placeholder="email"
+      placeholder="example@example.com"
       @keyup.enter="forgotPassword"
     />
     <CommonButton

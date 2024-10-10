@@ -15,8 +15,7 @@ export class UtilityService {
   };
 
   static verifyPassword = async (password: string, hashedPassword: string) => {
-    const isMatch = await bcrypt.compare(password, hashedPassword);
-    return isMatch;
+    return await bcrypt.compare(password, hashedPassword);
   };
 
   static generateRandomHex(length: number): string {

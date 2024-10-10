@@ -26,6 +26,7 @@ import {
 } from "@/wallet/dtos/wallet.dto";
 import {
   TransactionPurpose,
+  TransactionStatus,
   TransactionType,
   WalletTransactionDocument,
 } from "@/wallet/schemas/wallet-transaction.schema";
@@ -45,6 +46,12 @@ import { RevenueSource } from "@/revenue/schemas/revenue.schema";
 import { EmailService } from "@/notification/email/email.service";
 import { UserService } from "@/user/services/user.service";
 import { FcmService } from "@/notification/fcm/fcm.service";
+import {
+  IWebhookCharge,
+  IWebhookResponse,
+  IWebhookTransfer,
+  WebhookEventEnum,
+} from "@/payment/types/payment.type";
 
 @Injectable()
 export class WalletService {
@@ -108,8 +115,7 @@ export class WalletService {
       })
       .populate({
         path: "walletCurrency",
-        select:
-          "name logo withdrawalEnabled fundingEnabled transferFee exchangePercentageFee maxExchangeFee",
+        select: "name logo withdrawalEnabled fundingEnabled",
       })
       .select("availableBalance currency");
   }
@@ -129,7 +135,13 @@ export class WalletService {
           isDeleted: false,
           user: user.id,
           wallet,
-          ...(search && { description: { $regex: search, $options: "i" } }),
+          ...(search && {
+            $or: [
+              { description: { $regex: search, $options: "i" } },
+              { note: { $regex: search, $options: "i" } },
+              { purpose: { $regex: search, $options: "i" } },
+            ],
+          }),
         },
         {
           sort: { createdAt: -1 },
@@ -137,7 +149,7 @@ export class WalletService {
           limit,
           pagination: !all,
           select:
-            "amount description type purpose currency createdAt walletStateAfter.availableBalance walletStateAfter.currency walletStateBefore.availableBalance note",
+            "amount description type purpose currency createdAt walletStateAfter.availableBalance walletStateAfter.currency walletStateBefore.availableBalance note status",
         }
       );
     return { data, metadata };
@@ -211,17 +223,7 @@ export class WalletService {
   async creditWallet(
     payload: CreateWalletTxnDTO
   ): Promise<WalletTransactionDocument> {
-    const {
-      user,
-      reference,
-      amount,
-      description,
-      currency,
-      balanceKeys,
-      purpose,
-      meta,
-      sender,
-    } = payload;
+    const { user, reference, amount, currency, balanceKeys, purpose } = payload;
 
     const wallet = await this.fetchWallet(user, currency);
     const mutex = this.getOrCreateMutex(wallet.id);
@@ -230,17 +232,10 @@ export class WalletService {
 
     try {
       const transactionPayload = {
-        user,
-        reference,
         type: TransactionType.CREDIT,
-        purpose,
-        description,
         wallet: wallet.id,
         walletStateBefore: wallet.toJSON(),
-        amount,
-        meta,
-        currency,
-        sender,
+        ...payload,
       };
 
       const txn = await this.executeTransaction(
@@ -250,38 +245,6 @@ export class WalletService {
         balanceKeys
       );
 
-      if ([TransactionPurpose.DEPOSIT].includes(purpose)) {
-        const userObj = await this.userService.findUser({ _id: wallet.user });
-        this.emailService.sendWalletFundingNotification(
-          userObj,
-          amount,
-          currency
-        );
-        this.fcmService.sendPushNotification(userObj, {
-          title: "Wallet Funding",
-          body: `You have successfully funded your wallet with ${UtilityService.formatMoney(amount, currency)}.`,
-        });
-      }
-
-      if ([TransactionPurpose.TRANSFER_CREDIT].includes(purpose)) {
-        const [userObj, senderObj] = await Promise.all([
-          this.userService.findUser({ _id: wallet.user }),
-          this.userService.findUser({ _id: sender }),
-        ]);
-        this.emailService.sendEmail(
-          userObj,
-          "Wallet Transfer Confirmation",
-          "transfer-success-receiver.njk",
-          {
-            amount: UtilityService.formatMoney(amount, currency),
-            sender: senderObj,
-          }
-        );
-        this.fcmService.sendPushNotification(userObj, {
-          title: "Wallet Transfer",
-          body: `You have received ${UtilityService.formatMoney(amount, currency)} from ${senderObj.tag}.`,
-        });
-      }
       return txn;
     } finally {
       release();
@@ -291,19 +254,7 @@ export class WalletService {
   async debitWallet(
     payload: CreateWalletTxnDTO
   ): Promise<WalletTransactionDocument> {
-    const {
-      user,
-      reference,
-      amount,
-      description,
-      currency,
-      balanceKeys,
-      purpose,
-      meta,
-      fee,
-      note,
-      receiver,
-    } = payload;
+    const { user, reference, amount, currency, balanceKeys } = payload;
 
     const wallet = await this.fetchWallet(user, currency);
     const mutex = this.getOrCreateMutex(wallet.id);
@@ -320,19 +271,10 @@ export class WalletService {
       });
 
       const transactionPayload = {
-        user,
-        reference,
         type: TransactionType.DEBIT,
-        purpose,
-        description,
         wallet: wallet.id,
         walletStateBefore: wallet.toJSON(),
-        amount,
-        meta,
-        currency,
-        fee,
-        note,
-        receiver,
+        ...payload,
       };
 
       const txn = await this.executeTransaction(
@@ -341,25 +283,7 @@ export class WalletService {
         -amount,
         balanceKeys
       );
-      if ([TransactionPurpose.TRANSFER_DEBIT].includes(purpose)) {
-        const [userObj, receiverObj] = await Promise.all([
-          this.userService.findUser({ _id: wallet.user }),
-          this.userService.findUser({ _id: receiver }),
-        ]);
-        this.emailService.sendEmail(
-          userObj,
-          "Wallet Transfer Confirmation",
-          "transfer-success-sender.njk",
-          {
-            amount: UtilityService.formatMoney(amount, currency),
-            receiver: receiverObj,
-          }
-        );
-        this.fcmService.sendPushNotification(userObj, {
-          title: "Wallet Transfer",
-          body: `You have sent ${UtilityService.formatMoney(amount, currency)} to ${receiverObj.tag}.`,
-        });
-      }
+
       return txn;
     } finally {
       release();
@@ -401,18 +325,20 @@ export class WalletService {
         })
         .populate("walletCurrency");
       const { transferFee } = wallet.walletCurrency;
-      currency = wallet.walletCurrency.currency;
+      let { currency } = wallet;
+
       const txn = await this.debitWallet({
         amount: amount + transferFee,
         currency,
         balanceKeys: [AVAILABLE_BALANCE],
-        description: `Withdrew money to beneficiary`,
+        description: `You sent ${accountName}`,
         reference: UtilityService.generateRandomHex(12),
         user: user.id,
         purpose: TransactionPurpose.WITHDRAWAL,
         fee: transferFee,
         note,
         meta: { accountName, accountNumber, bankName: bank.name },
+        status: TransactionStatus.Pending,
       });
 
       await this.paymentService.transferToAccount({
@@ -424,22 +350,11 @@ export class WalletService {
         bank: bank,
         accountNumber,
         accountName,
-        meta: {},
-      });
-
-      this.revenueService.createRevenue({
-        amount: transferFee,
-        source: RevenueSource.WALLET_WITHDRAWAL,
-        currency,
-        reference: `rev_${txn.id}`,
         meta: { walletTransactionId: txn.id },
       });
 
-      this.emailService.sendWithdrawalNotification(user, amount, currency);
-      this.fcmService.sendPushNotification(user, {
-        title: "Wallet Withdrawal",
-        body: `You have successfully withdrew ${UtilityService.formatMoney(amount, currency)} from wallet.`,
-      });
+      txn.status = TransactionStatus.Processing;
+      await txn.save();
     }
 
     if (beneficiary.type === BeneficiaryType.Platform) {
@@ -448,7 +363,7 @@ export class WalletService {
         amount,
         currency,
         balanceKeys: [AVAILABLE_BALANCE],
-        description: `Sent ${amount} ${currency} to @${receiver.tag}`,
+        description: `You sent @${receiver.tag}`,
         reference: UtilityService.generateRandomHex(12),
         user: user.id,
         purpose: TransactionPurpose.TRANSFER_DEBIT,
@@ -460,12 +375,40 @@ export class WalletService {
         amount,
         currency,
         balanceKeys: [AVAILABLE_BALANCE],
-        description: `Received ${amount} ${currency} from @${user.tag}`,
+        description: `@${user.tag} sent you`,
         reference: `transfer_${txn.id}`,
         user: receiver.id,
         purpose: TransactionPurpose.TRANSFER_CREDIT,
         note,
         sender: user.id,
+      });
+
+      this.emailService.sendEmail(
+        user,
+        "Wallet Transfer Confirmation",
+        "transfer-success-sender.njk",
+        {
+          amount: UtilityService.formatMoney(amount, currency),
+          receiver: receiver,
+        }
+      );
+      this.fcmService.sendPushNotification(user, {
+        title: "Wallet Transfer",
+        body: `You have sent ${UtilityService.formatMoney(amount, currency)} to ${receiver.tag}.`,
+      });
+
+      this.emailService.sendEmail(
+        receiver,
+        "Wallet Transfer Confirmation",
+        "transfer-success-receiver.njk",
+        {
+          amount: UtilityService.formatMoney(amount, currency),
+          sender: user,
+        }
+      );
+      this.fcmService.sendPushNotification(receiver, {
+        title: "Wallet Transfer",
+        body: `You have received ${UtilityService.formatMoney(amount, currency)} from ${user.tag}.`,
       });
     }
   }
@@ -497,7 +440,9 @@ export class WalletService {
       });
 
       if (!beneficiaryUser) {
-        throw new BadRequestException("User not found");
+        throw new BadRequestException(
+          `invalid user tag passed: ${beneficiaryTag}`
+        );
       }
 
       if (beneficiaryUser.id === user.id) {
@@ -528,5 +473,103 @@ export class WalletService {
       { _id: beneficiaryId, user: user.id },
       { $set: { isDeleted: true, deletedAt: new Date() } }
     );
+  }
+
+  async refundWalletTransaction(walletTxnId: string, description?: string) {
+    const walletTransactionDebitToBeRefunded =
+      await this.walletTransactionModel.findById(walletTxnId);
+
+    if (!walletTransactionDebitToBeRefunded) {
+      return;
+    }
+
+    const { currency, amount, user } = walletTransactionDebitToBeRefunded;
+    await this.creditWallet({
+      amount,
+      currency,
+      balanceKeys: [AVAILABLE_BALANCE],
+      description: description || "Refund",
+      reference: `refund_${walletTransactionDebitToBeRefunded.id}`,
+      user: user as string,
+      purpose: TransactionPurpose.REFUND,
+      meta: { walletTransactionId: walletTransactionDebitToBeRefunded.id },
+    });
+  }
+
+  async handleTransferHook(payload: IWebhookResponse<IWebhookTransfer>) {
+    const { walletTransactionId } = payload.data.meta;
+
+    if (!walletTransactionId) return;
+
+    const walletTransaction = await this.walletTransactionModel
+      .findById(walletTransactionId)
+      .populate("user");
+    if (!walletTransaction) return;
+
+    const user = walletTransaction.user as UserDocument;
+    const { amount, currency } = walletTransaction;
+
+    switch (payload.event) {
+      case WebhookEventEnum.TransferSuccess:
+        walletTransaction.status = TransactionStatus.Successful;
+        this.revenueService.createRevenue({
+          amount: walletTransaction.fee,
+          source: RevenueSource.WALLET_WITHDRAWAL,
+          currency: walletTransaction.currency,
+          reference: `rev_${walletTransaction.id}`,
+          meta: { walletTransactionId: walletTransaction.id },
+        });
+        this.emailService.sendWithdrawalNotification(user, amount, currency);
+        this.fcmService.sendPushNotification(user, {
+          title: "Wallet Withdrawal",
+          body: `Your withdrawal of ${UtilityService.formatMoney(amount, currency)} from your wallet was successful.`,
+        });
+        break;
+
+      case WebhookEventEnum.TransferFailed:
+        walletTransaction.status = TransactionStatus.Failed;
+        await this.refundWalletTransaction(
+          walletTransaction.id,
+          "Refund from failed withdrawal"
+        );
+        this.fcmService.sendPushNotification(user, {
+          title: "Wallet Withdrawal",
+          body: `Your withdrawal of ${UtilityService.formatMoney(amount, currency)} has failed, and the amount has been refunded.`,
+        });
+        break;
+
+      default:
+        return;
+    }
+
+    await walletTransaction.save();
+  }
+
+  async handleChargeHook(payload: IWebhookResponse<IWebhookCharge>) {
+    const {
+      data: { amount, channel, currency, meta, reference },
+      event,
+    } = payload;
+
+    if (!meta.user) return;
+    if (event !== WebhookEventEnum.ChargeSuccess) return;
+    const description = `You funded your wallet from ${channel.replace(/_/g, " ")}`;
+    await this.creditWallet({
+      amount,
+      balanceKeys: [AVAILABLE_BALANCE],
+      currency,
+      description,
+      purpose: TransactionPurpose.DEPOSIT,
+      reference,
+      user: meta.user,
+      meta,
+    });
+
+    const user = await this.userService.findUser({ _id: meta.user });
+    this.emailService.sendWalletFundingNotification(user, amount, currency);
+    this.fcmService.sendPushNotification(user, {
+      title: "Wallet Funding",
+      body: `You have successfully funded your wallet with ${UtilityService.formatMoney(amount, currency)}.`,
+    });
   }
 }

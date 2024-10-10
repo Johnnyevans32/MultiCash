@@ -11,13 +11,16 @@
         inputType="number"
         class="w-full"
         custom-css="pl-0 border-l-0 rounded-l-none"
-        :placeholder="placeholder"
+        placeholder="Enter amount (e.g., 100)"
         :min="min"
         :max="max"
       />
     </div>
 
-    <span v-if="balance !== undefined" class="text-tiny text-red-600"
+    <span
+      v-if="balance !== undefined"
+      class="text-tiny"
+      :class="amount > balance ? 'text-red-600' : 'text-green-600'"
       >Wallet Balance: {{ currency }} {{ formatMoney(balance, 10) }}</span
     >
   </div>

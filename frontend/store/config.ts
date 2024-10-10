@@ -16,6 +16,8 @@ export const useConfigStore = defineStore(
     const autoLogoutTimeoutInMins = ref(5);
     const loadingScreenEnabled = ref<boolean>(false);
 
+    const hasShownFeaturesModal = ref(false);
+
     function setAutoLogoutEnabled(value: boolean) {
       autoLogoutEnabled.value = value;
     }
@@ -30,6 +32,18 @@ export const useConfigStore = defineStore(
       loadingScreenEnabled.value = status;
     }
 
+    function setHasShownFeaturesModal(status: boolean) {
+      hasShownFeaturesModal.value = status;
+    }
+
+    function resetStore() {
+      appThemeColor.value = AppThemeEnum.LIGHT;
+      autoLogoutEnabled.value = false;
+      autoLogoutTimeoutInMins.value = 5;
+      loadingScreenEnabled.value = false;
+      hasShownFeaturesModal.value = false;
+    }
+
     return {
       appThemeColor,
       autoLogoutTimeoutInMins,
@@ -39,6 +53,9 @@ export const useConfigStore = defineStore(
       setAutoLogoutTimeoutInMins,
       setAutoLogoutEnabled,
       updateLoadingScreenStatus,
+      setHasShownFeaturesModal,
+      hasShownFeaturesModal,
+      resetStore,
     };
   },
   {

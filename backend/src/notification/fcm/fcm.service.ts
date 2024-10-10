@@ -20,14 +20,15 @@ export class FcmService {
     user: UserDocument,
     notification: { title: string; body: string }
   ) {
-    if (isEmpty(user.deviceFcmTokens)) return;
-    const resp = await firebase.messaging().sendEachForMulticast({
-      tokens: user.deviceFcmTokens,
-      notification,
-      data: {
-        url: configuration().app.uiUrl,
-      },
-    });
-    console.log(resp);
+    if (user.pushNotificationIsEnabled) {
+      if (isEmpty(user.deviceFcmTokens)) return;
+      await firebase.messaging().sendEachForMulticast({
+        tokens: user.deviceFcmTokens,
+        notification,
+        data: {
+          url: configuration().app.uiUrl,
+        },
+      });
+    }
   }
 }

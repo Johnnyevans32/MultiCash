@@ -31,6 +31,9 @@ export class WalletCurrency extends BaseSchema {
   maxExchangeFee: number;
 
   @Prop({ type: SchemaTypes.Number, default: 0 })
+  minExchangeFee: number;
+
+  @Prop({ type: SchemaTypes.Number, default: 0 })
   transferFee: number;
 
   @Prop({ type: SchemaTypes.Boolean, default: false })

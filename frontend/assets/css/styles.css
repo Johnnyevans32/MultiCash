@@ -1,3 +1,4 @@
+@import "cropperjs/dist/cropper.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -132,4 +133,9 @@
     --border-base: 31, 41, 55;
     --border-lightbase: 201, 254, 0;
   }
+}
+
+.cropper-view-box,
+.cropper-face {
+  border-radius: 50%;
 }

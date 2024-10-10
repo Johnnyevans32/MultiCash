@@ -1,13 +1,10 @@
-import {
-  BadGatewayException,
-  BadRequestException,
-  Injectable,
-} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 
 import { UserService } from "@/user/services/user.service";
 import { UtilityService } from "@/core/services/util.service";
 import { UserDocument } from "@/user/schemas/user.schema";
+import * as moment from "moment";
 
 @Injectable()
 export class AuthService {
@@ -18,19 +15,17 @@ export class AuthService {
 
   async validateUser(email: string, password: string) {
     const user = await this.userService.findUser({ email });
-    if (user) {
-      const isMatch = await UtilityService.verifyPassword(
-        password,
-        user.password
-      );
-
-      if (isMatch) {
-        return user;
-      }
-    }
+    if (!user) return;
+    const isMatch = await UtilityService.verifyPassword(
+      password,
+      user.password
+    );
+    if (isMatch) return user;
   }
 
   async signin(user: UserDocument) {
+    user.lastLoggedIn = moment().toDate();
+    await user.save();
     return {
       accessToken: this.jwtService.sign({
         sub: user.id,

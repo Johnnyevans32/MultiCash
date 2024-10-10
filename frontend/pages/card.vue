@@ -3,8 +3,11 @@
     <CommonPageBar mainPage="Card" />
   </div>
   <VirtualCard />
-  <h1 class="text-2xl">Go Global With Ease</h1>
-  <p>Unlock a seamless global experience with your new virtual card.</p>
+  <h1 class="text-2xl">Effortless Global Access</h1>
+  <p>
+    Experience the convenience of seamless international transactions with your
+    new virtual card.
+  </p>
 
   <CommonButton
     text="Coming Soon"

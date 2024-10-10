@@ -1,5 +1,4 @@
 import axios, { AxiosRequestConfig, AxiosInstance } from "axios";
-import { merge } from "lodash";
 
 export class RequestService {
   private $axios: AxiosInstance;

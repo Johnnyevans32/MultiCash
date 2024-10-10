@@ -1,5 +1,15 @@
-import { Body, Controller, HttpStatus, Post, Req, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+  RawBodyRequest,
+} from "@nestjs/common";
 import { Request, Response } from "express";
+import { FastifyRequest } from "fastify";
+
 import { PaymentService } from "@/payment/services/payment.service";
 import { UtilityService } from "@/core/services/util.service";
 import { PaymentProvider } from "@/payment/schemas/transfer-record.schema";
@@ -29,6 +39,29 @@ export class WebhookController {
       HttpStatus.OK,
       { event: payload, headers: req.headers },
       PaymentProvider.Paystack
+    );
+  }
+
+  @Public()
+  @Post("stripe")
+  async handleStripeWebhook(
+    @Res() res: Response,
+    @Req() req: RawBodyRequest<FastifyRequest>,
+    @Body() payload: unknown
+  ): Promise<any> {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      {
+        handleWebhook: (a: any, b: any) => {
+          this.paymentService.handleWebhook(a, b);
+          return {};
+        },
+      },
+      "handleWebhook",
+      HttpStatus.OK,
+      { event: payload, headers: req.headers, rawBody: req.rawBody },
+      PaymentProvider.Stripe
     );
   }
 }

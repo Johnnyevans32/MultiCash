@@ -20,7 +20,6 @@ export interface IMatchedOffering {
   payinCurrency: string;
   payoutCurrency: string;
   cumulativeSettlementTimeInSecs: number;
-  id: string;
 }
 
 export interface IExchange {
@@ -28,6 +27,8 @@ export interface IExchange {
   payoutAmount: number;
   payinCurrency: string;
   payoutCurrency: string;
+  platformFee: number;
+  totalPayinAmount: number;
   payoutUnitsPerPayinUnit: number;
   totalFee: number;
   status: string;
@@ -36,6 +37,7 @@ export interface IExchange {
   offerings: IOffering[];
   rating: number;
   comment: string;
+  completionDate: string;
 }
 
 export interface IPfi {

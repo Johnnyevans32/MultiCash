@@ -12,7 +12,7 @@
           <NuxtLink
             :to="item.href"
             role="tab"
-            class="cursor-pointer mr-4 inline-block py-4 text-sm text-lightbase border-b-[1px] border-b-transparent"
+            class="cursor-pointer mr-4 inline-block py-4 text-sm text-lightbase border-b border-b-transparent"
             v-bind:class="{ active: activeNavbar === item.name }"
             v-for="item in items"
             :key="item.name"

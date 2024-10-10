@@ -28,7 +28,9 @@ export class UserService {
   async me(user: UserDocument) {
     return this.userModel
       .findById(user.id)
-      .select("name email did profileImage country tag");
+      .select(
+        "name email did profileImage country tag pushNotificationIsEnabled"
+      );
   }
 
   async signup(payload: CreateUserDTO) {
@@ -144,15 +146,21 @@ export class UserService {
   }
 
   async saveDeviceFcmToken(user: UserDocument, token: string) {
-    if (token && user.deviceFcmTokens.includes(token)) {
+    if (!token || user.deviceFcmTokens.includes(token)) {
       return;
     }
 
+    const updatedTokens = [...user.deviceFcmTokens];
+
+    if (updatedTokens.length >= 3) {
+      updatedTokens.shift();
+    }
+
+    updatedTokens.push(token);
+
     await this.userModel.findOneAndUpdate(
       { _id: user.id },
-      {
-        $push: { deviceFcmTokens: token },
-      },
+      { deviceFcmTokens: updatedTokens },
       { new: true }
     );
   }

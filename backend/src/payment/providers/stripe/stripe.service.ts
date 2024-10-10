@@ -111,7 +111,7 @@ export class StripeService implements IPaymentProvider {
         },
       ],
       mode: "payment",
-      payment_method_types: ["card", "cashapp", "link", "us_bank_account"],
+      payment_method_types: ["card", "link"],
       success_url: `${configuration().app.uiUrl}?stripe_session_id={CHECKOUT_SESSION_ID}&currency=${currency}`,
       cancel_url: `${configuration().app.uiUrl}?stripe_payment_canceled=true&currency=${currency}`,
       payment_intent_data: {

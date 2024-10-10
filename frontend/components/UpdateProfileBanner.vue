@@ -1,7 +1,7 @@
 <template>
   <NuxtLink
     to="/settings/profile"
-    class="bg-blue-600 text-white py-2 px-4 flex justify-between items-center cursor-pointer md:text-tbase text-sm"
+    class="bg-blue-600 text-white py-2 px-4 flex gap-4 justify-between items-center cursor-pointer md:text-tbase text-xs"
   >
     <span>
       Your profile is incomplete. Please complete it to unlock all features.

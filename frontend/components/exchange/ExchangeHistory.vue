@@ -181,7 +181,7 @@
                     : 'dot-circle'
                 "
                 :class="offeringStatusStyles[offering.status]"
-                class="bg-lightbase absolute -left-1 top-1 rounded-full"
+                class="bg-white absolute -left-1 top-1 rounded-full"
               />
 
               <div class="flex flex-col">
@@ -392,6 +392,7 @@ export default defineComponent({
         $api.exchangeService
           .closeOffering(offeringId, reason.value)
           .then(() => {
+            updateExchangeModal.value = false;
             fetchExchanges();
             notify({
               type: "success",

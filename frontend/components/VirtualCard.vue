@@ -10,7 +10,7 @@
       >
         <!-- Front Side of the Card -->
         <div
-          class="card absolute inset-0 text-white rounded-3xl flex flex-col justify-between p-6 border-[1px] border-base backface-hidden"
+          class="card absolute inset-0 text-white rounded-3xl flex flex-col justify-between p-6 backface-hidden"
         >
           <div class="flex items-center justify-between">
             <CommonImage
@@ -37,7 +37,7 @@
 
         <!-- Back Side of the Card -->
         <div
-          class="card absolute inset-0 text-white rounded-3xl flex flex-col justify-between p-6 border-[1px] border-base backface-hidden transform rotate-y-180"
+          class="card absolute inset-0 text-white rounded-3xl flex flex-col justify-between p-6 backface-hidden transform rotate-y-180"
         >
           <h1 class="md:text-3xl text-lg">Coming Soon</h1>
           <img src="https://i.ibb.co/WHZ3nRJ/visa.png" class="w-16 h-5" />

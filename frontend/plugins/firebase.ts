@@ -23,6 +23,19 @@ export default defineNuxtPlugin(() => {
       title: payload.notification?.body,
     });
 
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+      const { title, body } = payload.notification!;
+      const options = {
+        body: body,
+        icon: "/logo.png",
+        data: payload.data,
+      };
+
+      navigator.serviceWorker.getRegistration().then(function (reg) {
+        reg?.showNotification(title as string, options);
+      });
+    }
+
     router.replace({
       path: router.currentRoute.value.path,
       query: {

@@ -27,7 +27,7 @@ messaging.onBackgroundMessage((payload) => {
     body: payload.notification.body,
     icon: "/logo.png",
     data: {
-      url: payload.data.url, 
+      url: payload.data.url,
     },
   };
 
@@ -39,7 +39,7 @@ messaging.onBackgroundMessage((payload) => {
 self.addEventListener("notificationclick", (event) => {
   const notification = event.notification;
   const url = notification.data?.url || "/";
-  
+
   event.waitUntil(
     clients
       .matchAll({ type: "window", includeUncontrolled: true })

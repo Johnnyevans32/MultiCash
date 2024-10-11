@@ -17,13 +17,14 @@
               image="https://i.ibb.co/G9pDnYJ/chip.png"
               custom-css="h-10 w-10 !rounded-none"
             />
-            <div class="flex items-end">
+            <!-- <div class="flex items-end">
               <CommonImage
                 image="./whitelogo.png"
                 custom-css="h-8 w-8 !rounded-none"
               />
               <p class="text-white text-sm leading-none">MultiCash</p>
-            </div>
+            </div> -->
+            <span class="text-white">MultiCash</span>
           </div>
           <h1 class="md:text-3xl text-2xl">**** **** **** ****</h1>
 

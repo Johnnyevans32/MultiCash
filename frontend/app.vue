@@ -94,11 +94,7 @@ export default defineComponent({
                 {
                   label: "Install",
                   onClick: async () => {
-                    if ($pwa?.install) {
-                      await $pwa.install();
-                    } else {
-                      console.error("Install function not available.");
-                    }
+                    await $pwa.install();
                   },
                 },
               ],

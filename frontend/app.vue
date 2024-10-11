@@ -82,21 +82,18 @@ export default defineComponent({
 
     watch(
       () => $pwa?.showInstallPrompt,
-      (changed) => {
-        console.log("Install prompt changed:", { changed });
-
-        if ($pwa?.showInstallPrompt.value && !$pwa?.needRefresh.value) {
-          // Trigger the notification
+      (value) => {
+        console.log({ value });
+        if (value) {
           notify({
-            title: "Install MultiCash",
+            title: `Install ${config.public.appName}`,
             text: "Install the app for a better experience!",
-            duration: -1, // Keeps notification on screen until closed
+            duration: -1,
             data: {
               actions: [
                 {
                   label: "Install",
                   onClick: async () => {
-                    // Trigger PWA install process
                     if ($pwa?.install) {
                       await $pwa.install();
                     } else {
@@ -109,7 +106,7 @@ export default defineComponent({
           });
         }
       },
-      { immediate: true } // Watch immediately on component mount
+      { immediate: true }
     );
 
     const isDarkThemed = computed(() =>

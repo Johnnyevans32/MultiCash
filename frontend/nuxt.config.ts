@@ -24,6 +24,9 @@ export default defineNuxtConfig({
     },
   },
   pwa: {
+    client: {
+      installPrompt: true,
+    },
     registerType: "autoUpdate",
     devOptions: {
       enabled: process.env.ENV_MODE === "dev",

@@ -12,7 +12,8 @@
   <CommonButton
     text="Coming Soon"
     :disabled="true"
-    custom-css="bg-base w-full text-base"
+    custom-css="bg-base w-full
+  text-base"
   />
 </template>
 
@@ -23,6 +24,7 @@ export default defineComponent({
       title: "Card",
       ogTitle: "Card",
     });
+
     return {};
   },
 });

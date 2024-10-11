@@ -25,6 +25,9 @@ export default defineNuxtConfig({
   },
   pwa: {
     registerType: "autoUpdate",
+    devOptions: {
+      enabled: process.env.ENV_MODE === "dev",
+    },
     manifest: {
       name: process.env.APP_NAME,
       short_name: process.env.APP_NAME,

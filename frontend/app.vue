@@ -5,52 +5,65 @@
       <NuxtPage />
     </NuxtLayout>
 
-    <notifications position="top center" width="100%" animation-type="css">
+    <notifications
+      position="top center"
+      width="100%"
+      class="mb-2 transition-all duration-700 ease-in-out"
+      animation-type="css"
+      animation-name="toast"
+      :pause-on-hover="true"
+      :max="2"
+    >
       <template #body="props">
         <div
           :class="[
-            'flex items-center p-5 md:mx-[30vw] font-semibold border-l-4 rounded-xl',
-            {
-              'border-green-500': props.item.type === 'success',
-              'border-blue-500': props.item.type === 'info',
-              'border-red-500':
-                props.item.type !== 'success' && props.item.type !== 'info',
-              'bg-black text-white': !isDarkThemed,
-              'bg-white text-black': isDarkThemed,
-            },
+            'flex items-center justify-between p-4 max-w-md md:mx-auto m-2 font-semibold rounded-xl shadow-lg',
+            isDarkThemed ? 'bg-white text-black' : 'bg-[#1c1c1c] text-white',
           ]"
         >
-          <font-awesome-icon
-            v-if="props.item.type === 'success'"
-            icon="check-circle"
-            class="text-green-500"
-          />
-          <font-awesome-icon
-            v-else-if="props.item.type === 'info'"
-            icon="circle-exclamation"
-            class="text-blue-500"
-          />
-          <font-awesome-icon
-            v-else
-            icon="circle-exclamation"
-            class="text-red-500"
-          />
-          <div class="ml-3 text-sm font-medium">
-            <div>{{ props.item.title }}</div>
-            <div
-              v-if="props.item.text"
+          <div class="flex flex-col items-start">
+            <span class="text-sm font-medium">{{ props.item.title }}</span>
+            <span
               class="text-xs"
-              v-html="props.item.text"
-            />
+              v-if="props.item.text"
+              :class="isDarkThemed ? 'text-gray-500' : 'text-gray-400'"
+            >
+              {{ props.item.text }}
+            </span>
           </div>
-          <button
-            type="button"
-            @click="props.close"
-            :class="isDarkThemed ? 'text-black' : 'text-white'"
-            class="ml-auto -mx-1.5 -my-1.5 w-6 h-6 p-2 rounded-xl flex items-center justify-center"
-          >
-            <font-awesome-icon icon="xmark" />
-          </button>
+          <div class="flex items-center ml-auto space-x-3">
+            <div
+              v-if="props.item.data.actions && props.item.data.actions.length"
+              class="flex space-x-2"
+            >
+              <button
+                v-for="(action, index) in props.item.data.actions"
+                :key="index"
+                @click="action.onClick"
+                :class="[
+                  'px-3 py-1 rounded-xl border',
+                  isDarkThemed
+                    ? ' text-black hover:bg-gray-300  border-black'
+                    : ' text-white hover:bg-gray-800  border-white',
+                ]"
+              >
+                {{ action.label }}
+              </button>
+            </div>
+
+            <button
+              type="button"
+              @click="props.close"
+              :class="
+                isDarkThemed
+                  ? 'text-black hover:text-gray-600'
+                  : 'text-gray-400 hover:text-white'
+              "
+              class="w-8 h-8 flex items-center justify-center"
+            >
+              <font-awesome-icon icon="xmark" class="text-xl" />
+            </button>
+          </div>
         </div>
       </template>
     </notifications>
@@ -59,11 +72,45 @@
 
 <script lang="ts">
 import { useConfigStore } from "~/store/config";
+import { notify } from "@kyvg/vue3-notification";
 
 export default defineComponent({
   async setup() {
     const config = useRuntimeConfig();
     const { appThemeColor } = storeToRefs(useConfigStore());
+    const { $pwa } = useNuxtApp();
+
+    watch(
+      () => $pwa?.showInstallPrompt,
+      (changed) => {
+        console.log("Install prompt changed:", { changed });
+
+        if ($pwa?.showInstallPrompt.value && !$pwa?.needRefresh.value) {
+          // Trigger the notification
+          notify({
+            title: "Install MultiCash",
+            text: "Install the app for a better experience!",
+            duration: -1, // Keeps notification on screen until closed
+            data: {
+              actions: [
+                {
+                  label: "Install",
+                  onClick: async () => {
+                    // Trigger PWA install process
+                    if ($pwa?.install) {
+                      await $pwa.install();
+                    } else {
+                      console.error("Install function not available.");
+                    }
+                  },
+                },
+              ],
+            },
+          });
+        }
+      },
+      { immediate: true } // Watch immediately on component mount
+    );
 
     const isDarkThemed = computed(() =>
       ["dark", "midnight"].includes(appThemeColor.value)
@@ -148,5 +195,32 @@ html {
 *::after {
   box-sizing: border-box;
   margin: 0;
+}
+
+.vue-notification-wrapper {
+  /* Properly render shadows */
+  overflow: visible !important;
+}
+
+.toast-enter-from {
+  @apply translate-y-full opacity-0;
+}
+
+.toast-enter-to {
+  @apply translate-y-0 opacity-100;
+}
+
+.toast-enter-active,
+.toast-leave-active,
+.toast-move {
+  @apply transition duration-700 ease-in-out;
+}
+
+.toast-leave-from {
+  @apply translate-y-0 opacity-100;
+}
+
+.toast-leave-to {
+  @apply -translate-y-full opacity-0;
 }
 </style>

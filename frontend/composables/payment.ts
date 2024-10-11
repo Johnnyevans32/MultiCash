@@ -68,7 +68,7 @@ export function useFundWallet() {
     } catch (error: any) {
       notify({
         type: "error",
-        text: error.message || "Transaction failed.",
+        title: error.message || "Transaction failed.",
       });
     } finally {
       isLoading.value = false;

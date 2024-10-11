@@ -39,7 +39,12 @@
               <button
                 v-for="(action, index) in props.item.data.actions"
                 :key="index"
-                @click="action.onClick"
+                @click="
+                  async () => {
+                    await action.onClick();
+                    props.close();
+                  }
+                "
                 :class="[
                   'px-3 py-1 rounded-xl border',
                   isDarkThemed

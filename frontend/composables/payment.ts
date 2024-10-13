@@ -24,8 +24,10 @@ export function useFundWallet() {
             onSuccess: resolve,
             onLoad: () => {},
             onCancel: () => reject(new Error("Transaction cancelled by user.")),
-            onError: (error: { message: string | undefined }) =>
-              reject(new Error(error.message || "Transaction failed.")),
+            onError: (error: { message: any }) => {
+              console.error("Paystack error:", error);
+              reject(new Error(error.message || "Transaction failed."));
+            },
           });
         });
       } catch (err) {

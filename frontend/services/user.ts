@@ -47,13 +47,12 @@ export class UserService {
 
   async uploadFile(payload: any) {
     const { useCustomFetch } = useAppVueUtils();
-    const { data } = await useCustomFetch<IResponse<{ url: string }>>(
-      `/api/files`,
-      {
-        method: "post",
-        body: payload,
-      }
-    );
+    const { data } = await useCustomFetch<
+      IResponse<{ url: string; secure_url: string }>
+    >(`/api/files`, {
+      method: "post",
+      body: payload,
+    });
     return data;
   }
 

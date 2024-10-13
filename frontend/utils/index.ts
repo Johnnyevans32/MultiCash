@@ -73,7 +73,7 @@ export const uploadFile = async (
   };
   const { $api } = useNuxtApp();
   const resp = await $api.userService.uploadFile(payload);
-  return resp.url;
+  return resp.secure_url;
 };
 
 export const getCurrencySign = (currency: string) => {

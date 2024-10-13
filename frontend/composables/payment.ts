@@ -12,6 +12,7 @@ export function useFundWallet() {
   const providerMap = {
     paystack: async (amount: number, currency: string) => {
       try {
+        console.log("trying paystack");
         const popup = new Paystack();
         return new Promise((resolve, reject) => {
           popup.checkout({

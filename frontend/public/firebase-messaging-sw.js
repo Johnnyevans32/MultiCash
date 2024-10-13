@@ -35,11 +35,6 @@ messaging.onBackgroundMessage((payload) => {
 
   // Show notification when message received
   self.registration.showNotification(title, notificationOptions);
-
-  const sound = new Audio(notificationOptions.data.sound);
-  sound.play().catch((error) => {
-    console.log("Sound playback failed:", error);
-  });
 });
 
 // Handle notification clicks

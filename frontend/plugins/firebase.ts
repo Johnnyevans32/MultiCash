@@ -35,15 +35,8 @@ export default defineNuxtPlugin(() => {
         },
       };
 
-      console.log({ options });
-
       navigator.serviceWorker.getRegistration().then(function (reg) {
         reg?.showNotification(title as string, options);
-      });
-
-      const sound = new Audio(options.data.sound);
-      sound.play().catch((error) => {
-        console.log("Sound playback failed:", error);
       });
     }
 

@@ -2,6 +2,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsPositive,
@@ -73,11 +74,14 @@ export class ExchangeRequestDTO {
 
 export class UserKycInfoDTO {
   @IsString({ message: "user name is required" })
+  @IsNotEmpty()
   name: string;
 
   @IsEnum(SupportedCountry, { message: "user country is required" })
+  @IsNotEmpty()
   country: SupportedCountry;
 
   @IsString({ message: "user did is required" })
+  @IsNotEmpty()
   did: string;
 }

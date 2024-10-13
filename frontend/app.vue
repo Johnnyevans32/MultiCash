@@ -88,7 +88,6 @@ export default defineComponent({
     watch(
       () => $pwa?.showInstallPrompt,
       (value) => {
-        console.log({ value });
         if (value) {
           notify({
             title: `Install ${config.public.appName}`,

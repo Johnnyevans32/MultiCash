@@ -553,7 +553,7 @@ export class WalletService {
 
     if (!meta.user) return;
     if (event !== WebhookEventEnum.ChargeSuccess) return;
-    const description = `You funded your wallet from ${channel.replace(/_/g, " ")}`;
+    const description = `You funded your wallet using ${channel.replace(/_/g, " ")}`;
     await this.creditWallet({
       amount,
       balanceKeys: [AVAILABLE_BALANCE],
@@ -569,7 +569,7 @@ export class WalletService {
     this.emailService.sendWalletFundingNotification(user, amount, currency);
     this.fcmService.sendPushNotification(user, {
       title: "Wallet Funding",
-      body: `You have successfully funded your wallet using ${UtilityService.formatMoney(amount, currency)}.`,
+      body: `You have successfully funded your wallet with ${UtilityService.formatMoney(amount, currency)}.`,
     });
   }
 }

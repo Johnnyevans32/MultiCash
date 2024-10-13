@@ -26,8 +26,10 @@ messaging.onBackgroundMessage((payload) => {
   const notificationOptions = {
     body: payload.notification.body,
     icon: "/logo.png",
+    badge: "/whitelogo.png",
     data: {
       url: payload.data.url,
+      sound: "/sound.mp3",
     },
   };
 

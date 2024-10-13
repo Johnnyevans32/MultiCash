@@ -28,7 +28,11 @@ export default defineNuxtPlugin(() => {
       const options = {
         body: body,
         icon: "/logo.png",
-        data: payload.data,
+        badge: "/whitelogo.png",
+        data: {
+          ...(payload.data || {}),
+          sound: "/sound.mp3",
+        },
       };
 
       navigator.serviceWorker.getRegistration().then(function (reg) {

@@ -569,7 +569,7 @@ export class WalletService {
     this.emailService.sendWalletFundingNotification(user, amount, currency);
     this.fcmService.sendPushNotification(user, {
       title: "Wallet Funding",
-      body: `You have successfully funded your wallet with ${UtilityService.formatMoney(amount, currency)}.`,
+      body: `You have successfully funded your wallet using ${UtilityService.formatMoney(amount, currency)}.`,
     });
   }
 }

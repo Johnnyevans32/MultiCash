@@ -11,28 +11,21 @@ export function useFundWallet() {
 
   const providerMap = {
     paystack: async (amount: number, currency: string) => {
-      try {
-        console.log("Attempting Paystack payment with:", { amount, currency });
-        const popup = new Paystack();
+      const popup = new Paystack();
+      return new Promise((resolve, reject) => {
         popup.checkout({
           key: config.public.paystackPublickKey,
-          email: "test@example.com", // Use a valid test email
-          amount: 1000, // Test amount in kobo
-          currency: "NGN",
-          onSuccess: (response) => {
-            console.log("Payment successful:", response);
-          },
-          onCancel: () => {
-            console.log("Transaction cancelled by user.");
-          },
-          onError: (error) => {
-            console.error("Paystack error:", error);
-          },
+          email: user.value?.email,
+          amount: amount * 100,
+          metadata: { user: user.value?.id },
+          currency,
+          onSuccess: resolve,
+          onLoad: () => {},
+          onCancel: () => reject(new Error("Transaction cancelled by user.")),
+          onError: (error: { message: string | undefined }) =>
+            reject(new Error(error.message || "Transaction failed.")),
         });
-      } catch (err) {
-        console.error("Unexpected error:", err);
-        throw err;
-      }
+      });
     },
     stripe: async (amount: number, currency: string) => {
       const { sessionId } = await $api.paymentService.createCheckoutSession({

@@ -12,18 +12,26 @@ export function useFundWallet() {
   const providerMap = {
     paystack: async (amount: number, currency: string) => {
       try {
-        console.log("trying paystack");
+        console.log("Attempting Paystack payment with:", { amount, currency });
         const popup = new Paystack();
         return new Promise((resolve, reject) => {
           popup.checkout({
             key: config.public.paystackPublickKey,
             email: user.value?.email,
-            amount: amount * 100,
+            amount: amount * 100, // Paystack expects amount in kobo
             metadata: { user: user.value?.id },
             currency,
-            onSuccess: resolve,
-            onLoad: () => {},
-            onCancel: () => reject(new Error("Transaction cancelled by user.")),
+            onSuccess: (response: unknown) => {
+              console.log("Payment successful:", response);
+              resolve(response);
+            },
+            onLoad: () => {
+              console.log("Paystack checkout loaded");
+            },
+            onCancel: () => {
+              console.log("Transaction cancelled by user.");
+              reject(new Error("Transaction cancelled by user."));
+            },
             onError: (error: { message: any }) => {
               console.error("Paystack error:", error);
               reject(new Error(error.message || "Transaction failed."));
@@ -31,8 +39,7 @@ export function useFundWallet() {
           });
         });
       } catch (err) {
-        console.error(err);
-        console.log("error wtf", { err });
+        console.error("Unexpected error:", err);
         throw err;
       }
     },

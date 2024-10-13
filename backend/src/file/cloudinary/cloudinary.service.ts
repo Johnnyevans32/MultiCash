@@ -10,6 +10,7 @@ export class CloudinaryService {
       cloud_name: configuration().cloudinary.cloudName,
       api_key: configuration().cloudinary.apiKey,
       api_secret: configuration().cloudinary.apiSecret,
+      secure: true,
     });
   }
 

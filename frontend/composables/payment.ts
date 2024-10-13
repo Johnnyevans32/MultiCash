@@ -14,29 +14,20 @@ export function useFundWallet() {
       try {
         console.log("Attempting Paystack payment with:", { amount, currency });
         const popup = new Paystack();
-        return new Promise((resolve, reject) => {
-          popup.checkout({
-            key: config.public.paystackPublickKey,
-            email: user.value?.email,
-            amount: amount * 100, // Paystack expects amount in kobo
-            metadata: { user: user.value?.id },
-            currency,
-            onSuccess: (response: unknown) => {
-              console.log("Payment successful:", response);
-              resolve(response);
-            },
-            onLoad: () => {
-              console.log("Paystack checkout loaded");
-            },
-            onCancel: () => {
-              console.log("Transaction cancelled by user.");
-              reject(new Error("Transaction cancelled by user."));
-            },
-            onError: (error: { message: any }) => {
-              console.error("Paystack error:", error);
-              reject(new Error(error.message || "Transaction failed."));
-            },
-          });
+        popup.checkout({
+          key: config.public.paystackPublickKey,
+          email: "test@example.com", // Use a valid test email
+          amount: 1000, // Test amount in kobo
+          currency: "NGN",
+          onSuccess: (response) => {
+            console.log("Payment successful:", response);
+          },
+          onCancel: () => {
+            console.log("Transaction cancelled by user.");
+          },
+          onError: (error) => {
+            console.error("Paystack error:", error);
+          },
         });
       } catch (err) {
         console.error("Unexpected error:", err);

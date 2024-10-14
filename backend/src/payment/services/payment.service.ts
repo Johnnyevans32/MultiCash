@@ -116,6 +116,7 @@ export class PaymentService {
         isDeleted: false,
         ...(currency && { currency }),
       })
+      .sort({ name: 1 })
       .select("name currency");
   }
 

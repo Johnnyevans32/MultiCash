@@ -47,12 +47,12 @@
         <CommonImage
           :image="
             beneficiary.type === 'platform'
-              ? beneficiary.beneficiaryUser.profileImage
+              ? beneficiary.beneficiaryUser?.profileImage
               : beneficiary.bank.logo
           "
           :alt="
             beneficiary.type === 'platform'
-              ? beneficiary.beneficiaryUser.tag
+              ? beneficiary.beneficiaryUser?.tag
               : beneficiary.bank.name
           "
         />
@@ -60,12 +60,12 @@
         <div class="flex flex-col text-left">
           <span class="md:text-sm text-xs line-clamp-1">{{
             beneficiary.type === "platform"
-              ? beneficiary.beneficiaryUser.name
+              ? beneficiary?.beneficiaryUser?.name
               : beneficiary.accountName
           }}</span>
           <span class="md:text-sm text-xs line-clamp-1">{{
             beneficiary.type === "platform"
-              ? `@${beneficiary.beneficiaryUser.tag}`
+              ? `@${beneficiary?.beneficiaryUser?.tag}`
               : `${beneficiary.accountNumber} (${beneficiary.bank.name})`
           }}</span>
         </div>
@@ -119,7 +119,7 @@
             placeholder="1234567890"
             title="Enter account number"
             input-type="text"
-            @keyup.enter="createBeneficiary"
+            @keyup.enter="verifyAccountNumber"
           />
         </div>
         <CommonFormInput
@@ -130,7 +130,12 @@
           input-type="text"
           @keyup.enter="createBeneficiary"
         />
-        <span v-if="accountName" class="text-sm text-red-600"
+        <span v-if="isVerifyAccountNumberLoading" class="text-sm"
+          >Validating account details...</span
+        >
+        <span
+          v-else-if="!isVerifyAccountNumberLoading && accountName"
+          class="text-sm"
           >Account Name: {{ accountName }}</span
         >
       </div>
@@ -145,7 +150,7 @@
         text="Add beneficiary"
         @btn-action="createBeneficiary"
         custom-css="!bg-blue-600 w-full text-white"
-        :loading="isCreateBeneficiaryLoading"
+        :loading="isCreateBeneficiaryLoading || isVerifyAccountNumberLoading"
       />
     </template>
   </CommonModal>
@@ -188,16 +193,16 @@
         >
           <div class="flex items-center gap-2">
             <CommonImage
-              :image="selectedBeneficiary.beneficiaryUser?.profileImage"
+              :image="selectedBeneficiary?.beneficiaryUser?.profileImage"
               alt="avatar"
               type="image"
             />
             <div>
               <p class="text-sm md:text-xs">
-                {{ selectedBeneficiary?.beneficiaryUser.name }}
+                {{ selectedBeneficiary?.beneficiaryUser?.name }}
               </p>
               <p class="text-xs md:text-sm">
-                @{{ selectedBeneficiary?.beneficiaryUser.tag }}
+                @{{ selectedBeneficiary?.beneficiaryUser?.tag }}
               </p>
             </div>
           </div>
@@ -333,15 +338,26 @@ export default defineComponent({
     const beneficiaryTag = ref();
     const isCreateBeneficiaryLoading = ref(false);
     const accountName = ref("");
+
+    const isVerifyAccountNumberLoading = ref(false);
+    const verifyAccountNumber = async () => {
+      try {
+        isVerifyAccountNumberLoading.value = true;
+        accountName.value = "";
+        const resp = await $api.paymentService.verifyAccountNumber({
+          accountNumber: accountNumber.value,
+          bankId: selectedBankId.value,
+        });
+        accountName.value = resp.accountName;
+      } finally {
+        isVerifyAccountNumberLoading.value = false;
+      }
+    };
     const createBeneficiary = async () => {
       try {
         isCreateBeneficiaryLoading.value = true;
         if (beneficiaryType.value === "bankaccount") {
-          const resp = await $api.paymentService.verifyAccountNumber({
-            accountNumber: accountNumber.value,
-            bankId: selectedBankId.value,
-          });
-          accountName.value = resp.accountName;
+          await verifyAccountNumber();
         }
         await $api.walletService.createBeneficiary({
           beneficiaryType: beneficiaryType.value,
@@ -456,6 +472,8 @@ export default defineComponent({
       beneficiaryType,
       beneficiaryTag,
       allCurrencies,
+      verifyAccountNumber,
+      isVerifyAccountNumberLoading,
     };
   },
 });

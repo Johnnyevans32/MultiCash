@@ -13,7 +13,7 @@
     <span v-if="isCheckTagLoading" class="text-sm"
       >Checking tag availability...</span
     >
-    <span v-else-if="!isCheckTagLoading" class="text-sm">{{
+    <span v-else-if="!isCheckTagLoading && tag" class="text-sm">{{
       tagAlreadyExist ? "tag already exist" : "tag is available"
     }}</span>
     <CommonButton

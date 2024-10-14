@@ -7,9 +7,15 @@
       inputType="text"
       v-model="tag"
       :title="`Your ${config.public.appName} tag`"
-      @keyup.enter="updateTag"
+      @keyup.enter="checkIfTagExist"
     />
 
+    <span v-if="isCheckTagLoading" class="text-sm"
+      >Checking tag availability...</span
+    >
+    <span v-else-if="!isCheckTagLoading" class="text-sm">{{
+      tagAlreadyExist ? "tag already exist" : "tag is available"
+    }}</span>
     <CommonButton
       text="Claim tag"
       @btn-action="updateTag"
@@ -40,7 +46,25 @@ export default defineComponent({
       setUser(user);
     });
 
-    const { withLoading, loading } = useLoading();
+    const { withLoading, withLoadingPromise, loading } = useLoading();
+
+    const isCheckTagLoading = ref(false);
+    const tagAlreadyExist = ref(false);
+    const checkIfTagExist = async () => {
+      if (!tag.value) {
+        return;
+      }
+
+      if (tag.value === user.value?.tag) {
+        return;
+      }
+      await withLoadingPromise(
+        $api.userService.checkIfTagExist(tag.value).then((data) => {
+          tagAlreadyExist.value = data;
+        }),
+        isCheckTagLoading
+      );
+    };
 
     const updateTag = async () => {
       if (!tag.value) {
@@ -63,6 +87,9 @@ export default defineComponent({
       updateTag,
       tag,
       config,
+      isCheckTagLoading,
+      checkIfTagExist,
+      tagAlreadyExist,
     };
   },
 });

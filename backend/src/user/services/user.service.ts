@@ -46,6 +46,11 @@ export class UserService {
     );
   }
 
+  async checkIfTagExist(tag: string) {
+    const user = await this.userModel.findOne({ tag, isDeleted: false });
+    return !!user;
+  }
+
   async checkIfUserAlreadyExist(email: string) {
     const user = await this.findUser({ email, isDeleted: false });
     if (user) {

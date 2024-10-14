@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   HttpStatus,
+  Param,
   Put,
   Res,
 } from "@nestjs/common";
@@ -50,6 +51,18 @@ export class UserController {
       HttpStatusCode.Ok,
       user,
       payload
+    );
+  }
+
+  @Get(":tag")
+  async checkIfTagExist(@Res() res: Response, @Param("tag") tag: string) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.userService,
+      "checkIfTagExist",
+      HttpStatusCode.Ok,
+      tag
     );
   }
 

@@ -14,6 +14,17 @@ export class UserService {
     return data;
   }
 
+  async checkIfTagExist(tag: string) {
+    const { useCustomFetch } = useAppVueUtils();
+    const { data } = await useCustomFetch<IResponse<boolean>>(
+      `/api/users/${tag}`,
+      {
+        method: "get",
+      }
+    );
+    return data;
+  }
+
   async updateUser(payload: UpdateUserDTO) {
     const { useCustomFetch } = useAppVueUtils();
     return useCustomFetch(`/api/users`, {

@@ -120,6 +120,12 @@
             title="Enter account number"
             input-type="text"
             @keyup.enter="verifyAccountNumber"
+            :validationMessage="
+              isVerifyAccountNumberLoading
+                ? 'Validating account details...'
+                : accountName
+            "
+            :isErrorMessage="false"
           />
         </div>
         <CommonFormInput
@@ -130,14 +136,6 @@
           input-type="text"
           @keyup.enter="createBeneficiary"
         />
-        <span v-if="isVerifyAccountNumberLoading" class="text-sm"
-          >Validating account details...</span
-        >
-        <span
-          v-else-if="!isVerifyAccountNumberLoading && accountName"
-          class="text-sm"
-          >Account Name: {{ accountName }}</span
-        >
       </div>
     </template>
     <template v-slot:footer>

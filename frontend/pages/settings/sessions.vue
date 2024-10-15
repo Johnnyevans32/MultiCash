@@ -82,7 +82,7 @@
       />
       <CommonButton
         v-if="modalSession.sessionClientId !== sessionClientId"
-        text="Logout the session shown"
+        text="Logout session"
         @btn-action="logoutSession(modalSession.sessionClientId)"
         custom-css="bg-red-600 w-full text-white"
         :loading="isLogoutSessionLoading"

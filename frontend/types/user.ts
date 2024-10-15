@@ -60,8 +60,8 @@ export const SupportedCountries = [
 ];
 
 export interface IUserSession {
-  deviceName: string;
-  deviceIP: string;
+  userAgent: string;
+  ipAddress: string;
   lastActivity: string;
   id: string;
   sessionClientId: string;

@@ -19,13 +19,13 @@ export class UserSession extends BaseSchema {
   sessionClientId: string;
 
   @Prop({ type: String })
-  deviceName: string;
+  userAgent: string;
 
   @Prop({ type: String })
   fcmToken: string;
 
   @Prop({ type: String })
-  deviceIP: string;
+  ipAddress: string;
 
   @Prop({ type: String })
   location: string;

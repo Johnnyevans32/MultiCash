@@ -51,15 +51,15 @@ export class UserService {
 
   async findOrCreateUserSession(
     user: UserDocument,
-    payload: { sessionClientId: string; deviceName: string; deviceIP: string }
+    payload: { sessionClientId: string; userAgent: string; ipAddress: string }
   ) {
-    const { sessionClientId, deviceName, deviceIP } = payload;
-    const locationData = await UtilityService.getLocationFromIP(deviceIP);
+    const { sessionClientId, userAgent, ipAddress } = payload;
+    const locationData = await UtilityService.getLocationFromIP(ipAddress);
     const session = await this.userSessionModel.findOneAndUpdate(
       { user: user.id, sessionClientId, isDeleted: false },
       {
-        deviceName,
-        deviceIP,
+        userAgent,
+        ipAddress,
         location: UtilityService.formatLocationString(locationData),
       },
       { upsert: true, new: true }
@@ -79,7 +79,7 @@ export class UserService {
     return await this.userSessionModel
       .find({ user: user.id, isDeleted: false })
       .sort({ lastActivity: -1 })
-      .select("deviceName deviceIP lastActivity sessionClientId location");
+      .select("userAgent ipAddress lastActivity sessionClientId location");
   }
 
   async logoutSession(user: UserDocument, sessionClientId: string) {

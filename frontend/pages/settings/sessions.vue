@@ -28,11 +28,11 @@
       @click="openSessionDetailsModal(session)"
     >
       <div class="flex space-x-3 items-center">
-        <font-awesome-icon :icon="getDeviceInfo(session.deviceName).icon" />
+        <font-awesome-icon :icon="getDeviceInfo(session.userAgent).icon" />
 
         <div class="flex flex-col text-left">
           <span class="md:text-sm text-xs"
-            >{{ getDeviceInfo(session.deviceName).device }}
+            >{{ getDeviceInfo(session.userAgent).device }}
           </span>
           <span
             v-if="session.sessionClientId === sessionClientId"
@@ -169,7 +169,7 @@ export default defineComponent({
       if (!modalSession.value) {
         return [];
       }
-      const { deviceName, lastActivity, deviceIP, sessionClientId, location } =
+      const { userAgent, lastActivity, ipAddress, sessionClientId, location } =
         modalSession.value;
 
       return [
@@ -178,23 +178,23 @@ export default defineComponent({
           value: sessionClientId,
         },
         {
-          title: "Device name",
-          value: getDeviceInfo(deviceName).device,
+          title: "Device",
+          value: getDeviceInfo(userAgent).device,
         },
         {
-          title: "Device browser",
-          value: getDeviceInfo(deviceName).browser,
+          title: "Browser",
+          value: getDeviceInfo(userAgent).browser,
         },
         {
-          title: "Device IP",
-          value: deviceIP || "no data",
+          title: "IP Address",
+          value: ipAddress || "no data",
         },
         {
-          title: "Device Location",
+          title: "Location",
           value: location || "no data",
         },
         {
-          title: "Last activity",
+          title: "Last seen",
           value: formatDate(lastActivity, "ddd, MMM Do YYYY, h:mm:ss a"),
         },
       ];

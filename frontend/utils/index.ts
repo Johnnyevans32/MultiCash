@@ -125,14 +125,14 @@ export async function requestNotificationPermission() {
 
 export async function setToken(isFromRetry = false) {
   try {
-    const { deviceId } = storeToRefs(useUserStore());
+    const { sessionClientId } = storeToRefs(useUserStore());
     const { $messaging, $api } = useNuxtApp();
     const token = await getToken($messaging, {
       vapidKey:
         "BIARmEHojCDE1iSgKRLzAZveSlZf2RhzNFjlV0MSuUv66AKeNiP5_bTdbz4vCHXLpvwGnvhtZ3C3Pu_hRnReKI8",
     });
 
-    await $api.userService.saveDeviceFcmToken(deviceId.value, token);
+    await $api.userService.saveSessionFcmToken(sessionClientId.value, token);
   } catch (err) {
     if (!isFromRetry) {
       await setToken(true);

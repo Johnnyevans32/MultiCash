@@ -39,6 +39,7 @@ export default defineComponent({
     const { setAccessToken } = useUserStore();
     const oldPassword = ref();
     const newPassword = ref();
+    const { sessionClientId } = storeToRefs(useUserStore());
 
     const { withLoading, loading } = useLoading();
 
@@ -48,6 +49,7 @@ export default defineComponent({
           newPassword: newPassword.value,
           oldPassword: oldPassword.value,
         });
+        $api.userService.logoutSession(sessionClientId.value);
         setAccessToken(null);
         await navigateTo("/signin");
         notify({

@@ -29,7 +29,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     response.status(status).send({
       code: status,
-      message: [401, 404, 500, 501, 503].includes(status)
+      message: [404, 500, 501, 503].includes(status)
         ? this.statusCodeMessage[status]
         : (exception.getResponse() as any).message || exception.message,
       timestamp: new Date().toISOString(),

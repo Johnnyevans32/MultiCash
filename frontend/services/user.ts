@@ -3,7 +3,7 @@ import type {
   IUser,
   UpdatePasswordDTO,
   UpdateUserDTO,
-  UserDevice,
+  IUserSession,
 } from "~/types/user";
 
 export class UserService {
@@ -68,18 +68,18 @@ export class UserService {
     return data;
   }
 
-  async saveDeviceFcmToken(deviceId: string, fcmToken: string) {
+  async saveSessionFcmToken(sessionClientId: string, fcmToken: string) {
     const { useCustomFetch } = useAppVueUtils();
-    return useCustomFetch(`/api/users/devices/fcm-token`, {
+    return useCustomFetch(`/api/users/sessions/fcm-token`, {
       method: "put",
-      body: { deviceId, fcmToken },
+      body: { sessionClientId, fcmToken },
     });
   }
 
-  async fetchUserDevices() {
+  async fetchUserSessions() {
     const { useCustomFetch } = useAppVueUtils();
-    const { data } = await useCustomFetch<IResponse<UserDevice[]>>(
-      `/api/users/devices`,
+    const { data } = await useCustomFetch<IResponse<IUserSession[]>>(
+      `/api/users/sessions`,
       {
         method: "get",
       }
@@ -87,9 +87,16 @@ export class UserService {
     return data;
   }
 
-  async logoutDevice(deviceId?: string) {
+  async logoutSession(sessionClientId?: string) {
     const { useCustomFetch } = useAppVueUtils();
-    return useCustomFetch(`/api/users/logout/${deviceId}`, {
+    return useCustomFetch(`/api/users/logout/${sessionClientId}`, {
+      method: "put",
+    });
+  }
+
+  async userSessionPing(sessionClientId: string) {
+    const { useCustomFetch } = useAppVueUtils();
+    await useCustomFetch(`/api/users/sessions/${sessionClientId}/ping`, {
       method: "put",
     });
   }

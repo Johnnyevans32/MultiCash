@@ -44,7 +44,23 @@ export default defineComponent({
     const { autoLogoutTimeoutInMins, autoLogoutEnabled } = storeToRefs(
       useConfigStore()
     );
-    const { user } = storeToRefs(useUserStore());
+    const { $api } = useNuxtApp();
+    const { user, sessionClientId } = storeToRefs(useUserStore());
+
+    let heartbeatInterval: number | null = null;
+
+    onMounted(() => {
+      heartbeatInterval = window.setInterval(() => {
+        $api.userService.userSessionPing(sessionClientId.value);
+      }, 1 * 60 * 1000); // Every 1 minutes
+    });
+
+    onUnmounted(() => {
+      if (heartbeatInterval !== null) {
+        clearInterval(heartbeatInterval);
+        heartbeatInterval = null;
+      }
+    });
 
     const hasShownFeaturesModal = ref(false);
 
@@ -76,6 +92,7 @@ export default defineComponent({
     const onidle = async () => {
       const route = useRoute();
       const { setAccessToken } = useUserStore();
+      $api.userService.logoutSession(sessionClientId.value);
       setAccessToken(null);
       await navigateTo(`/signin?redirect=${route.fullPath}`);
       notify({
@@ -98,7 +115,6 @@ export default defineComponent({
     const handleNotificationPermissionRequest = async () => {
       const permissionGranted = await requestNotificationPermission();
 
-      const { $api } = useNuxtApp();
       const { setUser } = useUserStore();
       await $api.userService.updateUser({
         pushNotificationIsEnabled: permissionGranted,

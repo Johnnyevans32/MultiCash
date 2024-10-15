@@ -57,7 +57,7 @@ export default defineComponent({
       title: "Settings",
       ogTitle: "Settings",
     });
-    const { user } = storeToRefs(useUserStore());
+    const { user, sessionClientId } = storeToRefs(useUserStore());
     const { $api } = useNuxtApp();
     const { appThemeColor } = storeToRefs(useConfigStore());
     const { setAccessToken } = useUserStore();
@@ -66,6 +66,7 @@ export default defineComponent({
     const confirmDeletionModal = ref(false);
 
     const logout = async () => {
+      $api.userService.logoutSession(sessionClientId.value);
       setAccessToken(null);
       await navigateTo("/signin");
       notify({

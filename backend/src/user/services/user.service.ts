@@ -12,19 +12,19 @@ import {
   UpdateUserDTO,
 } from "@/user/dtos/user.dto";
 import { UserDocument } from "@/user/schemas/user.schema";
-import { USER, USER_DEVICE } from "@/core/constants/schema.constants";
+import { USER, USER_SESSION } from "@/core/constants/schema.constants";
 import { EmailService } from "@/notification/email/email.service";
 import { UtilityService } from "@/core/services/util.service";
 import configuration from "@/core/services/configuration";
-import { UserDeviceDocument } from "../schemas/user-device.schema";
+import { UserSessionDocument } from "../schemas/user-session.schema";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(USER)
     private userModel: Model<UserDocument>,
-    @InjectModel(USER_DEVICE)
-    private userDeviceModel: Model<UserDeviceDocument>,
+    @InjectModel(USER_SESSION)
+    private userSessionModel: Model<UserSessionDocument>,
     private emailService: EmailService
   ) {}
 
@@ -49,28 +49,45 @@ export class UserService {
     );
   }
 
-  async findOrCreateUserDevice(
+  async findOrCreateUserSession(
     user: UserDocument,
-    payload: { deviceId: string; deviceName: string }
+    payload: { sessionClientId: string; deviceName: string }
   ) {
-    const { deviceId, deviceName } = payload;
-    await this.userDeviceModel.findOneAndUpdate(
-      { user: user.id, deviceId, isDeleted: false },
-      { name: deviceName },
-      { upsert: true }
+    const { sessionClientId, deviceName } = payload;
+    const session = await this.userSessionModel.findOneAndUpdate(
+      { user: user.id, sessionClientId, isDeleted: false },
+      { deviceName },
+      { upsert: true, new: true }
+    );
+
+    return session;
+  }
+
+  async findSession(sessionId: string) {
+    return await this.userSessionModel.findOne({
+      _id: sessionId,
+      isDeleted: false,
+    });
+  }
+
+  async fetchUserSessions(user: UserDocument) {
+    return await this.userSessionModel
+      .find({ user: user.id, isDeleted: false })
+      .sort({ lastActivity: -1 })
+      .select("deviceName deviceIP lastActivity sessionClientId");
+  }
+
+  async logoutSession(user: UserDocument, sessionClientId: string) {
+    await this.userSessionModel.findOneAndUpdate(
+      { user: user.id, sessionClientId },
+      { isDeleted: true }
     );
   }
 
-  async fetchUserDevices(user: UserDocument) {
-    await this.userDeviceModel
-      .find({ user: user.id, isDeleted: false })
-      .select("name ip lastActivity");
-  }
-
-  async logoutDevice(user: UserDocument, deviceId: string) {
-    await this.userDeviceModel.findOneAndUpdate(
-      { user: user.id, deviceId },
-      { isDeleted: true }
+  async userSessionPing(user: UserDocument, sessionClientId: string) {
+    await this.userSessionModel.findOneAndUpdate(
+      { user: user.id, sessionClientId },
+      { lastActivity: new Date() }
     );
   }
 
@@ -178,19 +195,19 @@ export class UserService {
     await this.userModel.updateOne({ _id: user.id }, { $set: { tag } });
   }
 
-  async saveDeviceFcmToken(
+  async saveSessionFcmToken(
     user: UserDocument,
     payload: {
       fcmToken: string;
-      deviceId: string;
+      sessionClientId: string;
     }
   ) {
-    const { fcmToken, deviceId } = payload;
-    await this.userDeviceModel.findOneAndUpdate(
+    const { fcmToken, sessionClientId } = payload;
+    await this.userSessionModel.findOneAndUpdate(
       {
         user: user.id,
         isDeleted: false,
-        deviceId,
+        sessionClientId,
       },
       { fcmToken }
     );

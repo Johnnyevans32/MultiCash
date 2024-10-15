@@ -8,27 +8,27 @@ import {
 import { USER } from "@/core/constants/schema.constants";
 import { UserDocument } from "./user.schema";
 
-export type UserDeviceDocument = HydratedDocument<UserDevice>;
+export type UserSessionDocument = HydratedDocument<UserSession>;
 
 @BaseSchemaDecorator()
-export class UserDevice extends BaseSchema {
+export class UserSession extends BaseSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: USER })
   user: UserDocument | string;
 
   @Prop({ type: String })
-  deviceId: string;
+  sessionClientId: string;
 
   @Prop({ type: String })
-  name: string;
+  deviceName: string;
 
   @Prop({ type: String })
   fcmToken: string;
 
   @Prop({ type: String })
-  ip: string;
+  deviceIP: string;
 
   @Prop({ type: SchemaTypes.Date })
   lastActivity?: Date;
 }
 
-export const UserDeviceSchema = SchemaFactory.createForClass(UserDevice);
+export const UserSessionSchema = SchemaFactory.createForClass(UserSession);

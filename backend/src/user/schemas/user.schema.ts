@@ -6,8 +6,8 @@ import {
   BaseSchemaDecorator,
 } from "@/core/decorators/base-schema.decorator";
 import { UtilityService } from "@/core/services/util.service";
-import { UserDeviceDocument } from "./user-device.schema";
-import { USER_DEVICE } from "@/core/constants/schema.constants";
+import { UserSessionDocument } from "./user-session.schema";
+import { USER_SESSION } from "@/core/constants/schema.constants";
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -72,7 +72,7 @@ export class User extends BaseSchema {
   @Prop({ type: Date })
   lastLoggedIn: Date;
 
-  devices: UserDeviceDocument[];
+  sessions: UserSessionDocument[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -87,10 +87,10 @@ UserSchema.pre<UserDocument>("save", async function (next) {
   next();
 });
 
-UserSchema.virtual("devices", {
+UserSchema.virtual("sessions", {
   localField: "_id",
   foreignField: "user",
-  ref: USER_DEVICE,
+  ref: USER_SESSION,
   match: {
     isDeleted: false,
   },

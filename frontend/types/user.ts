@@ -37,7 +37,7 @@ export interface IMetadata {
 export interface SigninDTO {
   email: string;
   password: string;
-  deviceId: string;
+  sessionClientId: string;
   deviceName: string;
 }
 
@@ -59,9 +59,10 @@ export const SupportedCountries = [
   { name: "South Africa", code: "ZA" },
 ];
 
-export interface UserDevice {
-  name: string;
-  ip: string;
+export interface IUserSession {
+  deviceName: string;
+  deviceIP: string;
   lastActivity: string;
   id: string;
+  sessionClientId: string;
 }

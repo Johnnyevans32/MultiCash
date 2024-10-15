@@ -23,14 +23,18 @@ export class AuthService {
     if (isMatch) return user;
   }
 
-  async signin(user: UserDocument, devicePayload: any) {
-    this.userService.findOrCreateUserDevice(user, devicePayload);
+  async signin(user: UserDocument, payload: any) {
+    const session = await this.userService.findOrCreateUserSession(
+      user,
+      payload
+    );
     user.lastLoggedIn = moment().toDate();
     await user.save();
     return {
       accessToken: this.jwtService.sign({
         sub: user.id,
         tokenVersion: user.jwtTokenVersion,
+        sessionId: session.id,
       }),
     };
   }

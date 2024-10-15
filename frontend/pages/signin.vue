@@ -57,8 +57,8 @@ export default defineComponent({
     const config = useRuntimeConfig();
     const route = useRoute();
     const { $api } = useNuxtApp();
-    const { deviceId } = storeToRefs(useUserStore());
-    const { setAccessToken, setUser, setDeviceId } = useUserStore();
+    const { sessionClientId } = storeToRefs(useUserStore());
+    const { setAccessToken, setUser, setSessionClientId } = useUserStore();
     const password = ref("");
     const email = ref("");
 
@@ -66,14 +66,14 @@ export default defineComponent({
 
     const signin = async () => {
       await withLoading(async () => {
-        if (!deviceId.value) {
-          setDeviceId(crypto.randomUUID());
+        if (!sessionClientId.value) {
+          setSessionClientId(crypto.randomUUID());
         }
 
         const token = await $api.authService.signin({
           email: email.value,
           password: password.value,
-          deviceId: deviceId.value,
+          sessionClientId: sessionClientId.value,
           deviceName: navigator.userAgent,
         });
         setAccessToken(token);

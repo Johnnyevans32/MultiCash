@@ -54,6 +54,21 @@ export class UserController {
     );
   }
 
+  @Get("sessions")
+  async fetchUserSessions(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "sessions fetched successful",
+      this.userService,
+      "fetchUserSessions",
+      HttpStatusCode.Ok,
+      user
+    );
+  }
+
   @Get(":tag")
   async checkIfTagExist(@Res() res: Response, @Param("tag") tag: string) {
     return UtilityService.handleRequest(
@@ -96,19 +111,19 @@ export class UserController {
   }
 
   @Put("logout/:id")
-  async logoutDevice(
+  async logoutSession(
     @Res() res: Response,
     @CurrentUser() user: UserDocument,
-    @Param("id") deviceId: string
+    @Param("id") sessionClientId: string
   ) {
     return UtilityService.handleRequest(
       res,
       "successful",
       this.userService,
-      "logoutDevice",
+      "logoutSession",
       HttpStatusCode.Ok,
       user,
-      deviceId
+      sessionClientId
     );
   }
 
@@ -129,8 +144,8 @@ export class UserController {
     );
   }
 
-  @Put("devices/fcm-token")
-  async saveDeviceFcmToken(
+  @Put("sessions/fcm-token")
+  async saveSessionFcmToken(
     @Res() res: Response,
     @CurrentUser() user: UserDocument,
     @Body() payload: any
@@ -139,25 +154,27 @@ export class UserController {
       res,
       "update successful",
       this.userService,
-      "saveDeviceFcmToken",
+      "saveSessionFcmToken",
       HttpStatusCode.Ok,
       user,
       payload
     );
   }
 
-  @Get("devices")
-  async fetchUserDevices(
+  @Put("sessions/:id/ping")
+  async userSessionPing(
     @Res() res: Response,
-    @CurrentUser() user: UserDocument
+    @CurrentUser() user: UserDocument,
+    @Param("id") sesionClientId: string
   ) {
     return UtilityService.handleRequest(
       res,
-      "successful",
+      "update successful",
       this.userService,
-      "fetchUserDevices",
+      "userSessionPing",
       HttpStatusCode.Ok,
-      user
+      user,
+      sesionClientId
     );
   }
 }

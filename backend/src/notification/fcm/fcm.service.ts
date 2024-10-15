@@ -21,10 +21,10 @@ export class FcmService {
     notification: { title: string; body: string }
   ) {
     if (!user.pushNotificationIsEnabled) return;
-    await user.populate("devices");
+    await user.populate("sessions");
 
-    const fcmTokens = user.devices
-      ?.map((device) => device.fcmToken)
+    const fcmTokens = user.sessions
+      ?.map((session) => session.fcmToken)
       .filter(Boolean);
 
     if (isEmpty(fcmTokens)) return;

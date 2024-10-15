@@ -41,7 +41,7 @@
             Active Session
           </span>
           <span v-else class="md:text-sm text-xs">{{
-            formatDate(session.lastActivity, "ddd, MMM Do YYYY, h:mm:ss a")
+            timeAgo(session.lastActivity)
           }}</span>
         </div>
       </div>
@@ -94,6 +94,7 @@
 <script lang="ts">
 import type { IUserSession } from "~/types/user";
 import { useUserStore } from "~/store/user";
+import moment from "moment";
 
 export default defineComponent({
   setup() {
@@ -110,6 +111,7 @@ export default defineComponent({
 
     const sessions = ref<IUserSession[]>([]);
 
+    const timeAgo = (date: string) => moment(date).fromNow();
     onBeforeMount(async () => {
       fetchSessions();
     });
@@ -198,6 +200,7 @@ export default defineComponent({
       isLogoutSessionLoading,
       sessionClientId,
       isFetchSessionsLoading,
+      timeAgo,
     };
   },
 });

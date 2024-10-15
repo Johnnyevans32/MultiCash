@@ -300,7 +300,7 @@ export default defineComponent({
     };
 
     watch(
-      () => route.query.currency,
+      () => route.query.currency as string,
       (newCurrency: string) => {
         if (walletCurrencies.value.includes(newCurrency?.toUpperCase())) {
           selectedCurrency.value = newCurrency?.toUpperCase();

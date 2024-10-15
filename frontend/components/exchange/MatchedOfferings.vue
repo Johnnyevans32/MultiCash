@@ -287,7 +287,7 @@ export default defineComponent({
     };
 
     const isLoadingFetchExchangeSummary = ref(false);
-    const exchangeSummary = ref<IExchange>();
+    const exchangeSummary = ref<IExchange | null>();
     const fetchExchangeSummary = async () => {
       if (!payinAmount.value) {
         notify({

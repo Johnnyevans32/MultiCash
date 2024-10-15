@@ -127,7 +127,7 @@ export async function setToken(isFromRetry = false) {
   try {
     const { sessionClientId } = storeToRefs(useUserStore());
     const { $messaging, $api } = useNuxtApp();
-    const token = await getToken($messaging, {
+    const token = await getToken($messaging as any, {
       vapidKey:
         "BIARmEHojCDE1iSgKRLzAZveSlZf2RhzNFjlV0MSuUv66AKeNiP5_bTdbz4vCHXLpvwGnvhtZ3C3Pu_hRnReKI8",
     });

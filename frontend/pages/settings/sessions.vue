@@ -32,7 +32,7 @@
 
         <div class="flex flex-col text-left">
           <span class="md:text-sm text-xs"
-            >{{ getDeviceInfo(session.deviceName).name }}
+            >{{ getDeviceInfo(session.deviceName).device }}
           </span>
           <span
             v-if="session.sessionClientId === sessionClientId"
@@ -117,21 +117,41 @@ export default defineComponent({
     });
 
     const getDeviceInfo = (userAgent: string) => {
-      if (/Macintosh/.test(userAgent)) {
-        return { name: "Macbook", icon: "laptop" };
-      } else if (/Windows/.test(userAgent)) {
-        return { name: "Windows", icon: "laptop" };
-      } else if (/iPhone/.test(userAgent)) {
-        return { name: "iPhone", icon: "mobile" };
-      } else if (/iPad/.test(userAgent)) {
-        return { name: "iPad", icon: "tablet" };
-      } else if (/Android/.test(userAgent)) {
-        return { name: "Android", icon: "mobile" };
-      } else if (/Linux/.test(userAgent)) {
-        return { name: "Linux", icon: "laptop" };
-      } else {
-        return { name: "Unknown Device", icon: "question" };
-      }
+      const device = /Macintosh/.test(userAgent)
+        ? "Macbook"
+        : /Windows/.test(userAgent)
+        ? "Windows"
+        : /iPhone/.test(userAgent)
+        ? "iPhone"
+        : /iPad/.test(userAgent)
+        ? "iPad"
+        : /Android/.test(userAgent)
+        ? "Android"
+        : /Linux/.test(userAgent)
+        ? "Linux"
+        : "Unknown Device";
+
+      const browser = /Chrome/.test(userAgent)
+        ? "Chrome"
+        : /Safari/.test(userAgent) && !/Chrome/.test(userAgent)
+        ? "Safari"
+        : /Firefox/.test(userAgent)
+        ? "Firefox"
+        : /Edge/.test(userAgent)
+        ? "Edge"
+        : /Opera|OPR/.test(userAgent)
+        ? "Opera"
+        : "Unknown Browser";
+
+      const icon = /iPhone|Android/.test(device)
+        ? "mobile"
+        : /iPad|Tablet/.test(device)
+        ? "tablet"
+        : /Macbook|Windows|Linux/.test(device)
+        ? "laptop"
+        : "question";
+
+      return { device, browser, icon };
     };
 
     const { $api } = useNuxtApp();
@@ -159,11 +179,19 @@ export default defineComponent({
         },
         {
           title: "Device name",
-          value: getDeviceInfo(deviceName).name,
+          value: getDeviceInfo(deviceName).device,
+        },
+        {
+          title: "Device browser",
+          value: getDeviceInfo(deviceName).browser,
         },
         {
           title: "Device IP",
           value: deviceIP || "no data",
+        },
+        {
+          title: "Device Location",
+          value: "no data",
         },
         {
           title: "Last activity",

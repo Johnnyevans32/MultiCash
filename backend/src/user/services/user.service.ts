@@ -29,9 +29,8 @@ export class UserService {
   ) {}
 
   async me(user: UserDocument) {
-    return this.userModel
+    return await this.userModel
       .findById(user.id)
-      .populate("intercomHash")
       .select(
         "name email did profileImage country tag pushNotificationIsEnabled intercomHash"
       );

@@ -22,6 +22,7 @@ export enum SupportedCountry {
 
 @BaseSchemaDecorator({
   toJSON: {
+    virtuals: true,
     transform: (_doc: any, ret: any): void => {
       ret.id = ret._id;
       delete ret._id;
@@ -75,8 +76,7 @@ export class User extends BaseSchema {
   lastLoggedIn: Date;
 
   sessions: UserSessionDocument[];
-
-  intercomHash: string;
+  intercomHash?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -101,6 +101,7 @@ UserSchema.virtual("sessions", {
 });
 
 UserSchema.virtual("intercomHash").get(function () {
+  if (!this.email) return;
   const hash = createHmac("sha256", configuration().intercom.secretKey)
     .update(this.email)
     .digest("hex");

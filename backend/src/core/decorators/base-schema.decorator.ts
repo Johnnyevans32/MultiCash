@@ -15,6 +15,9 @@ export const BaseSchemaDecorator = (options?: SchemaOptions): any =>
           delete ret.isDeleted;
         },
       },
+      toObject: {
+        virtuals: true,
+      },
       ...options,
     })
   );

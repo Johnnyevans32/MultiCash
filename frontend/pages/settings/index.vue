@@ -105,7 +105,7 @@ export default defineComponent({
         href: "/settings/guard",
       },
       {
-        logo: "laptop",
+        logo: "window-restore",
         action: "Sessions",
         value: "Manage login sessions for your account.",
         logoType: "icon",

@@ -104,6 +104,13 @@ export default defineComponent({
         href: "/settings/guard",
       },
       {
+        logo: "laptop",
+        action: "Sessions",
+        value: "Manage login sessions for your account.",
+        logoType: "icon",
+        href: "/settings/sessions",
+      },
+      {
         logo: "bell",
         action: "Push Notification",
         value: "Enable push notification for real time updates.",

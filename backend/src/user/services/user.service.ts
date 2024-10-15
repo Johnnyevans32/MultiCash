@@ -64,7 +64,7 @@ export class UserService {
   async fetchUserDevices(user: UserDocument) {
     await this.userDeviceModel
       .find({ user: user.id, isDeleted: false })
-      .select("name ip");
+      .select("name ip lastActivity");
   }
 
   async logoutDevice(user: UserDocument, deviceId: string) {

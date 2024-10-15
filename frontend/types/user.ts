@@ -58,3 +58,10 @@ export const SupportedCountries = [
   { name: "Kenya", code: "KE" },
   { name: "South Africa", code: "ZA" },
 ];
+
+export interface UserDevice {
+  name: string;
+  ip: string;
+  lastActivity: string;
+  id: string;
+}

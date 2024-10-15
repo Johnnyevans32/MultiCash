@@ -3,6 +3,7 @@ import type {
   IUser,
   UpdatePasswordDTO,
   UpdateUserDTO,
+  UserDevice,
 } from "~/types/user";
 
 export class UserService {
@@ -77,11 +78,12 @@ export class UserService {
 
   async fetchUserDevices() {
     const { useCustomFetch } = useAppVueUtils();
-    const { data } = await useCustomFetch<
-      IResponse<{ name: string; ip: string }[]>
-    >(`/api/users/devices`, {
-      method: "get",
-    });
+    const { data } = await useCustomFetch<IResponse<UserDevice[]>>(
+      `/api/users/devices`,
+      {
+        method: "get",
+      }
+    );
     return data;
   }
 

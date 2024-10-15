@@ -26,6 +26,9 @@ export class UserDevice extends BaseSchema {
 
   @Prop({ type: String })
   ip: string;
+
+  @Prop({ type: SchemaTypes.Date })
+  lastActivity?: Date;
 }
 
 export const UserDeviceSchema = SchemaFactory.createForClass(UserDevice);

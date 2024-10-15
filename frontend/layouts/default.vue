@@ -38,7 +38,7 @@
 import { notify } from "@kyvg/vue3-notification";
 import { useConfigStore } from "~/store/config";
 import { useUserStore } from "~/store/user";
-import Intercom from "@intercom/messenger-js-sdk";
+import { Intercom, shutdown } from "@intercom/messenger-js-sdk";
 
 export default defineComponent({
   setup() {
@@ -54,6 +54,13 @@ export default defineComponent({
       heartbeatInterval = window.setInterval(() => {
         $api.userService.userSessionPing(sessionClientId.value);
       }, 1 * 60 * 1000); // Every 1 minutes
+
+      Intercom({
+        app_id: "ma6omd0w",
+        name: user.value?.name,
+        email: user.value?.email,
+        user_hash: user.value?.intercomHash,
+      });
     });
 
     onUnmounted(() => {
@@ -61,15 +68,8 @@ export default defineComponent({
         clearInterval(heartbeatInterval);
         heartbeatInterval = null;
       }
-    });
 
-    onMounted(() => {
-      Intercom({
-        app_id: "ma6omd0w",
-        name: user.value?.name,
-        email: user.value?.email,
-        user_hash: user.value?.intercomHash,
-      });
+      shutdown();
     });
 
     const hasShownFeaturesModal = ref(false);

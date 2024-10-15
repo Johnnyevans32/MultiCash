@@ -7,6 +7,7 @@ export interface IUser {
   did: string;
   tag: string;
   pushNotificationIsEnabled: boolean;
+  intercomHash: string;
 }
 
 export interface UpdateUserDTO {

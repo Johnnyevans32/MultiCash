@@ -37,6 +37,9 @@ export interface Configuration {
     secretKey: string;
     webhookSecret: string;
   };
+  intercom: {
+    secretKey: string;
+  };
 }
 
 export default (): Configuration => ({
@@ -81,5 +84,8 @@ export default (): Configuration => ({
     baseurl: process.env.STRIPE_BASE_URL,
     secretKey: process.env.STRIPE_SECRET_KEY,
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
+  },
+  intercom: {
+    secretKey: process.env.INTERCOM_SECRET_KEY,
   },
 });

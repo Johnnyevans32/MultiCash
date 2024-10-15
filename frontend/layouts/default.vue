@@ -38,6 +38,7 @@
 import { notify } from "@kyvg/vue3-notification";
 import { useConfigStore } from "~/store/config";
 import { useUserStore } from "~/store/user";
+import Intercom from "@intercom/messenger-js-sdk";
 
 export default defineComponent({
   setup() {
@@ -60,6 +61,15 @@ export default defineComponent({
         clearInterval(heartbeatInterval);
         heartbeatInterval = null;
       }
+    });
+
+    onMounted(() => {
+      Intercom({
+        app_id: "ma6omd0w",
+        name: user.value?.name,
+        email: user.value?.email,
+        user_hash: user.value?.intercomHash,
+      });
     });
 
     const hasShownFeaturesModal = ref(false);

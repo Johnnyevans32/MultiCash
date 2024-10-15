@@ -32,7 +32,7 @@ export class UserService {
     return this.userModel
       .findById(user.id)
       .select(
-        "name email did profileImage country tag pushNotificationIsEnabled"
+        "name email did profileImage country tag pushNotificationIsEnabled intercomHash"
       );
   }
 

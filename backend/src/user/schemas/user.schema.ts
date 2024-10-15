@@ -8,6 +8,8 @@ import {
 import { UtilityService } from "@/core/services/util.service";
 import { UserSessionDocument } from "./user-session.schema";
 import { USER_SESSION } from "@/core/constants/schema.constants";
+import { createHmac } from "crypto";
+import configuration from "@/core/services/configuration";
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -73,6 +75,8 @@ export class User extends BaseSchema {
   lastLoggedIn: Date;
 
   sessions: UserSessionDocument[];
+
+  intercomHash: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -94,4 +98,11 @@ UserSchema.virtual("sessions", {
   match: {
     isDeleted: false,
   },
+});
+
+UserSchema.virtual("intercomHash").get(function () {
+  const hash = createHmac("sha256", configuration().intercom.secretKey)
+    .update(this.email)
+    .digest("hex");
+  return hash;
 });

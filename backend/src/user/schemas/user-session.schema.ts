@@ -27,7 +27,7 @@ export class UserSession extends BaseSchema {
   @Prop({ type: String })
   deviceIP: string;
 
-  @Prop({ type: SchemaTypes.Date })
+  @Prop({ type: SchemaTypes.Date, default: new Date() })
   lastActivity?: Date;
 }
 

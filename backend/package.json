@@ -36,6 +36,7 @@
     "@types/lodash": "^4.14.202",
     "@types/nunjucks": "^3.2.6",
     "@types/passport-local": "^1.0.38",
+    "@types/request-ip": "^0.0.41",
     "@web5/credentials": "1.1.1",
     "@web5/dids": "^1.1.3",
     "async-mutex": "^0.4.1",
@@ -55,6 +56,7 @@
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "reflect-metadata": "0.2.1",
+    "request-ip": "^3.3.0",
     "rimraf": "5.0.5",
     "rxjs": "7.8.1",
     "stripe": "^16.12.0"

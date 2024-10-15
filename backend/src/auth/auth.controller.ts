@@ -6,9 +6,11 @@ import {
   HttpStatus,
   Body,
   Put,
+  Req,
 } from "@nestjs/common";
-import { Response } from "express";
+import { Response, Request } from "express";
 import { HttpStatusCode } from "axios";
+import requestIp from "request-ip";
 
 import { LocalAuthGuard } from "./guards/local.guard";
 import { AuthService } from "./services/auth.service";
@@ -29,10 +31,14 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post("signin")
   async signin(
+    @Req() req: Request,
     @Res() res: Response,
     @CurrentUser() user: UserDocument,
     @Body() payload: any
   ) {
+    const ipAddress = requestIp.getClientIp(req);
+    const userAgent = req.headers["user-agent"];
+
     return UtilityService.handleRequest(
       res,
       "signin successful",
@@ -40,7 +46,7 @@ export class AuthController {
       "signin",
       HttpStatus.OK,
       user,
-      payload
+      { ...payload, deviceName: userAgent, deviceIP: ipAddress }
     );
   }
 

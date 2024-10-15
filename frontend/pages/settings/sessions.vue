@@ -169,7 +169,7 @@ export default defineComponent({
       if (!modalSession.value) {
         return [];
       }
-      const { deviceName, lastActivity, deviceIP, sessionClientId } =
+      const { deviceName, lastActivity, deviceIP, sessionClientId, location } =
         modalSession.value;
 
       return [
@@ -191,7 +191,7 @@ export default defineComponent({
         },
         {
           title: "Device Location",
-          value: "no data",
+          value: location || "no data",
         },
         {
           title: "Last activity",

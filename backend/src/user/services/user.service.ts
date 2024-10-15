@@ -51,12 +51,17 @@ export class UserService {
 
   async findOrCreateUserSession(
     user: UserDocument,
-    payload: { sessionClientId: string; deviceName: string }
+    payload: { sessionClientId: string; deviceName: string; deviceIP: string }
   ) {
-    const { sessionClientId, deviceName } = payload;
+    const { sessionClientId, deviceName, deviceIP } = payload;
+    const locationData = await UtilityService.getLocationFromIP(deviceIP);
     const session = await this.userSessionModel.findOneAndUpdate(
       { user: user.id, sessionClientId, isDeleted: false },
-      { deviceName },
+      {
+        deviceName,
+        deviceIP,
+        location: UtilityService.formatLocationString(locationData),
+      },
       { upsert: true, new: true }
     );
 

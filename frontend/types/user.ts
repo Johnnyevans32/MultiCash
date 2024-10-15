@@ -39,7 +39,6 @@ export interface SigninDTO {
   email: string;
   password: string;
   sessionClientId: string;
-  deviceName: string;
 }
 
 export interface SignupDTO extends SigninDTO {
@@ -66,4 +65,5 @@ export interface IUserSession {
   lastActivity: string;
   id: string;
   sessionClientId: string;
+  location: string;
 }

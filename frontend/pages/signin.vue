@@ -74,7 +74,6 @@ export default defineComponent({
           email: email.value,
           password: password.value,
           sessionClientId: sessionClientId.value,
-          deviceName: navigator.userAgent,
         });
         setAccessToken(token);
         const user = await $api.userService.me();

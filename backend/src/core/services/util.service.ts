@@ -3,7 +3,7 @@ import { Response } from "express";
 import * as bcrypt from "bcrypt";
 import { ResponseService } from "./response.service";
 import { randomBytes } from "crypto";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 
 @Injectable()
 export class UtilityService {
@@ -73,5 +73,25 @@ export class UtilityService {
       currency: currency,
       minimumFractionDigits: 2,
     }).format(amount);
+  }
+
+  static async getLocationFromIP(ip: string) {
+    try {
+      const response = await axios.get(`https://ipapi.co/${ip}/json/`);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching IP location:", error);
+      return null;
+    }
+  }
+
+  static formatLocationString(locationData: any) {
+    if (!locationData) return "Unknown Location";
+
+    const city = locationData.city || "Unknown City";
+    const region = locationData.region || "Unknown Region";
+    const country = locationData.country_name || "Unknown Country";
+
+    return `${city}, ${region}, ${country}`;
   }
 }

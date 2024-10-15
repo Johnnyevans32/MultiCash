@@ -20,19 +20,21 @@ export class FcmService {
     user: UserDocument,
     notification: { title: string; body: string }
   ) {
-    if (user.pushNotificationIsEnabled) {
-      await user.populate("devices");
+    if (!user.pushNotificationIsEnabled) return;
+    await user.populate("devices");
 
-      const devices = user.devices;
-      if (isEmpty(devices)) return;
-      await firebase.messaging().sendEachForMulticast({
-        tokens: devices.map((i) => i.fcmToken),
-        notification,
-        data: {
-          url: configuration().app.uiUrl,
-          userId: user.id,
-        },
-      });
-    }
+    const fcmTokens = user.devices
+      ?.map((device) => device.fcmToken)
+      .filter(Boolean);
+
+    if (isEmpty(fcmTokens)) return;
+
+    await firebase.messaging().sendEachForMulticast({
+      tokens: fcmTokens,
+      notification,
+      data: {
+        url: configuration().app.uiUrl,
+      },
+    });
   }
 }

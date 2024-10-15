@@ -17,6 +17,8 @@ export const useUserStore = defineStore(
     function setAccessToken(token: any) {
       accessToken.value = token;
       if (!token) {
+        const { $api } = useNuxtApp();
+        $api.userService.logoutDevice(deviceId.value);
         const { resetStore: resetWalletStore } = useWalletStore();
         user.value = null;
         deviceId.value = "";

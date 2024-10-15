@@ -1,6 +1,7 @@
 import moment from "moment";
 import { getToken } from "firebase/messaging";
 import { notify } from "@kyvg/vue3-notification";
+import { useUserStore } from "~/store/user";
 
 export const formatMoney = (value?: number, maxFractionDigits = 2) =>
   value?.toLocaleString(undefined, {
@@ -124,13 +125,14 @@ export async function requestNotificationPermission() {
 
 export async function setToken(isFromRetry = false) {
   try {
+    const { deviceId } = storeToRefs(useUserStore());
     const { $messaging, $api } = useNuxtApp();
     const token = await getToken($messaging, {
       vapidKey:
         "BIARmEHojCDE1iSgKRLzAZveSlZf2RhzNFjlV0MSuUv66AKeNiP5_bTdbz4vCHXLpvwGnvhtZ3C3Pu_hRnReKI8",
     });
 
-    await $api.userService.saveDeviceFcmToken(token);
+    await $api.userService.saveDeviceFcmToken(deviceId.value, token);
   } catch (err) {
     if (!isFromRetry) {
       await setToken(true);

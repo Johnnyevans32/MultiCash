@@ -6,6 +6,8 @@ import {
   BaseSchemaDecorator,
 } from "@/core/decorators/base-schema.decorator";
 import { UtilityService } from "@/core/services/util.service";
+import { UserDeviceDocument } from "./user-device.schema";
+import { USER_DEVICE } from "@/core/constants/schema.constants";
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -15,6 +17,7 @@ export enum SupportedCountry {
   KE = "KE",
   ZA = "ZA",
 }
+
 @BaseSchemaDecorator({
   toJSON: {
     transform: (_doc: any, ret: any): void => {
@@ -63,19 +66,13 @@ export class User extends BaseSchema {
   @Prop({ type: String, unique: true })
   tag?: string;
 
-  @Prop([
-    {
-      type: String,
-      default: [],
-    },
-  ])
-  deviceFcmTokens: string[];
-
   @Prop({ type: Boolean, default: false })
   pushNotificationIsEnabled: boolean;
 
   @Prop({ type: Date })
   lastLoggedIn: Date;
+
+  devices: UserDeviceDocument[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
@@ -88,4 +85,13 @@ UserSchema.pre<UserDocument>("save", async function (next) {
   }
 
   next();
+});
+
+UserSchema.virtual("devices", {
+  localField: "_id",
+  foreignField: "user",
+  ref: USER_DEVICE,
+  match: {
+    isDeleted: false,
+  },
 });

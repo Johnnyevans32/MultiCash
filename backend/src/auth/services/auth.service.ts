@@ -23,7 +23,8 @@ export class AuthService {
     if (isMatch) return user;
   }
 
-  async signin(user: UserDocument) {
+  async signin(user: UserDocument, devicePayload: any) {
+    this.userService.findOrCreateUserDevice(user, devicePayload);
     user.lastLoggedIn = moment().toDate();
     await user.save();
     return {

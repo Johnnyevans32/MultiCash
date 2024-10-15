@@ -12,16 +12,19 @@ import {
   UpdateUserDTO,
 } from "@/user/dtos/user.dto";
 import { UserDocument } from "@/user/schemas/user.schema";
-import { USER } from "@/core/constants/schema.constants";
+import { USER, USER_DEVICE } from "@/core/constants/schema.constants";
 import { EmailService } from "@/notification/email/email.service";
 import { UtilityService } from "@/core/services/util.service";
 import configuration from "@/core/services/configuration";
+import { UserDeviceDocument } from "../schemas/user-device.schema";
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(USER)
     private userModel: Model<UserDocument>,
+    @InjectModel(USER_DEVICE)
+    private userDeviceModel: Model<UserDeviceDocument>,
     private emailService: EmailService
   ) {}
 
@@ -43,6 +46,31 @@ export class UserService {
       {
         loginLink: `${configuration().app.uiUrl}/signin`,
       }
+    );
+  }
+
+  async findOrCreateUserDevice(
+    user: UserDocument,
+    payload: { deviceId: string; deviceName: string }
+  ) {
+    const { deviceId, deviceName } = payload;
+    await this.userDeviceModel.findOneAndUpdate(
+      { user: user.id, deviceId, isDeleted: false },
+      { name: deviceName },
+      { upsert: true }
+    );
+  }
+
+  async fetchUserDevices(user: UserDocument) {
+    await this.userDeviceModel
+      .find({ user: user.id, isDeleted: false })
+      .select("name ip");
+  }
+
+  async logoutDevice(user: UserDocument, deviceId: string) {
+    await this.userDeviceModel.findOneAndUpdate(
+      { user: user.id, deviceId },
+      { isDeleted: true }
     );
   }
 
@@ -150,23 +178,21 @@ export class UserService {
     await this.userModel.updateOne({ _id: user.id }, { $set: { tag } });
   }
 
-  async saveDeviceFcmToken(user: UserDocument, token: string) {
-    if (!token || user.deviceFcmTokens.includes(token)) {
-      return;
+  async saveDeviceFcmToken(
+    user: UserDocument,
+    payload: {
+      fcmToken: string;
+      deviceId: string;
     }
-
-    const updatedTokens = [...user.deviceFcmTokens];
-
-    if (updatedTokens.length >= 3) {
-      updatedTokens.shift();
-    }
-
-    updatedTokens.push(token);
-
-    await this.userModel.findOneAndUpdate(
-      { _id: user.id },
-      { deviceFcmTokens: updatedTokens },
-      { new: true }
+  ) {
+    const { fcmToken, deviceId } = payload;
+    await this.userDeviceModel.findOneAndUpdate(
+      {
+        user: user.id,
+        isDeleted: false,
+        deviceId,
+      },
+      { fcmToken }
     );
   }
 }

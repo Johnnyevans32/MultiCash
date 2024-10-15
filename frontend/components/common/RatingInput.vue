@@ -26,7 +26,6 @@ const hoverRating = ref(rating.value);
 
 const setRating = (value: number) => {
   rating.value = value;
-  console.log({ value });
   emit("update:modelValue", rating.value);
 };
 </script>

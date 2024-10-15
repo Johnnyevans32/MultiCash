@@ -28,14 +28,19 @@ export class AuthController {
   @Public()
   @UseGuards(LocalAuthGuard)
   @Post("signin")
-  async signin(@Res() res: Response, @CurrentUser() user: UserDocument) {
+  async signin(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument,
+    @Body() payload: any
+  ) {
     return UtilityService.handleRequest(
       res,
       "signin successful",
       this.authService,
       "signin",
       HttpStatus.OK,
-      user
+      user,
+      payload
     );
   }
 

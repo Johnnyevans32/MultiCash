@@ -67,11 +67,28 @@ export class UserService {
     return data;
   }
 
-  async saveDeviceFcmToken(token: string) {
+  async saveDeviceFcmToken(deviceId: string, fcmToken: string) {
     const { useCustomFetch } = useAppVueUtils();
-    return useCustomFetch(`/api/users/device-fcm-token`, {
+    return useCustomFetch(`/api/users/devices/fcm-token`, {
       method: "put",
-      body: { token },
+      body: { deviceId, fcmToken },
+    });
+  }
+
+  async fetchUserDevices() {
+    const { useCustomFetch } = useAppVueUtils();
+    const { data } = await useCustomFetch<
+      IResponse<{ name: string; ip: string }[]>
+    >(`/api/users/devices`, {
+      method: "get",
+    });
+    return data;
+  }
+
+  async logoutDevice(deviceId?: string) {
+    const { useCustomFetch } = useAppVueUtils();
+    return useCustomFetch(`/api/users/logout/${deviceId}`, {
+      method: "put",
     });
   }
 }

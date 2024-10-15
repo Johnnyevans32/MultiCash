@@ -95,6 +95,23 @@ export class UserController {
     );
   }
 
+  @Put("logout/:id")
+  async logoutDevice(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument,
+    @Param("id") deviceId: string
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.userService,
+      "logoutDevice",
+      HttpStatusCode.Ok,
+      user,
+      deviceId
+    );
+  }
+
   @Put("tag")
   async updateUserTag(
     @Res() res: Response,
@@ -112,11 +129,11 @@ export class UserController {
     );
   }
 
-  @Put("device-fcm-token")
+  @Put("devices/fcm-token")
   async saveDeviceFcmToken(
     @Res() res: Response,
     @CurrentUser() user: UserDocument,
-    @Body("token") token: string
+    @Body() payload: any
   ) {
     return UtilityService.handleRequest(
       res,
@@ -125,7 +142,22 @@ export class UserController {
       "saveDeviceFcmToken",
       HttpStatusCode.Ok,
       user,
-      token
+      payload
+    );
+  }
+
+  @Get("devices")
+  async fetchUserDevices(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.userService,
+      "fetchUserDevices",
+      HttpStatusCode.Ok,
+      user
     );
   }
 }

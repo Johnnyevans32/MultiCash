@@ -21,12 +21,16 @@ export class FcmService {
     notification: { title: string; body: string }
   ) {
     if (user.pushNotificationIsEnabled) {
-      if (isEmpty(user.deviceFcmTokens)) return;
+      await user.populate("devices");
+
+      const devices = user.devices;
+      if (isEmpty(devices)) return;
       await firebase.messaging().sendEachForMulticast({
-        tokens: user.deviceFcmTokens,
+        tokens: devices.map((i) => i.fcmToken),
         notification,
         data: {
           url: configuration().app.uiUrl,
+          userId: user.id,
         },
       });
     }

@@ -1,4 +1,5 @@
 export const USER = "users";
+export const USER_DEVICE = "userdevices";
 export const WALLET = "wallets";
 export const WALLET_TRANSACTION = "wallettransactions";
 export const BENEFICIARY = "beneficiaries";

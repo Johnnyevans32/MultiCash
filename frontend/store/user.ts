@@ -6,15 +6,20 @@ export const useUserStore = defineStore(
   () => {
     const user = ref<IUser | null>(null);
     const accessToken = ref<string | null>();
+    const deviceId = ref("");
 
     function setUser(_user: any) {
       user.value = _user;
+    }
+    function setDeviceId(_id: string) {
+      deviceId.value = _id;
     }
     function setAccessToken(token: any) {
       accessToken.value = token;
       if (!token) {
         const { resetStore: resetWalletStore } = useWalletStore();
         user.value = null;
+        deviceId.value = "";
         resetWalletStore();
       }
     }
@@ -22,9 +27,11 @@ export const useUserStore = defineStore(
     return {
       accessToken,
       user,
+      deviceId,
 
       setAccessToken,
       setUser,
+      setDeviceId,
     };
   },
   {

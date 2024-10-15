@@ -40,6 +40,9 @@ export interface Configuration {
   intercom: {
     secretKey: string;
   };
+  ipapi: {
+    accessKey: string;
+  };
 }
 
 export default (): Configuration => ({
@@ -87,5 +90,8 @@ export default (): Configuration => ({
   },
   intercom: {
     secretKey: process.env.INTERCOM_SECRET_KEY,
+  },
+  ipapi: {
+    accessKey: process.env.IPAPI_ACCESS_KEY,
   },
 });

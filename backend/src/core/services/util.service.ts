@@ -4,6 +4,7 @@ import * as bcrypt from "bcrypt";
 import { ResponseService } from "./response.service";
 import { randomBytes } from "crypto";
 import axios, { AxiosError } from "axios";
+import configuration from "./configuration";
 
 @Injectable()
 export class UtilityService {
@@ -77,7 +78,9 @@ export class UtilityService {
 
   static async getLocationFromIP(ip: string) {
     try {
-      const response = await axios.get(`https://ipapi.co/${ip}/json/`);
+      const response = await axios.get(
+        `http://api.ipapi.com/api/${ip}?access_key=${configuration().ipapi.accessKey}`
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching IP location:", error);

@@ -79,7 +79,7 @@ export class UserService {
     return await this.userSessionModel
       .find({ user: user.id, isDeleted: false })
       .sort({ lastActivity: -1 })
-      .select("deviceName deviceIP lastActivity sessionClientId");
+      .select("deviceName deviceIP lastActivity sessionClientId location");
   }
 
   async logoutSession(user: UserDocument, sessionClientId: string) {

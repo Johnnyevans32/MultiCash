@@ -10,7 +10,7 @@ import {
 } from "@nestjs/common";
 import { Response, Request } from "express";
 import { HttpStatusCode } from "axios";
-import requestIp from "request-ip";
+import * as requestIp from "request-ip";
 
 import { LocalAuthGuard } from "./guards/local.guard";
 import { AuthService } from "./services/auth.service";

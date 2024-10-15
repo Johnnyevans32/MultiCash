@@ -1,6 +1,6 @@
 import { applyDecorators } from "@nestjs/common";
-import { Prop, Schema, SchemaFactory, SchemaOptions } from "@nestjs/mongoose";
-import { HydratedDocument, SchemaTypes } from "mongoose";
+import { Prop, Schema, SchemaOptions } from "@nestjs/mongoose";
+import { SchemaTypes } from "mongoose";
 
 export const BaseSchemaDecorator = (options?: SchemaOptions): any =>
   applyDecorators(

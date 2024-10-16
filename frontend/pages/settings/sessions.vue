@@ -174,7 +174,7 @@ export default defineComponent({
 
       return [
         {
-          title: "Session Client Id",
+          title: "Client Id",
           value: sessionClientId,
         },
         {

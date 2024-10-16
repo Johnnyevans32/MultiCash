@@ -92,7 +92,7 @@ export class UtilityService {
     if (!locationData) return "Unknown Location";
 
     const city = locationData.city || "Unknown City";
-    const region = locationData.region || "Unknown Region";
+    const region = locationData.region_name || "Unknown Region";
     const country = locationData.country_name || "Unknown Country";
 
     return `${city}, ${region}, ${country}`;

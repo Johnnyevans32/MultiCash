@@ -46,7 +46,7 @@ export class AuthController {
       "signin",
       HttpStatus.OK,
       user,
-      { ...payload, userAgent, ipAddress: req.ip }
+      { ...payload, userAgent, ipAddress }
     );
   }
 

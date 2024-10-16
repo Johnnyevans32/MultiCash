@@ -15,7 +15,7 @@ export class UserSession extends BaseSchema {
   @Prop({ type: SchemaTypes.ObjectId, ref: USER })
   user: UserDocument | string;
 
-  @Prop({ type: String })
+  @Prop({ type: String, unique: true })
   sessionClientId: string;
 
   @Prop({ type: String })

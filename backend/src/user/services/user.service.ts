@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { FilterQuery, Model } from "mongoose";
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes, randomUUID } from "crypto";
 import * as moment from "moment";
 
 import {
@@ -53,7 +53,7 @@ export class UserService {
     user: UserDocument,
     payload: { sessionClientId: string; userAgent: string; ipAddress: string }
   ) {
-    const { sessionClientId, userAgent, ipAddress } = payload;
+    const { sessionClientId = randomUUID(), userAgent, ipAddress } = payload;
     const locationData = await UtilityService.getLocationFromIP(ipAddress);
     const session = await this.userSessionModel.findOneAndUpdate(
       { user: user.id, sessionClientId, isDeleted: false },

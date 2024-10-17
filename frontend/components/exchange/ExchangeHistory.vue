@@ -32,10 +32,10 @@
       <div
         v-for="exchange in exchanges"
         :key="exchange.id"
-        class="cursor-pointer py-5 md:px-5 px-2 flex mb-2 items-center h-16 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base"
+        class="cursor-pointer p-5 flex mb-2 items-center h-16 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base"
         @click="openExchangeModal(exchange)"
       >
-        <div class="flex md:space-x-2 space-x-1 items-center">
+        <div class="flex space-x-2 items-center">
           <font-awesome-icon icon="exchange" />
 
           <span class="truncate md:text-sm text-xs">

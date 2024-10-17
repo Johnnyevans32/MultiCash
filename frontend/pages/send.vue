@@ -43,7 +43,7 @@
       class="cursor-pointer p-5 flex items-center h-16 justify-between rounded-xl bg-lightbase"
       @click="openWithdrawalModal(beneficiary)"
     >
-      <div class="flex space-x-3 items-center">
+      <div class="flex space-x-2 items-center">
         <CommonImage
           :image="
             beneficiary.type === 'platform'

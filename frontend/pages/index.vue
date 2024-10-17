@@ -96,10 +96,10 @@
       <div
         v-for="txn in transactions"
         :key="txn.id"
-        class="cursor-pointer py-5 md:px-5 px-2 flex mb-2 items-center h-16 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base"
+        class="cursor-pointer p-5 flex mb-2 items-center h-16 justify-between rounded-xl text-base bg-lightbase border-[1px] border-base"
         @click="openTransactionDetailModal(txn)"
       >
-        <div class="flex md:gap-4 gap-1 items-center w-[70%]">
+        <div class="flex space-x-2 items-center w-[70%]">
           <div class="text-sm transform translate-y-0">
             <CommonImage
               type="icon"

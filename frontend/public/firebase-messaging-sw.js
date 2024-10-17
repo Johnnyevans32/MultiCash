@@ -29,12 +29,15 @@ messaging.onBackgroundMessage((payload) => {
     badge: "/whitelogo.png",
     data: {
       url: payload.data.url,
-      sound: "/sound.mp3",
+      sound: "/sound.wav",
     },
   };
 
   // Show notification when message received
   self.registration.showNotification(title, notificationOptions);
+
+  const sound = new Audio(notificationOptions.data.sound);
+  sound.play().catch((err) => console.log("error playin notif sound", err));
 });
 
 // Handle notification clicks

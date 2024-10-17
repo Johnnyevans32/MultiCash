@@ -31,13 +31,16 @@ export default defineNuxtPlugin(() => {
         badge: "/whitelogo.png",
         data: {
           ...(payload.data || {}),
-          sound: "/sound.mp3",
+          sound: "/sound.wav",
         },
       };
 
       navigator.serviceWorker.getRegistration().then(function (reg) {
         reg?.showNotification(title as string, options);
       });
+
+      const sound = new Audio(options.data.sound);
+      sound.play().catch((err) => console.log("error playin notif sound", err));
     }
 
     router.replace({

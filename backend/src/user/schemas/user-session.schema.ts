@@ -30,7 +30,7 @@ export class UserSession extends BaseSchema {
   @Prop({ type: String })
   location: string;
 
-  @Prop({ type: SchemaTypes.Date, default: new Date() })
+  @Prop({ type: SchemaTypes.Date })
   lastActivity?: Date;
 }
 

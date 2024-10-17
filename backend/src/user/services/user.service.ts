@@ -61,6 +61,7 @@ export class UserService {
         userAgent,
         ipAddress,
         location: UtilityService.formatLocationString(locationData),
+        lastActivity: moment().toDate(),
       },
       { upsert: true, new: true }
     );

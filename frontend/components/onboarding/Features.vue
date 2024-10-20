@@ -129,7 +129,7 @@ export default defineComponent({
     const currentFeatureIndex = ref(0);
 
     const nextFeature = () => {
-      if (currentFeatureIndex === features.value.length - 1) {
+      if (currentFeatureIndex.value === features.value.length - 1) {
         changeModalStatus(false);
         return;
       }

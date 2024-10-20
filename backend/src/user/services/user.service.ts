@@ -56,12 +56,13 @@ export class UserService {
     const { sessionClientId = randomUUID(), userAgent, ipAddress } = payload;
     const locationData = await UtilityService.getLocationFromIP(ipAddress);
     const session = await this.userSessionModel.findOneAndUpdate(
-      { user: user.id, sessionClientId, isDeleted: false },
+      { user: user.id, ipAddress, isDeleted: false },
       {
         userAgent,
         ipAddress,
         location: UtilityService.formatLocationString(locationData),
         lastActivity: new Date(),
+        sessionClientId,
       },
       { upsert: true, new: true }
     );

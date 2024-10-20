@@ -106,6 +106,19 @@ export class PaystackService
   async transferToAccount(payload: TransferToAccountDTO) {
     const { currency } = payload;
 
+    if (
+      [
+        SupportedCurrencyEnum.KES,
+        SupportedCurrencyEnum.GHS,
+        SupportedCurrencyEnum.ZAR,
+      ].includes(currency)
+    ) {
+      return {
+        providerResponse: payload,
+        status: this.paystackStatusMap["success"],
+      };
+    }
+
     const reason = payload.description;
     const amount = Math.floor(payload.amount * 100);
 

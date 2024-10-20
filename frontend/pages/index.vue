@@ -477,13 +477,13 @@ export default defineComponent({
           value: formatDate(createdAt, "ddd, MMM Do YYYY, h:mm:ss a"),
         },
         {
-          title: "Transaction Type",
+          title: "Type",
           value: type === "debit" ? "Debit" : "Credit",
         },
         ...(note
           ? [
               {
-                title: "Transaction Note",
+                title: "Note",
                 value: note,
               },
             ]

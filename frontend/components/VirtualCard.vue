@@ -26,7 +26,7 @@
             </div> -->
             <span class="text-white">MultiCash</span>
           </div>
-          <h1 class="md:text-3xl text-2xl">**** **** **** ****</h1>
+          <h1 class="text-4xl">**** **** **** ****</h1>
 
           <div class="flex justify-between">
             <div class="text-left">
@@ -40,7 +40,7 @@
         <div
           class="card absolute inset-0 text-white rounded-3xl flex flex-col justify-between p-6 backface-hidden transform rotate-y-180"
         >
-          <h1 class="md:text-3xl text-lg">Coming Soon</h1>
+          <h1 class="text-3xl">Coming Soon</h1>
           <img src="https://i.ibb.co/WHZ3nRJ/visa.png" class="w-16 h-5" />
         </div>
       </div>

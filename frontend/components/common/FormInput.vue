@@ -7,7 +7,7 @@
       @input="handleModelValueChangeAction($event)"
       :placeholder="placeholder"
       :class="`${customCss} rounded-xl px-4 py-2 bg-lightbase w-full border-[1px]
-    border-base`"
+    border-base ${disabled ? 'opacity-65' : ''}`"
       :disabled="disabled"
       :min="min"
       :max="max"

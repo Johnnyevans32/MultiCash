@@ -1,6 +1,7 @@
 <template>
   <div
     v-if="type === 'icon'"
+    :class="customCss"
     class="h-10 w-10 p-2 rounded-xl cursor-pointer bg-bgbase text-2xl flex items-center justify-center border-[1px] border-base"
   >
     <font-awesome-icon :icon="image" />
@@ -16,6 +17,7 @@
 
   <div
     v-else
+    :class="customCss"
     class="bg-base h-10 w-10 text-lightbase rounded-xl flex items-center justify-center text-xl"
   >
     {{ alt?.split("")[0] || "?" }}

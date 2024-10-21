@@ -178,6 +178,8 @@
                 :icon="
                   offering.status === 'completed'
                     ? 'check-circle'
+                    : offering.status === 'cancelled'
+                    ? 'circle-xmark'
                     : 'dot-circle'
                 "
                 :class="offeringStatusStyles[offering.status]"

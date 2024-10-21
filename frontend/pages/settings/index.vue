@@ -146,7 +146,7 @@ export default defineComponent({
         action: "Deactivate your account",
         value: "This will deactivate your account.",
         logoType: "icon",
-        customCss: "bg-red-400",
+        customCss: "bg-red-600 text-white",
         settingAction: () => (confirmDeletionModal.value = true),
       },
     ]);

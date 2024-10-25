@@ -48,7 +48,7 @@
         </div>
 
         <span
-          class="md:text-xs text-tiny py-1 px-2 rounded-lg"
+          class="md:text-xs text-tiny py-[2px] px-2 rounded-lg border"
           :class="exchangeStatusStyles[exchange.status]"
         >
           {{ exchange?.status }}
@@ -128,7 +128,7 @@
         <div class="flex flex-col items-start">
           <span>Status:</span>
           <span
-            class="font-bold md:text-xs text-tiny py-1 px-2 rounded-lg"
+            class="font-bold md:text-xs text-tiny py-[2px] px-2 rounded-lg border"
             :class="exchangeStatusStyles[modalExchange.status]"
           >
             {{ modalExchange?.status }}
@@ -192,7 +192,7 @@
 
                   <span
                     :class="offeringStatusStyles[offering.status]"
-                    class="md:text-xs text-tiny py-1 px-2 rounded-lg"
+                    class="md:text-xs text-tiny py-[2px] px-2 rounded-lg border"
                   >
                     {{ offering.status.replace("_", " ") }}
                   </span>
@@ -371,20 +371,20 @@ export default defineComponent({
     };
 
     const offeringStatusStyles = ref<Record<any, string>>({
-      pending: "text-blue-700 bg-blue-100",
-      processing: "text-yellow-700 bg-yellow-100",
-      awaiting_order: "text-orange-700 bg-orange-100",
-      order_placed: "text-purple-700 bg-purple-100",
-      cancelled: "text-red-700 bg-red-100",
-      completed: "text-green-700 bg-green-100",
+      pending: "text-blue-700 bg-blue-100 border-blue-700",
+      processing: "text-yellow-700 bg-yellow-100 border-yellow-700",
+      awaiting_order: "text-orange-700 bg-orange-100 border-orange-700",
+      order_placed: "text-purple-700 bg-purple-100 border-purple-700",
+      cancelled: "text-red-700 bg-red-100 border-red-700",
+      completed: "text-green-700 bg-green-100 border-green-700",
     });
 
     const exchangeStatusStyles = ref<Record<any, string>>({
-      pending: "text-blue-700 bg-blue-100",
-      processing: "text-yellow-700 bg-yellow-100",
-      completed: "text-green-700 bg-green-100",
-      cancelled: "text-red-700 bg-red-100",
-      partially_completed: "text-orange-700 bg-orange-100",
+      pending: "text-blue-700 bg-blue-100 border-blue-700",
+      processing: "text-yellow-700 bg-yellow-100 border-yellow-700",
+      completed: "text-green-700 bg-green-100 border-green-700",
+      cancelled: "text-red-700 bg-red-100 border-red-700",
+      partially_completed: "text-orange-700 bg-orange-100 border-orange-700",
     });
 
     const reason = ref("");

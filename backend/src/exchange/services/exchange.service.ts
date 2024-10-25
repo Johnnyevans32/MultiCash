@@ -616,7 +616,7 @@ export class ExchangeService extends RequestService {
     }
   }
 
-  @Cron("0 */2 * * * *")
+  @Cron("0 */2 * * * *") // every 2 minutes
   async checkStatusOfOfferingsFromPFIs(ids?: string[]) {
     const mutex = this.getOrCreateMutex("checkStatusOfOfferingsFromPFIs");
     const release = await mutex.acquire();

@@ -417,10 +417,10 @@ export default defineComponent({
 
     const walletsModal = ref(false);
     const txnStatusStyles = ref({
-      pending: "text-blue-700 bg-blue-100",
-      processing: "text-yellow-700 bg-yellow-100",
-      successful: "text-green-700 bg-green-100",
-      failed: "text-red-700 bg-red-100",
+      pending: "text-blue-700 bg-blue-100 border-blue-700",
+      processing: "text-yellow-700 bg-yellow-100 border-yellow-700",
+      successful: "text-green-700 bg-green-100 border-green-700",
+      failed: "text-red-700 bg-red-100 border-red-700",
     });
 
     const transactionDetails = computed(() => {
@@ -448,7 +448,7 @@ export default defineComponent({
         {
           title: "Status",
           value: status,
-          extraClass: `font-bold md:text-xs text-tiny py-1 px-2 rounded-lg ${
+          extraClass: `font-bold md:text-xs text-tiny py-[2px] px-2 rounded-lg border ${
             (txnStatusStyles.value as any)[status]
           }`,
         },

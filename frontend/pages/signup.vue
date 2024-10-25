@@ -7,7 +7,7 @@
       inputType="text"
       v-model="name"
       title="Enter your name"
-      placeholder="name"
+      placeholder="did:dht:example"
     />
     <CommonFormInput
       inputType="text"

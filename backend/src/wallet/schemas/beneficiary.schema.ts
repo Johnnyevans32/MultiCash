@@ -12,7 +12,7 @@ import { BankDocument } from "@/payment/schemas/bank.schema";
 export type BeneficiaryDocument = HydratedDocument<Beneficiary>;
 
 export enum BeneficiaryType {
-  BankAccount = "bankaccount",
+  BankAccount = "bank_account",
   Platform = "platform",
 }
 @BaseSchemaDecorator()

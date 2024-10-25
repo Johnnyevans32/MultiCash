@@ -87,7 +87,7 @@
         <CommonFormSelect
           title="Select beneficiary type"
           :selected="beneficiaryType"
-          :options="['platform', 'bankaccount']"
+          :options="['platform', 'bank_account']"
           @change-option="
             (val) => {
               beneficiaryType = val;
@@ -95,7 +95,7 @@
           "
         />
         <div
-          v-if="beneficiaryType === 'bankaccount'"
+          v-if="beneficiaryType === 'bank_account'"
           class="flex flex-col gap-4"
         >
           <CommonFormSelect
@@ -165,7 +165,7 @@
     <template v-slot:content>
       <div class="flex flex-col gap-4">
         <div
-          v-if="selectedBeneficiary?.type === 'bankaccount'"
+          v-if="selectedBeneficiary?.type === 'bank_account'"
           class="flex items-center gap-2"
         >
           <CommonImage
@@ -332,7 +332,7 @@ export default defineComponent({
       );
     };
 
-    const beneficiaryType = ref<"bankaccount" | "platform">("bankaccount");
+    const beneficiaryType = ref<"bank_account" | "platform">("bank_account");
     const beneficiaryTag = ref();
     const isCreateBeneficiaryLoading = ref(false);
     const accountName = ref("");
@@ -354,12 +354,12 @@ export default defineComponent({
     const createBeneficiary = async () => {
       try {
         isCreateBeneficiaryLoading.value = true;
-        if (beneficiaryType.value === "bankaccount") {
+        if (beneficiaryType.value === "bank_account") {
           await verifyAccountNumber();
         }
         await $api.walletService.createBeneficiary({
           beneficiaryType: beneficiaryType.value,
-          ...(beneficiaryType.value === "bankaccount"
+          ...(beneficiaryType.value === "bank_account"
             ? {
                 accountNumber: accountNumber.value,
                 accountName: accountName.value,

@@ -7,13 +7,13 @@
       inputType="text"
       v-model="name"
       title="Enter your name"
-      placeholder="did:dht:example"
+      placeholder="name"
     />
     <CommonFormInput
       inputType="text"
       v-model="did"
       title="Enter your DID"
-      placeholder="did"
+      placeholder="did:dht:example"
     />
     <CommonFormSelect
       title="Select your country"

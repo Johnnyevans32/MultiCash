@@ -38,7 +38,7 @@ export interface IMetadata {
 export interface SigninDTO {
   email: string;
   password: string;
-  sessionClientId: string;
+  sessionClientId?: string;
 }
 
 export interface SignupDTO extends SigninDTO {

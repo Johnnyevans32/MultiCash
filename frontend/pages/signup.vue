@@ -9,7 +9,12 @@
       title="Enter your name"
       placeholder="name"
     />
-
+    <CommonFormInput
+      inputType="text"
+      v-model="did"
+      title="Enter your DID"
+      placeholder="did"
+    />
     <CommonFormSelect
       title="Select your country"
       :selected="country"
@@ -76,6 +81,7 @@ export default defineComponent({
     const password = ref("");
     const email = ref("");
     const name = ref("");
+    const did = ref("");
     const country = ref("");
 
     const { loading, withLoading } = useLoading();
@@ -87,6 +93,7 @@ export default defineComponent({
           password: password.value,
           name: name.value,
           country: country.value,
+          did: did.value,
         });
         notify({
           type: "success",
@@ -106,6 +113,7 @@ export default defineComponent({
       loading,
       country,
       SupportedCountries,
+      did,
     };
   },
 });

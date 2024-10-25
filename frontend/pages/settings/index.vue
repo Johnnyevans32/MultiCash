@@ -65,16 +65,6 @@ export default defineComponent({
     const config = useRuntimeConfig();
     const confirmDeletionModal = ref(false);
 
-    const logout = async () => {
-      $api.userService.logoutSession(sessionClientId.value);
-      setAccessToken(null);
-      await navigateTo("/signin");
-      notify({
-        type: "info",
-        title: "you have been logged out",
-      });
-    };
-
     const settingsItems = ref([
       {
         logo: "at",
@@ -150,6 +140,16 @@ export default defineComponent({
         settingAction: () => (confirmDeletionModal.value = true),
       },
     ]);
+
+    const logout = async () => {
+      $api.userService.logoutSession(sessionClientId.value);
+      setAccessToken(null);
+      notify({
+        type: "info",
+        title: "you have been logged out",
+      });
+      await navigateTo("/signin");
+    };
 
     const deleteUser = async () => {
       await withLoading(async () => {

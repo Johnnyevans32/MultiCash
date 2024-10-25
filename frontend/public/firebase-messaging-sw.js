@@ -29,7 +29,7 @@ messaging.onBackgroundMessage((payload) => {
     badge: "/whitelogo.png",
     data: {
       url: payload.data.url,
-      sound: "/sound.wav",
+      sound: "/sound.mp3",
     },
   };
 

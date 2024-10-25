@@ -31,7 +31,7 @@ export default defineNuxtPlugin(() => {
         badge: "/whitelogo.png",
         data: {
           ...(payload.data || {}),
-          sound: "/sound.wav",
+          sound: "/sound.mp3",
         },
       };
 

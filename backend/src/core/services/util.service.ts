@@ -109,7 +109,10 @@ export class UtilityService {
   }
 
   async generatePDF(data: any, template: string) {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({
+      headless: true, // Enable headless mode
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
     const page = await browser.newPage();
 
     const body = this.engine.render(template, {

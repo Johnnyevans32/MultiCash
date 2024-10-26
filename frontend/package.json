@@ -36,6 +36,7 @@
     "axios": "^1.6.7",
     "cropperjs": "^1.6.2",
     "firebase": "^10.13.1",
+    "html2pdf.js": "^0.10.2",
     "moment": "^2.29.4",
     "node-fetch-native": "^1.6.4",
     "pinia": "^2.1.7",

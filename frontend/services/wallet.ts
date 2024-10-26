@@ -1,4 +1,4 @@
-import { useUserStore } from "~/store/user";
+import html2pdf from "html2pdf.js";
 import type { IResponse } from "~/types/user";
 import type { IBeneficiary, IWallet, IWalletTransaction } from "~/types/wallet";
 
@@ -35,35 +35,34 @@ export class WalletService {
   }
 
   async downloadTransactionReceipt(transactionId: string) {
-    const config = useRuntimeConfig();
-    const { accessToken } = storeToRefs(useUserStore());
+    const { useCustomFetch } = useAppVueUtils();
 
-    const response = await fetch(
-      `${config.public.apiUrl}/api/wallets/transactions/${transactionId}/receipt`,
+    const { data: receiptHtml } = await useCustomFetch<IResponse<string>>(
+      `/api/wallets/transactions/${transactionId}/receipt`,
       {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${accessToken.value}`,
-        },
+        method: "get",
       }
     );
 
-    if (!response.ok) {
-      throw new Error("Failed to download the file.");
+    // Create a new HTML element to hold the content
+    const element = document.createElement("div");
+    element.innerHTML = receiptHtml;
+
+    // Use html2pdf.js to generate the PDF
+    const options = {
+      margin: 1,
+      filename: `transaction_receipt_${transactionId}_${Date.now()}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+    };
+
+    // Create the PDF
+    try {
+      await html2pdf().from(element).set(options).save();
+    } catch (error) {
+      console.error("Error generating PDF:", error);
     }
-
-    const blob = await (response as any).blob();
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `transaction_receipt_${Date.now()}.pdf`;
-    document.body.appendChild(a);
-    a.click();
-
-    // Cleanup
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
   }
 
   async withdraw(payload: {

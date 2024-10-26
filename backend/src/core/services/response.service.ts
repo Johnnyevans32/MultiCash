@@ -56,7 +56,6 @@ export class ResponseService {
     message?: string,
     data?: T,
     metadata?: PaginationMetaData,
-    code?: number,
     directPayload?: T
   ): void {
     const error = statusOrError instanceof Error && statusOrError;
@@ -69,7 +68,7 @@ export class ResponseService {
       message: error ? message || error.message : message,
       ...(!isNil(data) && { data: data }),
       ...(!isNil(metadata) && { metadata }),
-      ...(!isEmpty(code) && { code }),
+      ...(!isEmpty(status) && { code: status }),
     };
 
     if (error) {

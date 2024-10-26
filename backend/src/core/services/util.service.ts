@@ -4,7 +4,6 @@ import { join } from "path";
 import * as bcrypt from "bcrypt";
 import { configure, Environment } from "nunjucks";
 import * as moment from "moment";
-import puppeteer from "puppeteer";
 import { ResponseService } from "./response.service";
 import { randomBytes } from "crypto";
 import axios, { AxiosError } from "axios";
@@ -72,8 +71,7 @@ export class UtilityService {
         statusCode,
         errorMessage,
         undefined,
-        undefined,
-        statusCode
+        undefined
       );
     }
   }
@@ -109,25 +107,11 @@ export class UtilityService {
   }
 
   async generatePDF(data: any, template: string) {
-    const browser = await puppeteer.launch({
-      headless: true, // Enable headless mode
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-    const page = await browser.newPage();
-
     const body = this.engine.render(template, {
       ...data,
       year: moment().format("YYYY"),
     });
 
-    await page.setContent(body);
-    const fileBuffer = await page.pdf({ format: "A4", printBackground: true });
-
-    await browser.close();
-
-    if (!fileBuffer) {
-      throw new Error("Failed to generate PDF");
-    }
-    return fileBuffer;
+    return body;
   }
 }

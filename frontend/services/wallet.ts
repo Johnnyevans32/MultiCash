@@ -1,3 +1,4 @@
+import { useUserStore } from "~/store/user";
 import type { IResponse } from "~/types/user";
 import type { IBeneficiary, IWallet, IWalletTransaction } from "~/types/wallet";
 
@@ -31,6 +32,38 @@ export class WalletService {
     });
 
     return { data, metadata };
+  }
+
+  async downloadTransactionReceipt(transactionId: string) {
+    const config = useRuntimeConfig();
+    const { accessToken } = storeToRefs(useUserStore());
+
+    const response = await fetch(
+      `${config.public.apiUrl}/api/wallets/transactions/${transactionId}/receipt`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${accessToken.value}`,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to download the file.");
+    }
+
+    const blob = await (response as any).blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `transaction_receipt_${Date.now()}.pdf`;
+    document.body.appendChild(a);
+    a.click();
+
+    // Cleanup
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
   }
 
   async withdraw(payload: {

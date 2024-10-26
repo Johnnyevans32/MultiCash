@@ -219,6 +219,12 @@
         @btn-action="transactionDetailsModal = false"
         custom-css="bg-base w-full text-base"
       />
+      <CommonButton
+        text="Download Receipt"
+        @btn-action="downloadTransactionReceipt"
+        custom-css="!bg-blue-600 w-full text-white"
+        :loading="isLoadingDownloadTransactionReceipt"
+      />
     </template>
   </CommonModal>
 
@@ -491,6 +497,16 @@ export default defineComponent({
       ];
     });
 
+    const isLoadingDownloadTransactionReceipt = ref(false);
+    const downloadTransactionReceipt = async () => {
+      await withLoadingPromise(
+        $api.walletService
+          .downloadTransactionReceipt(modalTransaction.value.id)
+          .then(() => {}),
+        isLoadingDownloadTransactionReceipt
+      );
+    };
+
     return {
       walletCurrencies,
       selectedCurrency,
@@ -515,6 +531,8 @@ export default defineComponent({
       walletsModal,
       wallets,
       transactionDetails,
+      isLoadingDownloadTransactionReceipt,
+      downloadTransactionReceipt,
     };
   },
 });

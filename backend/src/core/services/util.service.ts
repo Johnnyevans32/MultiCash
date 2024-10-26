@@ -1,6 +1,10 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { Response } from "express";
+import { join } from "path";
 import * as bcrypt from "bcrypt";
+import { configure, Environment } from "nunjucks";
+import * as moment from "moment";
+import puppeteer from "puppeteer";
 import { ResponseService } from "./response.service";
 import { randomBytes } from "crypto";
 import axios, { AxiosError } from "axios";
@@ -8,6 +12,12 @@ import configuration from "./configuration";
 
 @Injectable()
 export class UtilityService {
+  private engine: Environment;
+
+  constructor() {
+    const path = join(__dirname, "../../../", "templates");
+    this.engine = configure(path, { autoescape: true });
+  }
   static hashPassword = async (password: string) => {
     const SALT_ROUNDS = 10;
     const salt = await bcrypt.genSalt(SALT_ROUNDS);
@@ -96,5 +106,25 @@ export class UtilityService {
     const country = locationData.country_name || "Unknown Country";
 
     return `${city}, ${region}, ${country}`;
+  }
+
+  async generatePDF(data: any, template: string) {
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+
+    const body = this.engine.render(template, {
+      ...data,
+      year: moment().format("YYYY"),
+    });
+
+    await page.setContent(body);
+    const fileBuffer = await page.pdf({ format: "A4", printBackground: true });
+
+    await browser.close();
+
+    if (!fileBuffer) {
+      throw new Error("Failed to generate PDF");
+    }
+    return fileBuffer;
   }
 }

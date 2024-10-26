@@ -7,6 +7,7 @@ import {
 import { InjectConnection, InjectModel } from "@nestjs/mongoose";
 import { Connection, Model, PaginateModel } from "mongoose";
 import { Mutex, MutexInterface } from "async-mutex";
+import * as QRCode from "qrcode";
 
 import {
   BENEFICIARY,
@@ -52,6 +53,7 @@ import {
   IWebhookTransfer,
   WebhookEventEnum,
 } from "@/payment/types/payment.type";
+import configuration from "@/core/services/configuration";
 
 @Injectable()
 export class WalletService {
@@ -71,7 +73,8 @@ export class WalletService {
     private readonly revenueService: RevenueService,
     private emailService: EmailService,
     private userService: UserService,
-    private fcmService: FcmService
+    private fcmService: FcmService,
+    private utilityService: UtilityService
   ) {
     this.locks = new Map();
   }
@@ -153,6 +156,47 @@ export class WalletService {
         }
       );
     return { data, metadata };
+  }
+
+  async getTransactionReceipt(user: UserDocument, transactionId: string) {
+    const walletTransaction = await this.walletTransactionModel.findOne({
+      user: user.id,
+      _id: transactionId,
+      isDeleted: false,
+    });
+
+    if (!walletTransaction) {
+      throw new BadRequestException("transaction invalid");
+    }
+
+    const {
+      id,
+      amount,
+      currency,
+      status,
+      purpose,
+      createdAt,
+      type,
+      transferReference,
+    } = walletTransaction;
+
+    const qrCode = await QRCode.toDataURL(
+      `${configuration().app.uiUrl}/public/transaction?id=${id}`
+    );
+
+    return await this.utilityService.generatePDF(
+      {
+        id,
+        amount: UtilityService.formatMoney(amount, currency),
+        status,
+        purpose,
+        date: createdAt,
+        type: type === TransactionType.DEBIT ? "sent" : "received",
+        qrCode,
+        transferReference,
+      },
+      "transaction-receipt.njk"
+    );
   }
 
   private getOrCreateMutex(walletId: string) {
@@ -341,9 +385,10 @@ export class WalletService {
         status: TransactionStatus.Pending,
       });
 
+      const transferReference = `wallet_txn_${txn.id}`;
       await this.paymentService.transferToAccount({
         purpose: TransferPurpose.WALLET_WITHDRAWAL,
-        reference: `wallet_txn_${txn.id}`,
+        reference: transferReference,
         description: `withdrawal from user wallet`,
         amount,
         currency,
@@ -353,6 +398,7 @@ export class WalletService {
         meta: { walletTransactionId: txn.id },
       });
 
+      txn.transferReference = transferReference;
       txn.status = TransactionStatus.Processing;
       await txn.save();
     }
@@ -371,17 +417,20 @@ export class WalletService {
         receiver: receiver.id,
       });
 
+      const transferReference = `transfer_${txn.id}`;
       await this.creditWallet({
         amount,
         currency,
         balanceKeys: [AVAILABLE_BALANCE],
         description: `@${user.tag} sent you`,
-        reference: `transfer_${txn.id}`,
+        reference: transferReference,
         user: receiver.id,
         purpose: TransactionPurpose.TRANSFER_CREDIT,
         note,
         sender: user.id,
       });
+      txn.transferReference = transferReference;
+      await txn.save();
 
       this.emailService.sendEmail(
         user,

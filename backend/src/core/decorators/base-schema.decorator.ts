@@ -29,4 +29,7 @@ export class BaseSchema {
 
   @Prop({ type: SchemaTypes.Date })
   deletedAt?: Date;
+
+  createdAt: Date;
+  updatedAt: Date;
 }

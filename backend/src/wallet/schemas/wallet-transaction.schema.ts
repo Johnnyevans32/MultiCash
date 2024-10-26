@@ -100,6 +100,9 @@ export class WalletTransaction extends BaseSchema {
     default: TransactionStatus.Successful,
   })
   status: TransactionStatus;
+
+  @Prop({ type: SchemaTypes.String })
+  transferReference?: string;
 }
 
 export const WalletTransactionSchema =

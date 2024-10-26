@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Receipt</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f6f9fc;
+            color: #525f7f;
+            margin: 0;
+            padding: 20px;
+
+            justify-content: center;
+            align-items: center;
+            max-height: 100vh;
+        }
+
+        .receipt-container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header img {
+            max-width: 100px;
+        }
+
+        .transaction-summary {
+            padding: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .transaction-summary p {
+            margin: 8px 0;
+            font-size: 16px;
+        }
+
+        .transaction-summary .amount {
+            font-size: 28px;
+            font-weight: 600;
+            color: #32325d;
+        }
+
+        .transaction-details {
+            padding: 20px;
+        }
+
+        .transaction-details p {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .transaction-details strong {
+            color: #32325d;
+        }
+
+        .qr-code {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #eaeaea;
+        }
+
+        .qr-code img {
+            max-width: 100px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #8898aa;
+            border-top: 1px solid #eaeaea;
+        }
+
+        .footer p {
+            margin: 4px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Section -->
+    <div class="header">
+        <img src="https://i.ibb.co/2jP2Qjb/logo.png" alt="Logo" width="80px" height="auto" />
+        <img src="https://i.ibb.co/t8H5Xgd/name.png" alt="MultiCash" width="200px" height="auto" />
+    </div>
+
+    <!-- Transaction Summary Section -->
+    <div class="transaction-summary">
+        <p><strong>Transaction Receipt</strong></p>
+        <p class="amount">You {{type}} {{ amount }}</p>
+        <p><strong>Status:</strong> {{ status }}</p>
+    </div>
+
+    <!-- Transaction Details Section -->
+    <div class="transaction-details">
+        <p><strong>Purpose:</strong> {{ purpose }}</p>
+        <p><strong>Date:</strong> {{ date }}</p>
+        {% if transferReference %}
+        <p><strong>Reference:</strong> {{ transferReference }}</p>
+        {% endif %}
+    </div>
+
+    {# <!-- QR Code Section -->
+    <div class="qr-code">
+        <p>Scan the QR code to view the transaction:</p>
+        <img src="{{ qrCode }}" alt="QR Code">
+    </div> #}
+
+    <!-- Footer Section -->
+    <div class="footer">
+        <p>Thank you for using MultiCash!</p>
+        <p>Need help? Contact our support team.</p>
+    </div>
+
+</body>
+
+</html>

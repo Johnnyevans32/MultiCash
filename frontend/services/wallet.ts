@@ -51,7 +51,7 @@ export class WalletService {
     // Use html2pdf.js to generate the PDF
     const options = {
       margin: 1,
-      filename: `transaction_receipt_${transactionId}_${Date.now()}.pdf`,
+      filename: `transaction_receipt_${Date.now()}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2 },
       jsPDF: { unit: "in", format: "letter", orientation: "portrait" },

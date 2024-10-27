@@ -9,7 +9,7 @@ import { ResponseService } from "./response.service";
 import { randomBytes } from "crypto";
 import axios, { AxiosError } from "axios";
 import configuration from "./configuration";
-import { Readable, Stream } from "stream";
+import { Stream } from "stream";
 
 @Injectable()
 export class UtilityService {
@@ -114,12 +114,20 @@ export class UtilityService {
       year: moment().format("YYYY"),
     });
 
+    const options: html2pdf.CreateOptions = {
+      format: "A4",
+      orientation: "portrait",
+      border: {
+        top: "10mm",
+        right: "10mm",
+        bottom: "10mm",
+        left: "10mm",
+      },
+      type: "pdf",
+    };
     const promise = await new Promise<Stream>((resolve, reject) => {
       html2pdf
-        .create(body, {
-          format: "A4",
-          orientation: "portrait",
-        })
+        .create(body, options)
         .toStream((error: any, stream: Stream | PromiseLike<Stream>) => {
           if (error) {
             reject(error);

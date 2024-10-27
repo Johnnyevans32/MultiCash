@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Post,
   Query,
@@ -54,20 +55,16 @@ export class WalletController {
   }
 
   @Get("transactions/:transactionId/receipt")
+  @Header("Content-Type", "application/pdf")
+  @Header("Content-Disposition", "attachment; filename=receipt.pdf")
   async getTransactionReceipt(
     @Res() res: Response,
     @CurrentUser() user: UserDocument,
     @Param("transactionId") id: string
   ) {
-    return UtilityService.handleRequest(
-      res,
-      "successful",
-      this.walletService,
-      "getTransactionReceipt",
-      HttpStatusCode.Ok,
-      user,
-      id
-    );
+    const pdfBuffer = await this.walletService.getTransactionReceipt(user, id);
+
+    res.send(pdfBuffer);
   }
 
   @Post("withdraw")

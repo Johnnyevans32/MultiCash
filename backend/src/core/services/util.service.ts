@@ -4,10 +4,12 @@ import { join } from "path";
 import * as bcrypt from "bcrypt";
 import { configure, Environment } from "nunjucks";
 import * as moment from "moment";
+import * as html2pdf from "html-pdf";
 import { ResponseService } from "./response.service";
 import { randomBytes } from "crypto";
 import axios, { AxiosError } from "axios";
 import configuration from "./configuration";
+import { Readable, Stream } from "stream";
 
 @Injectable()
 export class UtilityService {
@@ -112,6 +114,21 @@ export class UtilityService {
       year: moment().format("YYYY"),
     });
 
-    return body;
+    const promise = await new Promise<Stream>((resolve, reject) => {
+      html2pdf
+        .create(body, {
+          format: "A4",
+          orientation: "portrait",
+        })
+        .toStream((error: any, stream: Stream | PromiseLike<Stream>) => {
+          if (error) {
+            reject(error);
+          }
+
+          resolve(stream);
+        });
+    });
+
+    return promise;
   }
 }

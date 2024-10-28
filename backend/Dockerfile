@@ -1,3 +1,4 @@
+# Use Puppeteer base image
 FROM node:lts-alpine
 
 WORKDIR /usr/src/app
@@ -22,6 +23,10 @@ RUN yarn install
 # Copy application code
 COPY . .
 
+# Build application (if applicable)
 RUN yarn build
 
+# Puppeteer cache handling
+RUN npx puppeteer browsers install chrome
+# Set the command to start your application
 CMD ["node", "--optimize_for_size", "--max_old_space_size=460", "--gc_interval=100", "dist/main.js"]

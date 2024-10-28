@@ -147,8 +147,13 @@ export class UtilityService {
       year: moment().format("YYYY"),
     });
 
-    const browser = await puppeteer.launch();
-
+    const browser = await puppeteer.launch({
+      headless: true,
+      executablePath: ["production", "staging"].includes(configuration().env)
+        ? configuration().puppeteer.executablePath
+        : puppeteer.executablePath(),
+      args: ["--no-sandbox", "--disable-gpu"],
+    });
     // const browser = await puppeteer.launch({
     //   args: [
     //     "--disable-setuid-sandbox",

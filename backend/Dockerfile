@@ -4,10 +4,10 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable \
     USE_DOCKER=true
 
-WORKDIR /usr/src/app
+WORKDIR /code
 
-COPY package*.json ./
+COPY ./package.json /code/package.json
 RUN yarn
-COPY . .
+COPY . /code
 
 CMD ["node", "--optimize_for_size", "--max_old_space_size=460", "--gc_interval=100", "dist/main.js"]

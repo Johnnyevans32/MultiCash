@@ -8,7 +8,7 @@ import { InjectConnection, InjectModel } from "@nestjs/mongoose";
 import { Connection, Model, PaginateModel } from "mongoose";
 import { Mutex, MutexInterface } from "async-mutex";
 import * as QRCode from "qrcode";
-
+import * as moment from "moment";
 import {
   BENEFICIARY,
   WALLET,
@@ -184,7 +184,7 @@ export class WalletService {
         fee: UtilityService.formatMoney(fee, currency),
         transactionAmount: UtilityService.formatMoney(amount - fee, currency),
         transferReference,
-        date: createdAt,
+        date: moment(createdAt).format("MMMM D, YYYY h:mm:ss A z"),
         qrCode,
         user,
       },
@@ -364,12 +364,13 @@ export class WalletService {
       const { transferFee } = wallet.walletCurrency;
       let { currency } = wallet;
 
+      const reference = UtilityService.generateRandomHex(12);
       const txn = await this.debitWallet({
         amount: amount + transferFee,
         currency,
         balanceKeys: [AVAILABLE_BALANCE],
         description: `You sent ${accountName}`,
-        reference: UtilityService.generateRandomHex(12),
+        reference,
         user: user.id,
         purpose: TransactionPurpose.WITHDRAWAL,
         fee: transferFee,
@@ -421,6 +422,7 @@ export class WalletService {
         purpose: TransactionPurpose.TRANSFER_CREDIT,
         note,
         sender: user.id,
+        meta: { walletTransactionId: txn.id },
       });
       txn.transferReference = transferReference;
       await txn.save();

@@ -113,14 +113,6 @@ export class UtilityService {
       year: moment().format("YYYY"),
     });
 
-    console.log("configuration().isDeployed", configuration().isDeployed, {
-      headless: true,
-      executablePath: configuration().isDeployed
-        ? configuration().puppeteer.executablePath
-        : puppeteer.executablePath(),
-      args: ["--no-sandbox", "--disable-gpu"],
-    });
-
     const browser = await puppeteer.launch({
       headless: true,
       executablePath: configuration().isDeployed
@@ -132,7 +124,11 @@ export class UtilityService {
     try {
       const page = await browser.newPage();
       await page.setContent(body);
-      const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+      const pdfBuffer = await page.pdf({
+        format: "A4",
+        printBackground: true,
+      });
+
       return pdfBuffer;
     } finally {
       await browser.close();

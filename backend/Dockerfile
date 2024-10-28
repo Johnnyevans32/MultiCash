@@ -4,9 +4,8 @@ FROM ghcr.io/puppeteer/puppeteer:23.6.0
 # Set necessary environment variables to skip Chromium download and define cache directory
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable \
-    PUPPETEER_CACHE_DIR=/opt/render/project/puppeteer \
-    XDG_CACHE_HOME=/opt/render/project/cache
-    
+    PUPPETEER_CACHE_DIR=/opt/render/project/puppeteer
+
 WORKDIR /usr/src/app
 
 # Copy package.json and yarn.lock to install dependencies

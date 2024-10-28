@@ -123,7 +123,7 @@ export class UtilityService {
 
     try {
       const page = await browser.newPage();
-      await page.setContent(body, { waitUntil: "networkidle0" });
+      await page.setContent(body);
       const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
       return pdfBuffer;
     } finally {

@@ -45,6 +45,9 @@ export interface Configuration {
   };
   wise: { baseurl: string; apiKey: string };
   env: EnvType;
+  puppeteer: {
+    executablePath: string;
+  };
 }
 
 export default (): Configuration => ({
@@ -100,5 +103,8 @@ export default (): Configuration => ({
   wise: {
     baseurl: process.env.WISE_BASE_URL,
     apiKey: process.env.WISE_API_KEY,
+  },
+  puppeteer: {
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
   },
 });

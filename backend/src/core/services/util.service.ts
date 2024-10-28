@@ -10,6 +10,7 @@ import { randomBytes } from "crypto";
 import axios, { AxiosError } from "axios";
 import configuration from "./configuration";
 import { Stream } from "stream";
+import puppeteer from "puppeteer";
 
 @Injectable()
 export class UtilityService {
@@ -108,7 +109,7 @@ export class UtilityService {
     return `${city}, ${region}, ${country}`;
   }
 
-  async generatePDF(data: any, template: string) {
+  async _generatePDF(data: any, template: string) {
     const body = this.engine.render(template, {
       ...data,
       year: moment().format("YYYY"),
@@ -138,5 +139,33 @@ export class UtilityService {
     });
 
     return promise;
+  }
+
+  async generatePDF(data: any, template: string) {
+    const body = this.engine.render(template, {
+      ...data,
+      year: moment().format("YYYY"),
+    });
+
+    const browser = await puppeteer.launch({
+      args: [
+        "--disable-setuid-sandbox",
+        "--no-sandbox",
+        "--single-process",
+        "--no-zygote",
+      ],
+      executablePath:
+        configuration().env === "production"
+          ? configuration().puppeteer.executablePath
+          : puppeteer.executablePath(),
+    });
+    try {
+      const page = await browser.newPage();
+      await page.setContent(body, { waitUntil: "networkidle0" });
+      const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+      return pdfBuffer;
+    } finally {
+      await browser.close();
+    }
   }
 }

@@ -112,7 +112,7 @@ export class PaystackService
         SupportedCurrencyEnum.GHS,
         SupportedCurrencyEnum.ZAR,
       ].includes(currency) &&
-      ["staging", "local"].includes(configuration().env)
+      configuration().isDev
     ) {
       return {
         providerResponse: payload,

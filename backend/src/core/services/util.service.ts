@@ -115,7 +115,7 @@ export class UtilityService {
 
     const browser = await puppeteer.launch({
       headless: true,
-      executablePath: ["production", "staging"].includes(configuration().env)
+      executablePath: configuration().isDeployed
         ? configuration().puppeteer.executablePath
         : puppeteer.executablePath(),
       args: ["--no-sandbox", "--disable-gpu"],

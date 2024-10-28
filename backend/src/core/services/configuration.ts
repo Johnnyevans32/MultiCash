@@ -48,10 +48,14 @@ export interface Configuration {
   puppeteer: {
     executablePath: string;
   };
+  isDev: boolean;
+  isDeployed: boolean;
 }
 
 export default (): Configuration => ({
   env: (process.env.ENV as EnvType) || "local",
+  isDev: ["staging", "local"].includes(process.env.ENV),
+  isDeployed: ["staging", "production"].includes(process.env.ENV),
   app: {
     name: process.env.APP_NAME,
     uiUrl: process.env.UI_URL,

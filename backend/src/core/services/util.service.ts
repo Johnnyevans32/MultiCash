@@ -4,12 +4,10 @@ import { join } from "path";
 import * as bcrypt from "bcrypt";
 import { configure, Environment } from "nunjucks";
 import * as moment from "moment";
-import * as html2pdf from "html-pdf";
 import { ResponseService } from "./response.service";
 import { randomBytes } from "crypto";
 import axios, { AxiosError } from "axios";
 import configuration from "./configuration";
-import { Stream } from "stream";
 import puppeteer from "puppeteer";
 
 @Injectable()
@@ -109,38 +107,6 @@ export class UtilityService {
     return `${city}, ${region}, ${country}`;
   }
 
-  async _generatePDF(data: any, template: string) {
-    const body = this.engine.render(template, {
-      ...data,
-      year: moment().format("YYYY"),
-    });
-
-    const options: html2pdf.CreateOptions = {
-      format: "A4",
-      orientation: "portrait",
-      border: {
-        top: "10mm",
-        right: "10mm",
-        bottom: "10mm",
-        left: "10mm",
-      },
-      type: "pdf",
-    };
-    const promise = await new Promise<Stream>((resolve, reject) => {
-      html2pdf
-        .create(body, options)
-        .toStream((error: any, stream: Stream | PromiseLike<Stream>) => {
-          if (error) {
-            reject(error);
-          }
-
-          resolve(stream);
-        });
-    });
-
-    return promise;
-  }
-
   async generatePDF(data: any, template: string) {
     const body = this.engine.render(template, {
       ...data,
@@ -154,17 +120,7 @@ export class UtilityService {
         : puppeteer.executablePath(),
       args: ["--no-sandbox", "--disable-gpu"],
     });
-    // const browser = await puppeteer.launch({
-    //   args: [
-    //     "--disable-setuid-sandbox",
-    //     "--no-sandbox",
-    //     "--single-process",
-    //     "--no-zygote",
-    //   ],
-    //   executablePath: ["production", "staging"].includes(configuration().env)
-    //     ? configuration().puppeteer.executablePath
-    //     : puppeteer.executablePath(),
-    // });
+
     try {
       const page = await browser.newPage();
       await page.setContent(body, { waitUntil: "networkidle0" });

@@ -147,17 +147,19 @@ export class UtilityService {
       year: moment().format("YYYY"),
     });
 
-    const browser = await puppeteer.launch({
-      args: [
-        "--disable-setuid-sandbox",
-        "--no-sandbox",
-        "--single-process",
-        "--no-zygote",
-      ],
-      executablePath: ["production", "staging"].includes(configuration().env)
-        ? configuration().puppeteer.executablePath
-        : puppeteer.executablePath(),
-    });
+    const browser = await puppeteer.launch();
+
+    // const browser = await puppeteer.launch({
+    //   args: [
+    //     "--disable-setuid-sandbox",
+    //     "--no-sandbox",
+    //     "--single-process",
+    //     "--no-zygote",
+    //   ],
+    //   executablePath: ["production", "staging"].includes(configuration().env)
+    //     ? configuration().puppeteer.executablePath
+    //     : puppeteer.executablePath(),
+    // });
     try {
       const page = await browser.newPage();
       await page.setContent(body, { waitUntil: "networkidle0" });

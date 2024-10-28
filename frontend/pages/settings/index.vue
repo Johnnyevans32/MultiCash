@@ -137,7 +137,7 @@ export default defineComponent({
       {
         logo: "right-from-bracket",
         action: "Logout",
-        value: "You will be signed out of your account.",
+        value: "You will be logged out of your account.",
         logoType: "icon",
         settingAction: logout,
       },

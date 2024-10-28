@@ -167,19 +167,11 @@ export class WalletService {
     });
 
     if (!walletTransaction) {
-      throw new BadRequestException("transaction invalid");
+      throw new BadRequestException("Transaction invalid");
     }
 
-    const {
-      id,
-      amount,
-      currency,
-      status,
-      purpose,
-      createdAt,
-      type,
-      transferReference,
-    } = walletTransaction;
+    const { id, amount, currency, fee, createdAt, type, transferReference } =
+      walletTransaction;
 
     const qrCode = await QRCode.toDataURL(
       `${configuration().app.uiUrl}/public/transaction?id=${id}`
@@ -189,12 +181,12 @@ export class WalletService {
       {
         id,
         amount: UtilityService.formatMoney(amount, currency),
-        status,
-        purpose,
-        date: createdAt,
-        type: type === TransactionType.DEBIT ? "sent" : "received",
-        qrCode,
+        fee: UtilityService.formatMoney(fee, currency),
+        transactionAmount: UtilityService.formatMoney(amount - fee, currency),
         transferReference,
+        date: createdAt,
+        qrCode,
+        user,
       },
       "transaction-receipt.njk"
     );

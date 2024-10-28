@@ -1,4 +1,4 @@
-type EnvType = "staging" | "production" | "local";
+type EnvMode = "staging" | "production" | "local";
 export interface Configuration {
   app: { name: string; uiUrl: string; portableDidInBase64: string };
   database: {
@@ -44,7 +44,7 @@ export interface Configuration {
     accessKey: string;
   };
   wise: { baseurl: string; apiKey: string };
-  env: EnvType;
+  env: EnvMode;
   puppeteer: {
     executablePath: string;
   };
@@ -53,7 +53,7 @@ export interface Configuration {
 }
 
 export default (): Configuration => ({
-  env: (process.env.ENV as EnvType) || "local",
+  env: (process.env.ENV as EnvMode) || "local",
   isDev: ["staging", "local"].includes(process.env.ENV),
   isDeployed: ["staging", "production"].includes(process.env.ENV),
   app: {

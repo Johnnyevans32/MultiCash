@@ -21,18 +21,18 @@ export function useAppVueUtils() {
         }),
       },
       async onResponseError({ response }) {
-        const errorMessage = response?._data?.message || "An error occurred";
-        notify({
-          type: "error",
-          title: errorMessage,
-        });
-
         const { path } = route;
         if (
           response?.status === 401 &&
-          !accessToken.value &&
+          accessToken.value &&
           path !== "/signin"
         ) {
+          const errorMessage = response?._data?.message || "An error occurred";
+          notify({
+            type: "error",
+            title: errorMessage,
+          });
+
           setAccessToken(null);
           await navigateTo(`/signin?redirect=${encodeURIComponent(path)}`);
         }

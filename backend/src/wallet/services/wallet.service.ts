@@ -116,6 +116,7 @@ export class WalletService {
         user: user.id,
         isDeleted: false,
       })
+      .sort({ updatedAt: -1 })
       .populate({
         path: "walletCurrency",
         select: "name logo withdrawalEnabled fundingEnabled",

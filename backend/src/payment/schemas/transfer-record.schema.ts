@@ -25,6 +25,7 @@ export enum PaymentProvider {
   Paystack = "paystack",
   Stripe = "stripe",
   BitPay = "bitpay",
+  Wise = "wise",
 }
 
 export type TransferRecordDocument = HydratedDocument<TransferRecord>;

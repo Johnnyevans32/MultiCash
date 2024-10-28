@@ -1,3 +1,4 @@
+type EnvType = "staging" | "production" | "testing";
 export interface Configuration {
   app: { name: string; uiUrl: string; portableDidInBase64: string };
   database: {
@@ -21,7 +22,6 @@ export interface Configuration {
     baseurl: string;
     secretKey: string;
   };
-
   cloudinary: {
     cloudName: string;
     apiKey: string;
@@ -43,9 +43,12 @@ export interface Configuration {
   ipapi: {
     accessKey: string;
   };
+  wise: { baseurl: string; apiKey: string };
+  env: EnvType;
 }
 
 export default (): Configuration => ({
+  env: (process.env.ENV as EnvType) || "staging",
   app: {
     name: process.env.APP_NAME,
     uiUrl: process.env.UI_URL,
@@ -93,5 +96,9 @@ export default (): Configuration => ({
   },
   ipapi: {
     accessKey: process.env.IPAPI_ACCESS_KEY,
+  },
+  wise: {
+    baseurl: process.env.WISE_BASE_URL,
+    apiKey: process.env.WISE_API_KEY,
   },
 });

@@ -27,12 +27,14 @@ export function useAppVueUtils() {
           title: errorMessage,
         });
 
-        if (response?.status === 401) {
-          const { path } = route;
-          if (path !== "/signin") {
-            setAccessToken(null);
-            await navigateTo(`/signin?redirect=${encodeURIComponent(path)}`);
-          }
+        const { path } = route;
+        if (
+          response?.status === 401 &&
+          !accessToken.value &&
+          path !== "/signin"
+        ) {
+          setAccessToken(null);
+          await navigateTo(`/signin?redirect=${encodeURIComponent(path)}`);
         }
       },
       async onRequestError({ error }) {

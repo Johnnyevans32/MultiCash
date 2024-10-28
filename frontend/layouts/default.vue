@@ -107,13 +107,15 @@ export default defineComponent({
       await navigateTo(`/signin?redirect=${route.fullPath}`);
       notify({
         type: "info",
-        title: "You have been logged out",
+        duration: -1,
+        title: `We logged you out because you were inactive for ${autoLogoutTimeoutInMins} minutes — it’s to help keep your account secure.`,
       });
     };
 
     const onremind = (time: number) => {
       notify({
         type: "info",
+        duration: -1,
         title: `We care about your security! To ensure the safety of your account, you will be automatically logged out if there is no activity detected for ${time} seconds. Please stay active to avoid being logged out.`,
       });
     };

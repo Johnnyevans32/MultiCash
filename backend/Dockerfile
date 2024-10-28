@@ -5,8 +5,8 @@ FROM ghcr.io/puppeteer/puppeteer:23.6.0
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable \
     PUPPETEER_CACHE_DIR=/opt/render/project/puppeteer \
-    XDG_CACHE_HOME=/root/.cache
-
+    XDG_CACHE_HOME=/opt/render/project/cache
+    
 WORKDIR /usr/src/app
 
 # Copy package.json and yarn.lock to install dependencies

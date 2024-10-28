@@ -113,6 +113,14 @@ export class UtilityService {
       year: moment().format("YYYY"),
     });
 
+    console.log("configuration().isDeployed", configuration().isDeployed, {
+      headless: true,
+      executablePath: configuration().isDeployed
+        ? configuration().puppeteer.executablePath
+        : puppeteer.executablePath(),
+      args: ["--no-sandbox", "--disable-gpu"],
+    });
+
     const browser = await puppeteer.launch({
       headless: true,
       executablePath: configuration().isDeployed

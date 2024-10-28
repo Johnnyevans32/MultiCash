@@ -1,4 +1,4 @@
-type EnvType = "staging" | "production" | "testing";
+type EnvType = "staging" | "production" | "local";
 export interface Configuration {
   app: { name: string; uiUrl: string; portableDidInBase64: string };
   database: {
@@ -51,7 +51,7 @@ export interface Configuration {
 }
 
 export default (): Configuration => ({
-  env: (process.env.ENV as EnvType) || "staging",
+  env: (process.env.ENV as EnvType) || "local",
   app: {
     name: process.env.APP_NAME,
     uiUrl: process.env.UI_URL,

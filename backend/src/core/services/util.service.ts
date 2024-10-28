@@ -154,10 +154,9 @@ export class UtilityService {
         "--single-process",
         "--no-zygote",
       ],
-      executablePath:
-        configuration().env === "production"
-          ? configuration().puppeteer.executablePath
-          : puppeteer.executablePath(),
+      executablePath: ["production", "staging"].includes(configuration().env)
+        ? configuration().puppeteer.executablePath
+        : puppeteer.executablePath(),
     });
     try {
       const page = await browser.newPage();

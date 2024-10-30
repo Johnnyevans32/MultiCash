@@ -9,6 +9,7 @@ import { Connection, Model, PaginateModel } from "mongoose";
 import { Mutex, MutexInterface } from "async-mutex";
 import * as QRCode from "qrcode";
 import * as moment from "moment";
+import { v5 as uuidv5 } from "uuid";
 import {
   BENEFICIARY,
   WALLET,
@@ -174,23 +175,59 @@ export class WalletService {
       throw new BadRequestException("Transaction invalid");
     }
 
-    const { id, amount, currency, fee, createdAt, type, transferReference } =
-      walletTransaction;
-
-    const qrCode = await QRCode.toDataURL(
-      `${configuration().app.uiUrl}/public/transaction?id=${id}`
-    );
+    const {
+      id,
+      amount,
+      currency,
+      fee,
+      createdAt,
+      type,
+      purpose,
+      transferReference,
+      meta,
+      completedAt,
+    } = walletTransaction;
 
     return await this.utilityService.generatePDF(
       {
         id,
         amount: UtilityService.formatMoney(amount, currency),
-        fee: UtilityService.formatMoney(fee, currency),
+        fees: [
+          {
+            name: configuration().app.name,
+            value: UtilityService.formatMoney(fee, currency),
+          },
+        ],
+        totalFee: UtilityService.formatMoney(fee, currency),
         transactionAmount: UtilityService.formatMoney(amount - fee, currency),
         transferReference,
         date: moment(createdAt).format("MMMM D, YYYY h:mm:ss A z"),
-        qrCode,
+        ...(completedAt && {
+          paidOutAt: moment(completedAt).format("MMMM D, YYYY h:mm:ss A z"),
+        }),
         user,
+        ...([
+          TransactionPurpose.WITHDRAWAL,
+          TransactionPurpose.TRANSFER_DEBIT,
+        ].includes(purpose)
+          ? {
+              recipient: {
+                name: meta.accountName || meta.receiverName,
+                bankName: meta.bankName,
+                accountNumber: meta.accountNumber || meta.receiverTag,
+                bankCode: meta.bankCode,
+              },
+            }
+          : {}),
+
+        ...([TransactionPurpose.TRANSFER_CREDIT].includes(purpose)
+          ? {
+              sender: {
+                name: meta.senderName,
+                accountNumber: meta.senderTag,
+              },
+            }
+          : {}),
       },
       "transaction-receipt.njk"
     );
@@ -356,8 +393,14 @@ export class WalletService {
     }
 
     if (beneficiary.type === BeneficiaryType.BankAccount) {
-      const { accountNumber, accountName, recipientType, bankCode } =
-        beneficiary;
+      const {
+        accountNumber,
+        accountName,
+        recipientType,
+        bankCode,
+        accountType,
+        address,
+      } = beneficiary;
       const bank = beneficiary.bank as BankDocument;
       let wallet = await this.walletModel
         .findOne({
@@ -380,11 +423,11 @@ export class WalletService {
         purpose: TransactionPurpose.WITHDRAWAL,
         fee: transferFee,
         note,
-        meta: { accountName, accountNumber, bankName: bank?.name },
+        meta: { accountName, accountNumber, bankName: bank?.name, bankCode },
         status: TransactionStatus.Pending,
       });
 
-      const transferReference = `wallet_txn_${txn.id}`;
+      const transferReference = uuidv5(txn.id, uuidv5.DNS);
       await this.paymentService.transferToAccount({
         purpose: TransferPurpose.WALLET_WITHDRAWAL,
         reference: transferReference,
@@ -397,6 +440,8 @@ export class WalletService {
         meta: { walletTransactionId: txn.id },
         bankCode,
         recipientType,
+        accountType,
+        address,
       });
 
       txn.transferReference = transferReference;
@@ -416,6 +461,7 @@ export class WalletService {
         purpose: TransactionPurpose.TRANSFER_DEBIT,
         note,
         receiver: receiver.id,
+        meta: { receiverName: receiver.name, receiverTag: receiver.tag },
       });
 
       const transferReference = `transfer_${txn.id}`;
@@ -429,7 +475,11 @@ export class WalletService {
         purpose: TransactionPurpose.TRANSFER_CREDIT,
         note,
         sender: user.id,
-        meta: { walletTransactionId: txn.id },
+        meta: {
+          walletTransactionId: txn.id,
+          senderName: user.name,
+          senderTag: user.tag,
+        },
       });
       txn.transferReference = transferReference;
       await txn.save();
@@ -598,6 +648,7 @@ export class WalletService {
         return;
     }
 
+    walletTransaction.completedAt = new Date();
     await walletTransaction.save();
   }
 

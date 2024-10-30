@@ -37,6 +37,7 @@ import { WalletService } from "@/wallet/services/wallet.service";
 import { StripeService } from "../providers/stripe/stripe.service";
 import { UserDocument } from "@/user/schemas/user.schema";
 import { WiseService } from "../providers/wise/wise.service";
+import { isEmpty } from "lodash";
 
 @Injectable()
 export class PaymentService {
@@ -194,11 +195,17 @@ export class PaymentService {
       });
 
       transferRecord.status = transferResponse.status;
-      transferRecord.pspTransactionId =
-        transferResponse.pspTransactionId || reference;
+      if (transferResponse.pspTransactionId) {
+        transferRecord.pspTransactionId = transferResponse.pspTransactionId;
+      }
       transferRecord.providerResponse.push(transferResponse);
     } catch (error) {
-      transferRecord.providerResponse.push(JSON.parse(JSON.stringify(error)));
+      const errorContent =
+        typeof error === "string"
+          ? error
+          : error.message || JSON.stringify(error);
+
+      transferRecord.providerResponse.push(errorContent);
       transferRecord.status = TransferStatus.Failed;
     } finally {
       transferRecord.markModified("providerResponse");
@@ -253,6 +260,10 @@ export class PaymentService {
           purpose,
           meta,
           bank,
+          bankCode,
+          recipientType,
+          accountType,
+          address,
         } = transferRecord;
         const service = this.getService(paymentProvider);
         const transferResponse = await service.transferToAccount({
@@ -265,6 +276,10 @@ export class PaymentService {
           meta,
           purpose,
           bank: bank as BankDocument,
+          bankCode,
+          recipientType,
+          accountType,
+          address,
         });
 
         transferRecord.status = transferResponse.status;
@@ -419,5 +434,21 @@ export class PaymentService {
       email: user.email,
     });
     return resp;
+  }
+
+  async addBanks() {
+    const data = [];
+    await Promise.all(
+      data.map(async (bank) => {
+        await this.bankModel.findOneAndUpdate(
+          {
+            name: `${bank.name}-${bank.code}`,
+            currency: SupportedCurrencyEnum.GBP,
+          },
+          { $set: { meta: { wiseBankCode: bank.code } } },
+          { new: true, upsert: true }
+        );
+      })
+    );
   }
 }

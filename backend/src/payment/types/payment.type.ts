@@ -22,12 +22,18 @@ import {
 
 export interface IPaymentProvider {
   name(): PaymentProvider;
+  /**
+   * For verifying account details
+   */
   verifyAccountNumber(
     payload: VerifyAccountNumbertDTO
   ): Promise<IVerifyAccountNumberResponse | void>;
   checkTransferStatus(
     payload: CheckTransferStatusDTO
   ): Promise<ICheckTransferStatusResponse>;
+  /**
+   * Transfer funds to a recipient account.
+   */
   transferToAccount(
     payload: TransferToAccountDTO
   ): Promise<ITransferToAccountResponse>;
@@ -36,7 +42,14 @@ export interface IPaymentProvider {
     sessionId: string;
   }>;
 
+  /**
+   * Handle webhook validation by verifying the signature.
+   */
   validateWebhook(headers: any, payload: any, rawBody?: any): boolean;
+  /**
+   * Transform the webhook payload into a common format for handling
+   * different events (transfers, charges, etc.)
+   */
   transformWebhook(payload: any): IWebhookResponse<any>;
 }
 

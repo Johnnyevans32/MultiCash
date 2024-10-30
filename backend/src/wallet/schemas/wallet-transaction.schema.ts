@@ -103,6 +103,9 @@ export class WalletTransaction extends BaseSchema {
 
   @Prop({ type: SchemaTypes.String })
   transferReference?: string;
+
+  @Prop({ type: Date })
+  completedAt?: Date;
 }
 
 export const WalletTransactionSchema =

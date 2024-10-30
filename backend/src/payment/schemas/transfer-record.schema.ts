@@ -8,6 +8,11 @@ import {
 import { BankDocument } from "./bank.schema";
 import { BANK } from "@/core/constants/schema.constants";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
+import {
+  RecipientType,
+  AccountType,
+  BeneficiaryAddress,
+} from "@/wallet/schemas/beneficiary.schema";
 
 export enum TransferPurpose {
   WALLET_WITHDRAWAL = "wallet_withdrawal",
@@ -83,6 +88,18 @@ export class TransferRecord extends BaseSchema {
 
   @Prop({ type: SchemaTypes.Mixed, default: [] })
   providerResponse?: any[];
+
+  @Prop({ type: SchemaTypes.String })
+  bankCode?: string;
+
+  @Prop({ type: SchemaTypes.String, enum: Object.values(RecipientType) })
+  recipientType?: RecipientType;
+
+  @Prop({ type: SchemaTypes.String, enum: Object.values(AccountType) })
+  accountType?: AccountType;
+
+  @Prop({ type: SchemaTypes.Mixed })
+  address?: BeneficiaryAddress;
 }
 
 export const TransferRecordSchema =

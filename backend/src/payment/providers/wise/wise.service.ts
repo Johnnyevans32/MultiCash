@@ -1,4 +1,4 @@
-import { constants, createHmac, createPublicKey, verify } from "crypto";
+import { constants, createPublicKey, verify } from "crypto";
 import { Injectable, NotImplementedException } from "@nestjs/common";
 import { RequestService } from "@/core/services/request.service";
 import {
@@ -71,19 +71,14 @@ export class WiseService extends RequestService implements IPaymentProvider {
     return PaymentProvider.Wise;
   }
 
-  /**
-   * For verifying account details, this depends on the country and currency.
-   * Wise supports local bank transfers for certain currencies, and you may use
-   * their API to fetch details for different account requirements.
-   */
+  private getBankCodeKey() {
+    return `wiseBankCode`;
+  }
+
   async verifyAccountNumber(payload: VerifyAccountNumbertDTO) {
     throw new NotImplementedException();
   }
 
-  /**
-   * Transfer funds to a recipient account using Wise API.
-   * You need to create a recipient and then initiate a transfer.
-   */
   async transferToAccount(payload: TransferToAccountDTO) {
     const { amount, currency, reference, description } = payload;
 
@@ -97,7 +92,7 @@ export class WiseService extends RequestService implements IPaymentProvider {
       data: {
         targetAccount: recipientId,
         quoteUuid: quoteId,
-        customerTransactionId: crypto.randomUUID(),
+        customerTransactionId: reference,
         details: {
           reference: description,
         },
@@ -140,11 +135,12 @@ export class WiseService extends RequestService implements IPaymentProvider {
       accountName,
       bank,
       currency,
-      bankCode,
       recipientType,
       accountType,
       address,
     } = payload;
+
+    const bankCode = bank?.meta.get(this.getBankCodeKey()) || payload.bankCode;
 
     const currencyTypeMap = {
       [SupportedCurrencyEnum.EUR]: "iban",
@@ -191,7 +187,6 @@ export class WiseService extends RequestService implements IPaymentProvider {
   }
 
   async simulateSuccessfulTransaction(id: string) {
-    // Wait 1 second before starting the sequence
     const sleep = async (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -214,9 +209,6 @@ export class WiseService extends RequestService implements IPaymentProvider {
     });
   }
 
-  /**
-   * Handle webhook validation by verifying the signature.
-   */
   validateWebhook(headers: any, payload: any): boolean {
     const signature = headers["x-signature-sha256"];
 
@@ -236,11 +228,7 @@ export class WiseService extends RequestService implements IPaymentProvider {
     );
   }
 
-  /**
-   * Transform the webhook payload into a common format for handling
-   * different Wise events (transfers, charges, etc.)
-   */
-  public transformWebhook(payload: any): IWebhookResponse<IWebhookTransfer> {
+  transformWebhook(payload: any): IWebhookResponse<IWebhookTransfer> {
     switch (payload.event_type) {
       case "transfers#state-change":
         return this.transformTransferData(payload);

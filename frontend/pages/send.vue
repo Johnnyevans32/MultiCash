@@ -53,7 +53,7 @@
           :alt="
             beneficiary.type === 'platform'
               ? beneficiary.beneficiaryUser?.tag
-              : beneficiary.bank?.name
+              : beneficiary.bank?.name || beneficiary.accountName
           "
         />
 
@@ -66,7 +66,11 @@
           <span class="md:text-sm text-xs line-clamp-1">{{
             beneficiary.type === "platform"
               ? `@${beneficiary?.beneficiaryUser?.tag}`
-              : `${beneficiary.accountNumber} (${beneficiary.bank?.name})`
+              : `${beneficiary.accountNumber} ${
+                  beneficiary.bank
+                    ? `(${beneficiary.bank?.name})`
+                    : `(${beneficiary.currency} account)`
+                }`
           }}</span>
         </div>
       </div>
@@ -107,7 +111,7 @@
           />
           <CommonFormSelect
             title="Select bank"
-            v-if="['NGN', 'GHS', 'KES', 'ZAR'].includes(selectedCurrency)"
+            v-if="isAfricanCurrency(selectedCurrency)"
             :selected="selectedBankId"
             :options="groupedBanksByCurrency[selectedCurrency]"
             @change-option="handleBankChange"
@@ -118,35 +122,37 @@
 
           <CommonFormInput
             v-model="bankCode"
-            v-if="
-              ['EUR', 'GBP', 'AUD', 'MXN', 'USD'].includes(selectedCurrency)
-            "
+            v-if="isInternationalCurrency(selectedCurrency)"
             placeholder="1234567890"
-            title="Enter bank code"
+            :title="`Enter ${bankCodeNamesByCurrency[selectedCurrency]}`"
             input-type="text"
           />
 
           <CommonFormInput
             v-model="accountName"
             v-if="
-              ['EUR', 'GBP', 'AUD', 'MXN', 'USD'].includes(selectedCurrency)
+              isInternationalCurrency(selectedCurrency) ||
+              isCryptoCurrency(selectedCurrency)
             "
             placeholder="Mark Smith"
-            title="Enter account name"
+            title="Enter Beneficiary Name"
             input-type="text"
           />
 
           <CommonFormInput
             v-model="accountNumber"
             placeholder="1234567890"
-            title="Enter account number"
+            :title="`Enter ${
+              accountNumberNamesByCurrency[selectedCurrency] || 'Account Number'
+            }`"
             input-type="text"
             @keyup.enter="
-              ['NGN', 'GHS', 'KES', 'ZAR'].includes(selectedCurrency) &&
-                verifyAccountNumber
+              isAfricanCurrency(selectedCurrency) && verifyAccountNumber
             "
             :validationMessage="
-              isVerifyAccountNumberLoading
+              !isAfricanCurrency(selectedCurrency)
+                ? ''
+                : isVerifyAccountNumberLoading
                 ? 'Validating account details...'
                 : accountName
             "
@@ -195,7 +201,9 @@
         >
           <CommonImage
             :image="selectedBeneficiary.bank?.logo"
-            :alt="selectedBeneficiary.bank?.name"
+            :alt="
+              selectedBeneficiary.bank?.name || selectedBeneficiary.accountName
+            "
             type="image"
           />
           <div>
@@ -203,9 +211,13 @@
               {{ selectedBeneficiary?.accountName }}
             </p>
             <p class="text-xs md:text-sm">
-              {{ selectedBeneficiary?.accountNumber }} ({{
-                selectedBeneficiary?.bank?.name
-              }})
+              {{ selectedBeneficiary?.accountNumber }}
+
+              {{
+                selectedBeneficiary.bank
+                  ? `(${selectedBeneficiary.bank?.name})`
+                  : `(${selectedBeneficiary.currency} account)`
+              }}
             </p>
           </div>
         </div>
@@ -326,11 +338,36 @@ export default defineComponent({
     const { $api } = useNuxtApp();
     const addAccountModal = ref(false);
     const accountNumber = ref("");
-
-    const bankCodeNamesByCurrency = {
-      EUR: "Bank code (BIC/SWIFT)",
-    };
     const bankCode = ref("");
+
+    const bankCodeNamesByCurrency: Record<string, string> = {
+      EUR: "Bank code (BIC/SWIFT)",
+      USD: "Routing Number",
+      GBP: "Sort Code",
+      AUD: "BSB Code",
+      CAD: "Institution Number",
+      JPY: "Bank Code",
+      CNY: "CNAPS Code",
+      CHF: "Clearing Number",
+      SEK: "Bankgiro Number",
+      NOK: "Bank Code",
+      NZD: "BSB Number",
+      MXN: "CLABE",
+    };
+    const accountNumberNamesByCurrency: Record<string, string> = {
+      EUR: "IBAN",
+      BTC: "Crypto Address",
+      USDC: "Crypto Address",
+    };
+    const isInternationalCurrency = (cur: string) => {
+      return ["EUR", "GBP", "AUD", "MXN", "USD"].includes(cur);
+    };
+    const isAfricanCurrency = (cur: string) => {
+      return ["NGN", "GHS", "KES", "ZAR"].includes(cur);
+    };
+    const isCryptoCurrency = (cur: string) => {
+      return ["BTC", "USDC"].includes(cur);
+    };
 
     const { banks, wallets } = storeToRefs(useWalletStore());
     const { setWallets, setBanks } = useWalletStore();
@@ -386,7 +423,7 @@ export default defineComponent({
         isCreateBeneficiaryLoading.value = true;
         if (
           beneficiaryType.value === "bank_account" &&
-          ["NGN", "GHS", "KES", "ZAR"].includes(selectedCurrency.value)
+          isAfricanCurrency(selectedCurrency.value)
         ) {
           await verifyAccountNumber();
         }
@@ -510,6 +547,11 @@ export default defineComponent({
       verifyAccountNumber,
       isVerifyAccountNumberLoading,
       bankCode,
+      bankCodeNamesByCurrency,
+      accountNumberNamesByCurrency,
+      isInternationalCurrency,
+      isCryptoCurrency,
+      isAfricanCurrency,
     };
   },
 });

@@ -104,7 +104,8 @@ export class WalletController {
   @Get("beneficiaries")
   async fetchBeneficiaries(
     @Res() res: Response,
-    @CurrentUser() user: UserDocument
+    @CurrentUser() user: UserDocument,
+    @Query("search") search: string
   ) {
     return UtilityService.handleRequest(
       res,
@@ -112,7 +113,8 @@ export class WalletController {
       this.walletService,
       "fetchBeneficiaries",
       HttpStatusCode.Ok,
-      user
+      user,
+      search
     );
   }
 

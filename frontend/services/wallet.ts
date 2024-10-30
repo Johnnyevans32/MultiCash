@@ -94,10 +94,13 @@ export class WalletService {
     });
   }
 
-  async fetchBeneficiaries() {
+  async fetchBeneficiaries(search?: string) {
     const { useCustomFetch } = useAppVueUtils();
+    const query = new URLSearchParams({
+      ...(search && { search }),
+    }).toString();
     const { data } = await useCustomFetch<IResponse<IBeneficiary[]>>(
-      `/api/wallets/beneficiaries`,
+      `/api/wallets/beneficiaries?${query}`,
       {
         method: "get",
       }

@@ -120,6 +120,13 @@ export class UserService {
     });
   }
 
+  async findUsers(query: FilterQuery<UserDocument>, includeDeleted?: boolean) {
+    return this.userModel.find({
+      ...query,
+      ...(!includeDeleted && { isDeleted: false }),
+    });
+  }
+
   async forgotPassword(payload: ForgotPasswordDTO) {
     const user = await this.findUser({ email: payload.email });
     if (user) {

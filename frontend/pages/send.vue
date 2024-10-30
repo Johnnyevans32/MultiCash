@@ -2,8 +2,9 @@
   <div class="border-b-[1px] border-base text-left py-2">
     <CommonPageBar mainPage="Send" />
   </div>
-  <div class="flex items-center justify-between">
-    <h1 class="text-xl font-bold">Beneficiaries</h1>
+
+  <div class="flex items-center gap-2 justify-between">
+    <h1 class="text-xl font-bold text-left">Beneficiaries</h1>
     <CommonButton
       v-if="!isFetchWalletLoading"
       text="Add Beneficiary"
@@ -13,6 +14,16 @@
       customCss="justify-self-end"
     />
   </div>
+
+  <CommonFormInput
+    v-model="searchQuery"
+    inputType="search"
+    placeholder="Name, @MultiCashtag, Bank name, Currency"
+    @keyup.enter="fetchBeneficiaries"
+    customCss="pr-3 pl-9"
+    class="w-full"
+    @search="fetchBeneficiaries"
+  />
 
   <div v-if="isFetchBeneficiariesLoading">
     <div
@@ -461,11 +472,14 @@ export default defineComponent({
 
     const beneficiaries = ref<IBeneficiary[]>([]);
     const isFetchBeneficiariesLoading = ref(false);
+    const searchQuery = ref("");
     const fetchBeneficiaries = async () => {
       await withLoadingPromise(
-        $api.walletService.fetchBeneficiaries().then((resp) => {
-          beneficiaries.value = resp;
-        }),
+        $api.walletService
+          .fetchBeneficiaries(searchQuery.value)
+          .then((resp) => {
+            beneficiaries.value = resp;
+          }),
         isFetchBeneficiariesLoading
       );
     };
@@ -552,6 +566,8 @@ export default defineComponent({
       isInternationalCurrency,
       isCryptoCurrency,
       isAfricanCurrency,
+      searchQuery,
+      fetchBeneficiaries,
     };
   },
 });

@@ -564,9 +564,33 @@ export class WalletService {
     });
   }
 
-  async fetchBeneficiaries(user: UserDocument) {
+  async fetchBeneficiaries(user: UserDocument, search?: string) {
+    const query: any = { user: user.id, isDeleted: false };
+    if (!search) {
+      const [users, banks] = await Promise.all([
+        this.userService.findUsers({
+          isDeleted: false,
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { tag: { $regex: search, $options: "i" } },
+          ],
+        }),
+        this.paymentService.fetchBanksByQuery({
+          name: { $regex: search, $options: "i" },
+          currency: { $regex: search, $options: "i" },
+        }),
+      ]);
+      query.$or = [
+        { accountName: { $regex: search, $options: "i" } },
+        { currency: { $regex: search, $options: "i" } },
+        ...(users.length
+          ? [{ beneficiaryUser: { $in: users.map((i) => i.id) } }]
+          : []),
+        ...(banks.length ? [{ bank: { $in: banks.map((i) => i.id) } }] : []),
+      ];
+    }
     return this.beneficiaryModel
-      .find({ user: user.id, isDeleted: false })
+      .find(query)
       .populate([
         { path: "bank", select: "name currency logo" },
         { path: "beneficiaryUser", select: "name tag profileImage" },

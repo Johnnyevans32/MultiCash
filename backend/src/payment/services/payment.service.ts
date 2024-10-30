@@ -5,7 +5,7 @@ import {
   Injectable,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import { FilterQuery, Model } from "mongoose";
 import { Cron, CronExpression } from "@nestjs/schedule";
 
 import {
@@ -112,6 +112,13 @@ export class PaymentService {
       throw new Error(`service with name ${paymentService} not registered.`);
     }
     return service;
+  }
+
+  async fetchBanksByQuery(query: FilterQuery<BankDocument>) {
+    return this.bankModel.find({
+      isDeleted: false,
+      ...query,
+    });
   }
 
   async fetchBanks(currency?: string) {

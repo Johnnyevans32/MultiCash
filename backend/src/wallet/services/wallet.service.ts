@@ -352,13 +352,14 @@ export class WalletService {
     }
 
     if (beneficiary.type === BeneficiaryType.BankAccount) {
-      const { accountNumber, accountName } = beneficiary;
+      const { accountNumber, accountName, recipientType, bankCode } =
+        beneficiary;
       const bank = beneficiary.bank as BankDocument;
-      const wallet = await this.walletModel
+      let wallet = await this.walletModel
         .findOne({
           user: user.id,
           isDeleted: false,
-          currency: bank.currency,
+          currency: beneficiary.currency || bank?.currency,
         })
         .populate("walletCurrency");
       const { transferFee } = wallet.walletCurrency;
@@ -375,7 +376,7 @@ export class WalletService {
         purpose: TransactionPurpose.WITHDRAWAL,
         fee: transferFee,
         note,
-        meta: { accountName, accountNumber, bankName: bank.name },
+        meta: { accountName, accountNumber, bankName: bank?.name },
         status: TransactionStatus.Pending,
       });
 
@@ -390,6 +391,8 @@ export class WalletService {
         accountNumber,
         accountName,
         meta: { walletTransactionId: txn.id },
+        bankCode,
+        recipientType,
       });
 
       txn.transferReference = transferReference;
@@ -464,6 +467,8 @@ export class WalletService {
       accountName,
       beneficiaryType,
       beneficiaryTag,
+      bankCode,
+      currency,
     } = payload;
 
     let updateQuery: any = { type: beneficiaryType };
@@ -471,12 +476,15 @@ export class WalletService {
 
     if (beneficiaryType === BeneficiaryType.BankAccount) {
       const bank = await this.paymentService.fetchBankById(bankId);
-      if (!bank) {
-        throw new BadRequestException("Invalid bank");
-      }
 
       searchQuery.accountNumber = accountNumber;
-      updateQuery = { ...updateQuery, bank: bank.id, accountName };
+      updateQuery = {
+        ...updateQuery,
+        bank: bank?.id,
+        accountName,
+        bankCode,
+        currency,
+      };
     } else {
       const beneficiaryUser = await this.userService.findUser({
         tag: beneficiaryTag,
@@ -509,7 +517,7 @@ export class WalletService {
         { path: "bank", select: "name currency logo" },
         { path: "beneficiaryUser", select: "name tag profileImage" },
       ])
-      .select("accountNumber accountName type ");
+      .select("accountNumber accountName type currency");
   }
 
   async deleteBeneficiary(user: UserDocument, beneficiaryId: string) {

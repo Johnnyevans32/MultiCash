@@ -1,4 +1,4 @@
-import { createHmac } from "crypto";
+import { constants, createHmac, createPublicKey, verify } from "crypto";
 import { Injectable, NotImplementedException } from "@nestjs/common";
 import { RequestService } from "@/core/services/request.service";
 import {
@@ -18,19 +18,24 @@ import {
 } from "@/payment/types/payment.type";
 import configuration from "@/core/services/configuration";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
+import {
+  AccountType,
+  RecipientType,
+} from "@/wallet/schemas/beneficiary.schema";
 
 @Injectable()
 export class WiseService extends RequestService implements IPaymentProvider {
-  private readonly secret: string;
-
   private readonly wiseEventMap = {
-    "transfers.state-change": WebhookEventEnum.TransferSuccess, // or failed/processing based on the event details
+    "transfers.state-change": WebhookEventEnum.TransferSuccess,
     "transfers.cancelled": WebhookEventEnum.TransferFailed,
   };
 
   private readonly wiseStatusMap = {
-    completed: TransferStatus.Successful,
+    outgoing_payment_sent: TransferStatus.Successful,
     processing: TransferStatus.Processing,
+    incoming_payment_waiting: TransferStatus.Processing,
+    incoming_payment_initiated: TransferStatus.Processing,
+    funds_converted: TransferStatus.Processing,
     cancelled: TransferStatus.Failed,
   };
 
@@ -40,7 +45,6 @@ export class WiseService extends RequestService implements IPaymentProvider {
       baseURL: baseurl,
       headers: { Authorization: `Bearer ${apiKey}` },
     });
-    this.secret = apiKey;
   }
 
   checkTransferStatus(
@@ -67,13 +71,12 @@ export class WiseService extends RequestService implements IPaymentProvider {
     const { accountNumber, bank } = payload;
     const { currency } = bank;
 
-    // Example logic to validate recipient accounts.
     const { data } = await this.request<any>({
       method: "get",
       url: `/v1/account/validate`,
       params: {
         accountNumber,
-        bankCode: bank.meta.get("bankCode"), // Assuming you have bank codes for different regions
+        bankCode: bank.meta.get("bankCode"),
         currency,
       },
     });
@@ -91,29 +94,31 @@ export class WiseService extends RequestService implements IPaymentProvider {
   async transferToAccount(payload: TransferToAccountDTO) {
     const { amount, currency, reference, description } = payload;
 
-    // Step 1: Create a quote for the transfer
-    const quote = await this.createQuote(amount, currency);
+    const quoteId = await this.createQuote(amount, currency);
 
-    // Step 2: Create a recipient (beneficiary) account
     const recipientId = await this.getTransferRecipientCode(payload);
 
-    // Step 3: Initiate the transfer using the quote and recipient
-    const { data } = await this.request<any>({
+    const response = await this.request<any>({
       method: "post",
       url: "/v1/transfers",
       data: {
         targetAccount: recipientId,
-        quoteUuid: quote.id,
-        customerTransactionId: reference,
+        quoteUuid: quoteId,
+        customerTransactionId: crypto.randomUUID(),
         details: {
           reference: description,
         },
       },
     });
 
+    if (configuration().isDev) {
+      this.simulateSuccessfulTransaction(response.id);
+    }
+
     return {
-      providerResponse: data,
-      status: this.wiseStatusMap[data.status],
+      providerResponse: response,
+      status: this.wiseStatusMap[response.status] || TransferStatus.Processing,
+      pspTransactionId: response.id,
     };
   }
 
@@ -121,53 +126,135 @@ export class WiseService extends RequestService implements IPaymentProvider {
    * Helper method to create a quote for a transfer.
    */
   private async createQuote(amount: number, currency: SupportedCurrencyEnum) {
-    const { data } = await this.request<any>({
+    const response = await this.request<any>({
       method: "post",
-      url: "/v1/quotes",
+      url: `/v3/profiles/${configuration().wise.businessId}/quotes`,
       data: {
-        sourceCurrency: currency, // Use wallet currency for individual transactions
+        sourceCurrency: currency,
         targetCurrency: currency,
         sourceAmount: amount,
       },
     });
-    return data;
+    return response.id;
   }
 
   /**
    * Helper method to fetch or create a transfer recipient (beneficiary) code.
    */
   private async getTransferRecipientCode(payload: TransferToAccountDTO) {
-    const { accountNumber, accountName, bank, currency } = payload;
+    const {
+      accountNumber,
+      accountName,
+      bank,
+      currency,
+      bankCode,
+      recipientType,
+      accountType,
+      address,
+    } = payload;
 
-    const { data } = await this.request<any>({
+    const currencyTypeMap = {
+      [SupportedCurrencyEnum.EUR]: "iban",
+      [SupportedCurrencyEnum.GBP]: "sort_code",
+      [SupportedCurrencyEnum.AUD]: "australian",
+      [SupportedCurrencyEnum.MXN]: "mexican",
+      [SupportedCurrencyEnum.USD]: "aba",
+    };
+
+    const currencyDetailsMap = {
+      [SupportedCurrencyEnum.EUR]: { BIC: bankCode, IBAN: accountNumber },
+      [SupportedCurrencyEnum.GBP]: { sortCode: bankCode, accountNumber },
+      [SupportedCurrencyEnum.AUD]: { bsbCode: bankCode, accountNumber },
+      [SupportedCurrencyEnum.MXN]: {
+        clabe: bankCode,
+        identificationNumber: accountNumber,
+      },
+      [SupportedCurrencyEnum.USD]: {
+        abartn: bankCode,
+        accountNumber,
+        accountType:
+          accountType === AccountType.Checking ? "CHECKING" : "SAVINGS",
+        address,
+      },
+    };
+
+    const response = await this.request<any>({
       method: "post",
       url: "/v1/accounts",
       data: {
         currency,
-        type: "sort_code",
-        profile: 30000000,
-        ownedByCustomer: true,
+        type: currencyTypeMap[currency],
+        profile: configuration().wise.businessId,
         accountHolderName: accountName,
         details: {
-          legalType: "PRIVATE",
-          sortCode: "040075",
-          accountNumber: accountNumber,
+          legalType:
+            recipientType === RecipientType.Business ? "BUSINESS" : "PRIVATE",
+          ...(currencyDetailsMap[currency] ?? {}),
         },
       },
     });
 
-    return data.id; // Assuming the recipient ID is returned in the `id` field
+    return response.id;
+  }
+
+  async simulateSuccessfulTransaction(id: string) {
+    // Wait 1 second before starting the sequence
+    const sleep = (ms: number) =>
+      new Promise((resolve) => setTimeout(resolve, ms));
+
+    await sleep(1000);
+
+    await this.request<any>({
+      method: "get",
+      url: `v1/simulation/transfers/${id}/processing`,
+    });
+    await sleep(500);
+
+    await this.request<any>({
+      method: "get",
+      url: `v1/simulation/transfers/${id}/funds_converted`,
+    });
+    await sleep(500);
+
+    await this.request<any>({
+      method: "get",
+      url: `v1/simulation/transfers/${id}/outgoing_payment_sent`,
+    });
   }
 
   /**
    * Handle webhook validation by verifying the signature.
    */
   validateWebhook(headers: any, payload: any): boolean {
-    const signature = headers["x-signature"]; // Wise uses this header for webhook signature
-    const hash = createHmac("sha256", this.secret)
-      .update(JSON.stringify(payload))
-      .digest("hex");
-    return hash === signature;
+    const signature = headers["x-signature"];
+    const sandboxPubKey = `
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwpb91cEYuyJNQepZAVfP
+    ZIlPZfNUefH+n6w9SW3fykqKu938cR7WadQv87oF2VuT+fDt7kqeRziTmPSUhqPU
+    ys/V2Q1rlfJuXbE+Gga37t7zwd0egQ+KyOEHQOpcTwKmtZ81ieGHynAQzsn1We3j
+    wt760MsCPJ7GMT141ByQM+yW1Bx+4SG3IGjXWyqOWrcXsxAvIXkpUD/jK/L958Cg
+    nZEgz0BSEh0QxYLITnW1lLokSx/dTianWPFEhMC9BgijempgNXHNfcVirg1lPSyg
+    z7KqoKUN0oHqWLr2U1A+7kqrl6O2nx3CKs1bj1hToT1+p4kcMoHXA7kA+VBLUpEs
+    VwIDAQAB
+    -----END PUBLIC KEY-----
+    `;
+
+    const publicKey = createPublicKey({
+      key: configuration().wise.publicKey,
+      format: "pem",
+    });
+
+    const isVerified = verify(
+      "RSA-SHA256",
+      Buffer.from(JSON.stringify(payload)),
+      {
+        key: publicKey,
+        padding: constants.RSA_PKCS1_PADDING,
+      },
+      Buffer.from(signature, "base64")
+    );
+
+    return !!isVerified;
   }
 
   /**
@@ -175,7 +262,7 @@ export class WiseService extends RequestService implements IPaymentProvider {
    * different Wise events (transfers, charges, etc.)
    */
   public transformWebhook(payload: any): IWebhookResponse<IWebhookTransfer> {
-    switch (payload.event) {
+    switch (payload.event_type) {
       case "transfers.state-change":
       case "transfers.cancelled":
         return this.transformTransferData(payload);
@@ -191,14 +278,17 @@ export class WiseService extends RequestService implements IPaymentProvider {
   private transformTransferData(
     payload: any
   ): IWebhookResponse<IWebhookTransfer> {
-    const { status, id, targetAccount, sourceAmount } = payload.data;
+    const {
+      current_state,
+      resource: { id },
+    } = payload.data;
 
     return {
       event: this.wiseEventMap[payload.event],
       data: {
-        status: this.wiseStatusMap[status],
-        amount: sourceAmount,
+        status: this.wiseStatusMap[current_state],
         reference: id,
+        amount: 0,
         meta: {},
       },
       provider: PaymentProvider.Wise,

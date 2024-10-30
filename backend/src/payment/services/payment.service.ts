@@ -36,6 +36,7 @@ import { ChargeRecordDocument } from "../schemas/charge-record.schema";
 import { WalletService } from "@/wallet/services/wallet.service";
 import { StripeService } from "../providers/stripe/stripe.service";
 import { UserDocument } from "@/user/schemas/user.schema";
+import { WiseService } from "../providers/wise/wise.service";
 
 @Injectable()
 export class PaymentService {
@@ -51,6 +52,7 @@ export class PaymentService {
     private bankModel: Model<BankDocument>,
     private paystackService: PaystackService,
     private stripeService: StripeService,
+    private wiseService: WiseService,
     @Inject(forwardRef(() => WalletService))
     private walletService: WalletService
   ) {
@@ -60,6 +62,7 @@ export class PaymentService {
   private _registerServices(): void {
     this.services.set(PaymentProvider.Paystack, this.paystackService);
     this.services.set(PaymentProvider.Stripe, this.stripeService);
+    this.services.set(PaymentProvider.Wise, this.wiseService);
 
     this.registerCurrencyService(
       SupportedCurrencyEnum.NGN,
@@ -78,11 +81,11 @@ export class PaymentService {
       this.paystackService
     );
 
-    this.registerCurrencyService(SupportedCurrencyEnum.USD, this.stripeService);
-    this.registerCurrencyService(SupportedCurrencyEnum.EUR, this.stripeService);
-    this.registerCurrencyService(SupportedCurrencyEnum.GBP, this.stripeService);
-    this.registerCurrencyService(SupportedCurrencyEnum.AUD, this.stripeService);
-    this.registerCurrencyService(SupportedCurrencyEnum.MXN, this.stripeService);
+    this.registerCurrencyService(SupportedCurrencyEnum.USD, this.wiseService);
+    this.registerCurrencyService(SupportedCurrencyEnum.EUR, this.wiseService);
+    this.registerCurrencyService(SupportedCurrencyEnum.GBP, this.wiseService);
+    this.registerCurrencyService(SupportedCurrencyEnum.AUD, this.wiseService);
+    this.registerCurrencyService(SupportedCurrencyEnum.MXN, this.wiseService);
   }
 
   private registerCurrencyService(
@@ -175,7 +178,7 @@ export class PaymentService {
       },
       {
         ...payload,
-        bank: bank.id,
+        bank: bank?.id,
       },
       {
         upsert: true,
@@ -191,6 +194,8 @@ export class PaymentService {
       });
 
       transferRecord.status = transferResponse.status;
+      transferRecord.pspTransactionId =
+        transferResponse.pspTransactionId || reference;
       transferRecord.providerResponse.push(transferResponse);
     } catch (error) {
       transferRecord.providerResponse.push(JSON.parse(JSON.stringify(error)));
@@ -310,9 +315,12 @@ export class PaymentService {
     const { data, provider } = payload;
     const transferRecord = await this.transferRecordModel
       .findOne({
-        reference: data.reference,
         paymentProvider: provider,
         isDeleted: false,
+        $or: [
+          { reference: data.reference },
+          { pspTransactionId: data.reference },
+        ],
       })
       .sort({
         createdAt: -1,
@@ -376,6 +384,7 @@ export class PaymentService {
         const service = this.getService(transferRecord.paymentProvider);
         const { status, providerResponse } = await service.checkTransferStatus({
           reference: transferRecord.reference,
+          pspTransactionId: transferRecord.pspTransactionId,
         });
         await this.handleTransferHook({
           event:

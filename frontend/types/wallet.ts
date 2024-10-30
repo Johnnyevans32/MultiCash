@@ -48,4 +48,5 @@ export interface IBeneficiary {
   id: string;
   beneficiaryUser: IUser;
   type: string;
+  currency: string;
 }

@@ -48,12 +48,12 @@
           :image="
             beneficiary.type === 'platform'
               ? beneficiary.beneficiaryUser?.profileImage
-              : beneficiary.bank.logo
+              : beneficiary.bank?.logo
           "
           :alt="
             beneficiary.type === 'platform'
               ? beneficiary.beneficiaryUser?.tag
-              : beneficiary.bank.name
+              : beneficiary.bank?.name
           "
         />
 
@@ -66,7 +66,7 @@
           <span class="md:text-sm text-xs line-clamp-1">{{
             beneficiary.type === "platform"
               ? `@${beneficiary?.beneficiaryUser?.tag}`
-              : `${beneficiary.accountNumber} (${beneficiary.bank.name})`
+              : `${beneficiary.accountNumber} (${beneficiary.bank?.name})`
           }}</span>
         </div>
       </div>
@@ -107,6 +107,7 @@
           />
           <CommonFormSelect
             title="Select bank"
+            v-if="['NGN', 'GHS', 'KES', 'ZAR'].includes(selectedCurrency)"
             :selected="selectedBankId"
             :options="groupedBanksByCurrency[selectedCurrency]"
             @change-option="handleBankChange"
@@ -114,12 +115,36 @@
             placeholder="-- Please select a bank --"
             valueKey="id"
           />
+
+          <CommonFormInput
+            v-model="bankCode"
+            v-if="
+              ['EUR', 'GBP', 'AUD', 'MXN', 'USD'].includes(selectedCurrency)
+            "
+            placeholder="1234567890"
+            title="Enter bank code"
+            input-type="text"
+          />
+
+          <CommonFormInput
+            v-model="accountName"
+            v-if="
+              ['EUR', 'GBP', 'AUD', 'MXN', 'USD'].includes(selectedCurrency)
+            "
+            placeholder="Mark Smith"
+            title="Enter account name"
+            input-type="text"
+          />
+
           <CommonFormInput
             v-model="accountNumber"
             placeholder="1234567890"
             title="Enter account number"
             input-type="text"
-            @keyup.enter="verifyAccountNumber"
+            @keyup.enter="
+              ['NGN', 'GHS', 'KES', 'ZAR'].includes(selectedCurrency) &&
+                verifyAccountNumber
+            "
             :validationMessage="
               isVerifyAccountNumberLoading
                 ? 'Validating account details...'
@@ -179,7 +204,7 @@
             </p>
             <p class="text-xs md:text-sm">
               {{ selectedBeneficiary?.accountNumber }} ({{
-                selectedBeneficiary?.bank.name
+                selectedBeneficiary?.bank?.name
               }})
             </p>
           </div>
@@ -302,6 +327,11 @@ export default defineComponent({
     const addAccountModal = ref(false);
     const accountNumber = ref("");
 
+    const bankCodeNamesByCurrency = {
+      EUR: "Bank code (BIC/SWIFT)",
+    };
+    const bankCode = ref("");
+
     const { banks, wallets } = storeToRefs(useWalletStore());
     const { setWallets, setBanks } = useWalletStore();
     const selectedBankId = ref("");
@@ -354,7 +384,10 @@ export default defineComponent({
     const createBeneficiary = async () => {
       try {
         isCreateBeneficiaryLoading.value = true;
-        if (beneficiaryType.value === "bank_account") {
+        if (
+          beneficiaryType.value === "bank_account" &&
+          ["NGN", "GHS", "KES", "ZAR"].includes(selectedCurrency.value)
+        ) {
           await verifyAccountNumber();
         }
         await $api.walletService.createBeneficiary({
@@ -363,7 +396,9 @@ export default defineComponent({
             ? {
                 accountNumber: accountNumber.value,
                 accountName: accountName.value,
-                bank: selectedBankId.value,
+                ...(selectedBankId.value && { bank: selectedBankId.value }),
+                ...(bankCode.value && { bankCode: bankCode.value }),
+                currency: selectedCurrency.value,
               }
             : {
                 beneficiaryTag: beneficiaryTag.value,
@@ -438,7 +473,9 @@ export default defineComponent({
 
     const wallet = computed(() => {
       const targetCurrency =
-        selectedBeneficiary.value?.bank?.currency || selectedCurrency.value;
+        selectedBeneficiary.value?.currency ||
+        selectedBeneficiary.value?.bank?.currency ||
+        selectedCurrency.value;
       return wallets.value.find((w) => w.currency === targetCurrency);
     });
 
@@ -472,6 +509,7 @@ export default defineComponent({
       allCurrencies,
       verifyAccountNumber,
       isVerifyAccountNumberLoading,
+      bankCode,
     };
   },
 });

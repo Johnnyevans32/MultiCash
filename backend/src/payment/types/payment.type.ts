@@ -14,6 +14,11 @@ import {
 } from "../schemas/transfer-record.schema";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 import { BankDocument } from "../schemas/bank.schema";
+import {
+  AccountType,
+  BeneficiaryAddress,
+  RecipientType,
+} from "@/wallet/schemas/beneficiary.schema";
 
 export interface IPaymentProvider {
   name(): PaymentProvider;
@@ -98,6 +103,18 @@ export class TransferToAccountDTO {
 
   @IsOptional()
   stripeAccountId?: string;
+
+  @IsOptional()
+  bankCode?: string;
+
+  @IsEnum(RecipientType)
+  recipientType?: RecipientType;
+
+  @IsEnum(AccountType)
+  accountType?: AccountType;
+
+  @IsOptional()
+  address?: BeneficiaryAddress;
 }
 
 export class VerifyAccountNumbertDTO {
@@ -114,6 +131,9 @@ export class VerifyAccountNumbertDTO {
 export class CheckTransferStatusDTO {
   @IsString()
   reference: string;
+
+  @IsOptional()
+  pspTransactionId?: string;
 }
 
 export interface ICheckTransferStatusResponse {
@@ -129,6 +149,7 @@ export interface IVerifyAccountNumberResponse {
 export interface ITransferToAccountResponse {
   status: TransferStatus;
   providerResponse: any;
+  pspTransactionId?: string;
 }
 
 export class CreatePaymentIntentDTO {

@@ -99,4 +99,12 @@ export class CreateBeneficiaryDTO {
   @IsOptional()
   @IsString()
   beneficiaryTag: string;
+
+  @IsOptional()
+  @IsString()
+  bankCode: string;
+
+  @IsOptional()
+  @IsEnum(SupportedCurrencyEnum)
+  currency: SupportedCurrencyEnum;
 }

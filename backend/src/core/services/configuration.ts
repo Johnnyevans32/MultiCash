@@ -43,7 +43,12 @@ export interface Configuration {
   ipapi: {
     accessKey: string;
   };
-  wise: { baseurl: string; apiKey: string };
+  wise: {
+    baseurl: string;
+    apiKey: string;
+    businessId: string;
+    publicKey: string;
+  };
   env: EnvMode;
   puppeteer: {
     executablePath: string;
@@ -107,6 +112,8 @@ export default (): Configuration => ({
   wise: {
     baseurl: process.env.WISE_BASE_URL,
     apiKey: process.env.WISE_API_KEY,
+    businessId: process.env.WISE_BUSINESS_ID,
+    publicKey: process.env.WISE_PUBLIC_KEY,
   },
   puppeteer: {
     executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,

@@ -43,6 +43,29 @@ export class WebhookController {
   }
 
   @Public()
+  @Post("wise")
+  async handleWiseWebhook(
+    @Res() res: Response,
+    @Req() req: Request,
+    @Body() payload: unknown
+  ): Promise<any> {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      {
+        handleWebhook: (a: any, b: any) => {
+          this.paymentService.handleWebhook(a, b);
+          return {};
+        },
+      },
+      "handleWebhook",
+      HttpStatus.OK,
+      { event: payload, headers: req.headers },
+      PaymentProvider.Wise
+    );
+  }
+
+  @Public()
   @Post("stripe")
   async handleStripeWebhook(
     @Res() res: Response,

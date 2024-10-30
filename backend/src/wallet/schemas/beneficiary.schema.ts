@@ -8,12 +8,30 @@ import {
   BaseSchemaDecorator,
 } from "@/core/decorators/base-schema.decorator";
 import { BankDocument } from "@/payment/schemas/bank.schema";
+import { SupportedCurrencyEnum } from "./wallet.schema";
 
 export type BeneficiaryDocument = HydratedDocument<Beneficiary>;
 
 export enum BeneficiaryType {
   BankAccount = "bank_account",
   Platform = "platform",
+}
+
+export enum RecipientType {
+  Person = "person",
+  Business = "business",
+}
+
+export enum AccountType {
+  Savings = "savings",
+  Checking = "checking",
+}
+
+export interface BeneficiaryAddress {
+  country: string;
+  city: string;
+  firstLine: string;
+  postCode: string;
 }
 @BaseSchemaDecorator()
 export class Beneficiary extends BaseSchema {
@@ -38,6 +56,32 @@ export class Beneficiary extends BaseSchema {
     default: BeneficiaryType.BankAccount,
   })
   type: BeneficiaryType;
+
+  @Prop({
+    type: SchemaTypes.String,
+    enum: Object.values(RecipientType),
+    default: RecipientType.Person,
+  })
+  recipientType: RecipientType;
+
+  @Prop({ type: SchemaTypes.String })
+  bankCode?: string;
+
+  @Prop({
+    type: SchemaTypes.String,
+    enum: Object.values(AccountType),
+    default: AccountType.Savings,
+  })
+  accountType?: AccountType;
+
+  @Prop({ type: SchemaTypes.Mixed })
+  address?: BeneficiaryAddress;
+
+  @Prop({
+    type: SchemaTypes.String,
+    enum: Object.values(SupportedCurrencyEnum),
+  })
+  currency?: SupportedCurrencyEnum;
 }
 
 export const BeneficiarySchema = SchemaFactory.createForClass(Beneficiary);

@@ -47,6 +47,9 @@ export class TransferRecord extends BaseSchema {
   @Prop({ type: SchemaTypes.String, required: true, unique: true })
   reference: string;
 
+  @Prop({ type: SchemaTypes.String, unique: true })
+  pspTransactionId?: string;
+
   @Prop({ type: SchemaTypes.Number, required: true })
   amount: number;
 

@@ -24,16 +24,22 @@ export function useAppVueUtils() {
         const { path } = route;
 
         const errorMessage = response?._data?.message || "An error occurred";
-        notify({
-          type: "error",
-          title: errorMessage,
-        });
+        if (response?.status !== 401) {
+          notify({
+            type: "error",
+            title: errorMessage,
+          });
+        }
 
         if (
           response?.status === 401 &&
           accessToken.value &&
           path !== "/signin"
         ) {
+          notify({
+            type: "error",
+            title: errorMessage,
+          });
           setAccessToken(null);
           await navigateTo(`/signin?redirect=${encodeURIComponent(path)}`);
         }

@@ -9,9 +9,10 @@
 
 ## System Status
 
-[![Wallet API on Koyeb Status](https://img.shields.io/uptimerobot/status/m797923764-29aead7e9fd881c282d4c32c)](https://stats.uptimerobot.com/GVsUyt7VAq)
-[![Wallet API on Render Status](https://img.shields.io/uptimerobot/status/m797927084-5c7e4034776efd43a84fdd83)](https://stats.uptimerobot.com/GVsUyt7VAq)
-[![Wallet UI Status](https://img.shields.io/uptimerobot/status/m797923761-38b5c8fc3a2fc45b2927283d)](https://stats.uptimerobot.com/GVsUyt7VAq)
+![Koyeb API Status](https://img.shields.io/uptimerobot/status/m797923764-29aead7e9fd881c282d4c32c?label=Wallet%20API%20on%20Koyeb)
+![Render API Status](https://img.shields.io/uptimerobot/status/m797927084-5c7e4034776efd43a84fdd83?label=Wallet%20API%20on%20Render)
+![Wallet UI Status](https://img.shields.io/uptimerobot/status/m797923761-38b5c8fc3a2fc45b2927283d?label=Wallet%20UI)
+
 
 
 ## Overview

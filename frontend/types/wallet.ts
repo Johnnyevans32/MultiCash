@@ -33,6 +33,7 @@ export interface IWalletTransaction {
   currency: string;
   note: string;
   status: string;
+  transferReference: string;
 }
 
 export interface IBank {

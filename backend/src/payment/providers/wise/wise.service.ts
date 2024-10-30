@@ -26,8 +26,9 @@ import {
 @Injectable()
 export class WiseService extends RequestService implements IPaymentProvider {
   private readonly wiseEventMap = {
-    "transfers.state-change": WebhookEventEnum.TransferSuccess,
-    "transfers.cancelled": WebhookEventEnum.TransferFailed,
+    "transfers#state-change#outgoing_payment_sent":
+      WebhookEventEnum.TransferSuccess,
+    "transfers#state-change#cancelled": WebhookEventEnum.TransferFailed,
   };
 
   private readonly wiseStatusMap = {
@@ -47,10 +48,18 @@ export class WiseService extends RequestService implements IPaymentProvider {
     });
   }
 
-  checkTransferStatus(
+  async checkTransferStatus(
     payload: CheckTransferStatusDTO
   ): Promise<ICheckTransferStatusResponse> {
-    throw new NotImplementedException();
+    const response = await this.request<any>({
+      method: "get",
+      url: `/v1/transfers/${payload.pspTransactionId}`,
+    });
+
+    return {
+      providerResponse: response,
+      status: this.wiseStatusMap[response.status] || TransferStatus.Processing,
+    };
   }
   createCheckoutSession?(
     payload: CreatePaymentIntentDTO
@@ -68,23 +77,7 @@ export class WiseService extends RequestService implements IPaymentProvider {
    * their API to fetch details for different account requirements.
    */
   async verifyAccountNumber(payload: VerifyAccountNumbertDTO) {
-    const { accountNumber, bank } = payload;
-    const { currency } = bank;
-
-    const { data } = await this.request<any>({
-      method: "get",
-      url: `/v1/account/validate`,
-      params: {
-        accountNumber,
-        bankCode: bank.meta.get("bankCode"),
-        currency,
-      },
-    });
-
-    return {
-      accountName: data.accountName,
-      accountNumber: data.accountNumber,
-    };
+    throw new NotImplementedException();
   }
 
   /**
@@ -199,24 +192,23 @@ export class WiseService extends RequestService implements IPaymentProvider {
 
   async simulateSuccessfulTransaction(id: string) {
     // Wait 1 second before starting the sequence
-    const sleep = (ms: number) =>
+    const sleep = async (ms: number) =>
       new Promise((resolve) => setTimeout(resolve, ms));
 
     await sleep(1000);
-
-    await this.request<any>({
+    await this.request({
       method: "get",
       url: `v1/simulation/transfers/${id}/processing`,
     });
-    await sleep(500);
 
-    await this.request<any>({
+    await sleep(1000);
+    await this.request({
       method: "get",
       url: `v1/simulation/transfers/${id}/funds_converted`,
     });
-    await sleep(500);
 
-    await this.request<any>({
+    await sleep(1000);
+    await this.request({
       method: "get",
       url: `v1/simulation/transfers/${id}/outgoing_payment_sent`,
     });
@@ -226,25 +218,14 @@ export class WiseService extends RequestService implements IPaymentProvider {
    * Handle webhook validation by verifying the signature.
    */
   validateWebhook(headers: any, payload: any): boolean {
-    const signature = headers["x-signature"];
-    const sandboxPubKey = `
-    -----BEGIN PUBLIC KEY-----
-    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwpb91cEYuyJNQepZAVfP
-    ZIlPZfNUefH+n6w9SW3fykqKu938cR7WadQv87oF2VuT+fDt7kqeRziTmPSUhqPU
-    ys/V2Q1rlfJuXbE+Gga37t7zwd0egQ+KyOEHQOpcTwKmtZ81ieGHynAQzsn1We3j
-    wt760MsCPJ7GMT141ByQM+yW1Bx+4SG3IGjXWyqOWrcXsxAvIXkpUD/jK/L958Cg
-    nZEgz0BSEh0QxYLITnW1lLokSx/dTianWPFEhMC9BgijempgNXHNfcVirg1lPSyg
-    z7KqoKUN0oHqWLr2U1A+7kqrl6O2nx3CKs1bj1hToT1+p4kcMoHXA7kA+VBLUpEs
-    VwIDAQAB
-    -----END PUBLIC KEY-----
-    `;
+    const signature = headers["x-signature-sha256"];
 
     const publicKey = createPublicKey({
       key: configuration().wise.publicKey,
       format: "pem",
     });
 
-    const isVerified = verify(
+    return verify(
       "RSA-SHA256",
       Buffer.from(JSON.stringify(payload)),
       {
@@ -253,8 +234,6 @@ export class WiseService extends RequestService implements IPaymentProvider {
       },
       Buffer.from(signature, "base64")
     );
-
-    return !!isVerified;
   }
 
   /**
@@ -283,7 +262,7 @@ export class WiseService extends RequestService implements IPaymentProvider {
     } = payload.data;
 
     return {
-      event: this.wiseEventMap[payload.event],
+      event: this.wiseEventMap[`${payload.event_type}#${current_state}`],
       data: {
         status: this.wiseStatusMap[current_state],
         reference: id,

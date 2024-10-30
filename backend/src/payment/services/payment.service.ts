@@ -336,7 +336,7 @@ export class PaymentService {
 
     switch (transferRecord.purpose) {
       case TransferPurpose.WALLET_WITHDRAWAL:
-        this.walletService.handleTransferHook(payload);
+        this.walletService.handleTransferHook(transferRecord);
         break;
 
       default:

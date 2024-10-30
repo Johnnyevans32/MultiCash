@@ -36,7 +36,11 @@ import { PaginateDTO } from "@/core/services/response.service";
 import { WalletCurrencyDocument } from "../schemas/wallet-currency.schema";
 import { UtilityService } from "@/core/services/util.service";
 import { PaymentService } from "@/payment/services/payment.service";
-import { TransferPurpose } from "@/payment/schemas/transfer-record.schema";
+import {
+  TransferPurpose,
+  TransferRecordDocument,
+  TransferStatus,
+} from "@/payment/schemas/transfer-record.schema";
 import {
   BeneficiaryDocument,
   BeneficiaryType,
@@ -153,7 +157,7 @@ export class WalletService {
           limit,
           pagination: !all,
           select:
-            "amount description type purpose currency createdAt walletStateAfter.availableBalance walletStateAfter.currency walletStateBefore.availableBalance note status",
+            "amount description type purpose currency createdAt walletStateAfter.availableBalance walletStateAfter.currency walletStateBefore.availableBalance note status transferReference",
         }
       );
     return { data, metadata };
@@ -548,8 +552,8 @@ export class WalletService {
     });
   }
 
-  async handleTransferHook(payload: IWebhookResponse<IWebhookTransfer>) {
-    const { walletTransactionId } = payload.data.meta;
+  async handleTransferHook(payload: TransferRecordDocument) {
+    const { walletTransactionId } = payload.meta;
 
     if (!walletTransactionId) return;
 
@@ -561,8 +565,8 @@ export class WalletService {
     const user = walletTransaction.user as UserDocument;
     const { amount, currency } = walletTransaction;
 
-    switch (payload.event) {
-      case WebhookEventEnum.TransferSuccess:
+    switch (payload.status) {
+      case TransferStatus.Successful:
         walletTransaction.status = TransactionStatus.Successful;
         this.revenueService.createRevenue({
           amount: walletTransaction.fee,
@@ -578,7 +582,7 @@ export class WalletService {
         });
         break;
 
-      case WebhookEventEnum.TransferFailed:
+      case TransferStatus.Failed:
         walletTransaction.status = TransactionStatus.Failed;
         await this.refundWalletTransaction(
           walletTransaction.id,

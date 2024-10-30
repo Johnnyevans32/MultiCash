@@ -444,6 +444,7 @@ export default defineComponent({
         walletStateAfter,
         createdAt,
         note,
+        transferReference,
       } = modalTransaction.value;
 
       return [
@@ -458,6 +459,9 @@ export default defineComponent({
             (txnStatusStyles.value as any)[status]
           }`,
         },
+        ...(transferReference
+          ? [{ title: "Transfer Reference", value: transferReference }]
+          : []),
         {
           title: "Description",
           value: description,
@@ -499,12 +503,14 @@ export default defineComponent({
 
     const isLoadingDownloadTransactionReceipt = ref(false);
     const downloadTransactionReceipt = async () => {
-      await withLoadingPromise(
-        $api.walletService
-          .downloadTransactionReceipt(modalTransaction.value.id)
-          .then(() => {}),
-        isLoadingDownloadTransactionReceipt
-      );
+      if (modalTransaction.value) {
+        await withLoadingPromise(
+          $api.walletService
+            .downloadTransactionReceipt(modalTransaction.value.id)
+            .then(() => {}),
+          isLoadingDownloadTransactionReceipt
+        );
+      }
     };
 
     return {

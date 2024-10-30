@@ -5,7 +5,7 @@ import {
   Injectable,
 } from "@nestjs/common";
 import { InjectConnection, InjectModel } from "@nestjs/mongoose";
-import { Connection, Model, PaginateModel } from "mongoose";
+import { Connection, FilterQuery, Model, PaginateModel } from "mongoose";
 import { Mutex, MutexInterface } from "async-mutex";
 import * as QRCode from "qrcode";
 import * as moment from "moment";
@@ -565,8 +565,11 @@ export class WalletService {
   }
 
   async fetchBeneficiaries(user: UserDocument, search?: string) {
-    const query: any = { user: user.id, isDeleted: false };
-    if (!search) {
+    const query: FilterQuery<BeneficiaryDocument> = {
+      user: user.id,
+      isDeleted: false,
+    };
+    if (search) {
       const [users, banks] = await Promise.all([
         this.userService.findUsers({
           isDeleted: false,
@@ -576,17 +579,19 @@ export class WalletService {
           ],
         }),
         this.paymentService.fetchBanksByQuery({
-          name: { $regex: search, $options: "i" },
-          currency: { $regex: search, $options: "i" },
+          $or: [
+            { name: { $regex: search, $options: "i" } },
+            { currency: { $regex: search, $options: "i" } },
+          ],
         }),
       ]);
       query.$or = [
         { accountName: { $regex: search, $options: "i" } },
         { currency: { $regex: search, $options: "i" } },
         ...(users.length
-          ? [{ beneficiaryUser: { $in: users.map((i) => i.id) } }]
+          ? [{ beneficiaryUser: { $in: users.map(({ id }) => id) } }]
           : []),
-        ...(banks.length ? [{ bank: { $in: banks.map((i) => i.id) } }] : []),
+        ...(banks.length ? [{ bank: { $in: banks.map(({ id }) => id) } }] : []),
       ];
     }
     return this.beneficiaryModel

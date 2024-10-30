@@ -1,12 +1,6 @@
 
-# MultiCash: Your Multi-Currency Digital Wallet
-
-<div style="display: flex; align-items: end;">
-  <img src="https://i.ibb.co/2jP2Qjb/logo.png" width="80px" height="auto" />
-  <img src="https://i.ibb.co/t8H5Xgd/name.png" width="200px" height="auto" />
-  <img src="https://i.ibb.co/ysjfknF/slogan.png" width="400px" height="auto" />
-</div>
-
+<img src="https://res.cloudinary.com/dfbjysygb/image/upload/v1730322913/xrh7gvdtabmidd3xp3uq.png" />
+ 
 ## System Status
 
 ![Koyeb API Status](https://img.shields.io/uptimerobot/status/m797923764-29aead7e9fd881c282d4c32c?label=Wallet%20API%20on%20Koyeb)

@@ -263,8 +263,7 @@ export class WiseService extends RequestService implements IPaymentProvider {
    */
   public transformWebhook(payload: any): IWebhookResponse<IWebhookTransfer> {
     switch (payload.event_type) {
-      case "transfers.state-change":
-      case "transfers.cancelled":
+      case "transfers#state-change":
         return this.transformTransferData(payload);
 
       default:

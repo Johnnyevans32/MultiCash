@@ -78,7 +78,7 @@ export default defineComponent({
     const settingsItems = ref([
       {
         logo: "at",
-        action: `${config.public.appName} tag`,
+        action: `${config.public.appName}tag`,
         value: user.value?.tag ? `@${user.value?.tag}` : "Not set",
         logoType: "icon",
         href: "/settings/tag",

@@ -21,8 +21,6 @@ export function useAppVueUtils() {
         }),
       },
       async onResponseError({ response }) {
-        const { path } = route;
-
         const errorMessage = response?._data?.message || "An error occurred";
         if (response?.status !== 401) {
           notify({
@@ -31,6 +29,7 @@ export function useAppVueUtils() {
           });
         }
 
+        const { path } = route;
         if (
           response?.status === 401 &&
           accessToken.value &&

@@ -12,7 +12,7 @@ export const useConfigStore = defineStore(
   "configStore",
   () => {
     const appThemeColor = ref<string>("light");
-    const autoLogoutEnabled = ref(false);
+    const autoLogoutEnabled = ref(true);
     const autoLogoutTimeoutInMins = ref(5);
     const loadingScreenEnabled = ref<boolean>(false);
 

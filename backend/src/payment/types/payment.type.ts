@@ -137,15 +137,18 @@ export class VerifyAccountNumbertDTO {
   @IsString()
   accountNumber: string;
 
+  @IsOptional()
   @IsMongoId()
   bankId: string;
 
   @IsOptional()
   bankCode?: string;
 
+  @IsOptional()
   @IsEnum(RecipientType)
   recipientType?: RecipientType;
 
+  @IsOptional()
   @IsEnum(AccountType)
   accountType?: AccountType;
 
@@ -156,7 +159,6 @@ export class VerifyAccountNumbertDTO {
   @IsString()
   accountName: string;
 
-  @IsOptional()
   @IsEnum(SupportedCurrencyEnum)
   currency: SupportedCurrencyEnum;
 }

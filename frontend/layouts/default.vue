@@ -115,7 +115,6 @@ export default defineComponent({
     const onremind = (time: number) => {
       notify({
         type: "info",
-        duration: -1,
         title: `We care about your security! To ensure the safety of your account, you will be automatically logged out if there is no activity detected for ${time} seconds. Please stay active to avoid being logged out.`,
       });
     };

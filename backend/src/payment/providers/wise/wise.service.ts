@@ -86,12 +86,12 @@ export class WiseService extends RequestService implements IPaymentProvider {
       address,
       bankCode,
     } = payload;
-    // if (configuration().isDev) {
-    //   return {
-    //     accountName,
-    //     accountNumber,
-    //   };
-    // }
+    if (configuration().isDev) {
+      return {
+        accountName,
+        accountNumber,
+      };
+    }
     await this.getTransferRecipientCode({
       accountNumber,
       accountName,

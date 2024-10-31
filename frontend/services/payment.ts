@@ -19,6 +19,12 @@ export class PaymentService {
   async verifyAccountNumber(payload: {
     accountNumber: string;
     bankId: string;
+    bankCode?: string;
+    accountName?: string;
+    currency: string;
+    recipientType?: string;
+    accountType?: string;
+    address?: any;
   }) {
     const { useCustomFetch } = useAppVueUtils();
     const { data } = await useCustomFetch<IResponse<{ accountName: string }>>(

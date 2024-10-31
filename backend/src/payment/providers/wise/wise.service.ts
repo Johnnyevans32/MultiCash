@@ -20,6 +20,7 @@ import configuration from "@/core/services/configuration";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 import {
   AccountType,
+  BeneficiaryAddress,
   RecipientType,
 } from "@/wallet/schemas/beneficiary.schema";
 
@@ -76,7 +77,35 @@ export class WiseService extends RequestService implements IPaymentProvider {
   }
 
   async verifyAccountNumber(payload: VerifyAccountNumbertDTO) {
-    throw new NotImplementedException();
+    const {
+      accountNumber,
+      accountName,
+      currency,
+      recipientType,
+      accountType,
+      address,
+      bankCode,
+    } = payload;
+    if (configuration().isDev) {
+      return {
+        accountName,
+        accountNumber,
+      };
+    }
+    await this.getTransferRecipientCode({
+      accountNumber,
+      accountName,
+      currency,
+      recipientType,
+      accountType,
+      address,
+      bankCode,
+    });
+
+    return {
+      accountName,
+      accountNumber,
+    };
   }
 
   async transferToAccount(payload: TransferToAccountDTO) {
@@ -129,18 +158,24 @@ export class WiseService extends RequestService implements IPaymentProvider {
   /**
    * Helper method to fetch or create a transfer recipient (beneficiary) code.
    */
-  private async getTransferRecipientCode(payload: TransferToAccountDTO) {
+  private async getTransferRecipientCode(payload: {
+    accountNumber: string;
+    bankCode?: string;
+    accountName: string;
+    currency: SupportedCurrencyEnum;
+    recipientType?: RecipientType;
+    accountType?: AccountType;
+    address?: BeneficiaryAddress;
+  }) {
     const {
       accountNumber,
       accountName,
-      bank,
       currency,
       recipientType,
       accountType,
       address,
+      bankCode,
     } = payload;
-
-    const bankCode = bank?.meta.get(this.getBankCodeKey()) || payload.bankCode;
 
     const currencyTypeMap = {
       [SupportedCurrencyEnum.EUR]: "iban",

@@ -139,6 +139,26 @@ export class VerifyAccountNumbertDTO {
 
   @IsMongoId()
   bankId: string;
+
+  @IsOptional()
+  bankCode?: string;
+
+  @IsEnum(RecipientType)
+  recipientType?: RecipientType;
+
+  @IsEnum(AccountType)
+  accountType?: AccountType;
+
+  @IsOptional()
+  address?: BeneficiaryAddress;
+
+  @IsOptional()
+  @IsString()
+  accountName: string;
+
+  @IsOptional()
+  @IsEnum(SupportedCurrencyEnum)
+  currency: SupportedCurrencyEnum;
 }
 
 export class CheckTransferStatusDTO {

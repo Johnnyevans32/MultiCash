@@ -157,13 +157,9 @@
               accountNumberNamesByCurrency[selectedCurrency] || 'Account Number'
             }`"
             input-type="text"
-            @keyup.enter="
-              isAfricanCurrency(selectedCurrency) && verifyAccountNumber
-            "
+            @keyup.enter="verifyAccountNumber"
             :validationMessage="
-              !isAfricanCurrency(selectedCurrency)
-                ? ''
-                : isVerifyAccountNumberLoading
+              isVerifyAccountNumberLoading
                 ? 'Validating account details...'
                 : accountName
             "
@@ -423,6 +419,9 @@ export default defineComponent({
         const resp = await $api.paymentService.verifyAccountNumber({
           accountNumber: accountNumber.value,
           bankId: selectedBankId.value,
+          currency: selectedCurrency.value,
+          ...(accountName.value && { accountName: accountName.value }),
+          ...(bankCode.value && { bankCode: bankCode.value }),
         });
         accountName.value = resp.accountName;
       } finally {
@@ -432,10 +431,7 @@ export default defineComponent({
     const createBeneficiary = async () => {
       try {
         isCreateBeneficiaryLoading.value = true;
-        if (
-          beneficiaryType.value === "bank_account" &&
-          isAfricanCurrency(selectedCurrency.value)
-        ) {
+        if (beneficiaryType.value === "bank_account") {
           await verifyAccountNumber();
         }
         await $api.walletService.createBeneficiary({

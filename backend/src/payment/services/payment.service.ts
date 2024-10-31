@@ -37,7 +37,6 @@ import { WalletService } from "@/wallet/services/wallet.service";
 import { StripeService } from "../providers/stripe/stripe.service";
 import { UserDocument } from "@/user/schemas/user.schema";
 import { WiseService } from "../providers/wise/wise.service";
-import { isEmpty } from "lodash";
 
 @Injectable()
 export class PaymentService {
@@ -136,16 +135,19 @@ export class PaymentService {
   }
 
   async verifyAccountNumber(payload: VerifyAccountNumbertDTO) {
-    const { bankId } = payload;
+    const { bankId, currency } = payload;
 
-    const bank = await this.bankModel.findOne({
-      _id: bankId,
-      isDeleted: false,
-    });
-    if (!bank) {
-      throw new BadRequestException("invalid bank");
+    let bank;
+    if (bankId) {
+      bank = await this.bankModel.findOne({
+        _id: bankId,
+        isDeleted: false,
+      });
+      if (!bank) {
+        throw new BadRequestException("invalid bank");
+      }
     }
-    const service = this.getCurrencyService(bank.currency);
+    const service = this.getCurrencyService(bank?.currency || currency);
 
     return service.verifyAccountNumber({ ...payload, bank });
   }

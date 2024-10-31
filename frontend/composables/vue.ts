@@ -22,12 +22,10 @@ export function useAppVueUtils() {
       },
       async onResponseError({ response }) {
         const errorMessage = response?._data?.message || "An error occurred";
-        if (response?.status !== 401) {
-          notify({
-            type: "error",
-            title: errorMessage,
-          });
-        }
+        notify({
+          type: "error",
+          title: errorMessage,
+        });
 
         const { path } = route;
         if (
@@ -35,10 +33,6 @@ export function useAppVueUtils() {
           accessToken.value &&
           path !== "/signin"
         ) {
-          notify({
-            type: "error",
-            title: errorMessage,
-          });
           setAccessToken(null);
           await navigateTo(`/signin?redirect=${encodeURIComponent(path)}`);
         }

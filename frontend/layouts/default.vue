@@ -108,7 +108,7 @@ export default defineComponent({
       notify({
         type: "info",
         duration: -1,
-        title: `We logged you out because you were inactive for ${autoLogoutTimeoutInMins} minutes — it’s to help keep your account secure.`,
+        title: `We logged you out because you were inactive for ${autoLogoutTimeoutInMins.value} minutes — it’s to help keep your account secure.`,
       });
     };
 

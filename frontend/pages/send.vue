@@ -161,7 +161,7 @@
             :validationMessage="
               isVerifyAccountNumberLoading
                 ? 'Validating account details...'
-                : accountName
+                : verifiedAccountName
             "
             :isErrorMessage="false"
           />
@@ -410,20 +410,21 @@ export default defineComponent({
     const beneficiaryTag = ref();
     const isCreateBeneficiaryLoading = ref(false);
     const accountName = ref("");
+    const verifiedAccountName = ref("");
 
     const isVerifyAccountNumberLoading = ref(false);
     const verifyAccountNumber = async () => {
       try {
         isVerifyAccountNumberLoading.value = true;
-        accountName.value = "";
+        verifiedAccountName.value = "";
         const resp = await $api.paymentService.verifyAccountNumber({
           accountNumber: accountNumber.value,
-          bankId: selectedBankId.value,
+          ...(selectedBankId.value && { bankId: selectedBankId.value }),
           currency: selectedCurrency.value,
           ...(accountName.value && { accountName: accountName.value }),
           ...(bankCode.value && { bankCode: bankCode.value }),
         });
-        accountName.value = resp.accountName;
+        verifiedAccountName.value = resp.accountName;
       } finally {
         isVerifyAccountNumberLoading.value = false;
       }
@@ -439,7 +440,7 @@ export default defineComponent({
           ...(beneficiaryType.value === "bank_account"
             ? {
                 accountNumber: accountNumber.value,
-                accountName: accountName.value,
+                accountName: verifiedAccountName.value,
                 ...(selectedBankId.value && { bank: selectedBankId.value }),
                 ...(bankCode.value && { bankCode: bankCode.value }),
                 currency: selectedCurrency.value,
@@ -564,6 +565,7 @@ export default defineComponent({
       isAfricanCurrency,
       searchQuery,
       fetchBeneficiaries,
+      verifiedAccountName,
     };
   },
 });

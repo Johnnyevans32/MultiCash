@@ -18,7 +18,7 @@ export class PaymentService {
 
   async verifyAccountNumber(payload: {
     accountNumber: string;
-    bankId: string;
+    bankId?: string;
     bankCode?: string;
     accountName?: string;
     currency: string;

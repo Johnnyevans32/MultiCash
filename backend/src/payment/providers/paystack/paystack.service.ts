@@ -24,6 +24,7 @@ import {
 } from "./paystack.types";
 import configuration from "@/core/services/configuration";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
+import { UtilityService } from "@/core/services/util.service";
 
 @Injectable()
 export class PaystackService
@@ -65,6 +66,13 @@ export class PaystackService
 
   async verifyAccountNumber(payload: VerifyAccountNumbertDTO) {
     const { accountNumber, bank } = payload;
+
+    // if (configuration().isDev) {
+    //   return {
+    //     accountName: UtilityService.generateRandomName(),
+    //     accountNumber,
+    //   };
+    // }
 
     const { data } = await this.request<any>({
       method: "get",

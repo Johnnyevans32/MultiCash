@@ -86,12 +86,12 @@ export class WiseService extends RequestService implements IPaymentProvider {
       address,
       bankCode,
     } = payload;
-    if (configuration().isDev) {
-      return {
-        accountName,
-        accountNumber,
-      };
-    }
+    // if (configuration().isDev) {
+    //   return {
+    //     accountName,
+    //     accountNumber,
+    //   };
+    // }
     await this.getTransferRecipientCode({
       accountNumber,
       accountName,
@@ -110,6 +110,13 @@ export class WiseService extends RequestService implements IPaymentProvider {
 
   async transferToAccount(payload: TransferToAccountDTO) {
     const { amount, currency, reference, description } = payload;
+
+    // if (configuration().isDev) {
+    //   return {
+    //     providerResponse: payload,
+    //     status: this.wiseStatusMap.outgoing_payment_sent,
+    //   };
+    // }
 
     const quoteId = await this.createQuote(amount, currency);
 

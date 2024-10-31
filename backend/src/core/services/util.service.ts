@@ -134,4 +134,14 @@ export class UtilityService {
       await browser.close();
     }
   }
+
+  static generateRandomName() {
+    const adjectives = ["Swift", "Bright", "Bold", "Silent", "Quick"];
+    const nouns = ["Eagle", "Falcon", "Tiger", "Lion", "Wolf"];
+    const randomAdjective =
+      adjectives[Math.floor(Math.random() * adjectives.length)];
+    const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
+
+    return `${randomAdjective} ${randomNoun}`;
+  }
 }

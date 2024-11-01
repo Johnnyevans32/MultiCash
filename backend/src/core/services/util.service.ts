@@ -54,19 +54,8 @@ export class UtilityService {
         metadata
       );
     } catch (error) {
-      let errorMessage: string;
       const statusCode = error.statusCode || HttpStatus.BAD_REQUEST;
-
-      if (error.isAxiosError) {
-        const { response, message, code } = error as AxiosError;
-        errorMessage =
-          (response?.data as any)?.message || message || "Something went wrong";
-        console.error(`Axios error occurred: ${errorMessage} (${code})`);
-      } else {
-        errorMessage = error.message || "Something went wrong";
-        console.error(`An error occurred: ${error.message}`, error.stack);
-      }
-
+      const errorMessage = UtilityService.getErrorMessage(error);
       return ResponseService.json(
         res,
         statusCode,
@@ -143,5 +132,29 @@ export class UtilityService {
     const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
 
     return `${randomAdjective} ${randomNoun}`;
+  }
+
+  static getErrorMessage(error: any) {
+    let errorMessage: string;
+
+    if (error.isAxiosError) {
+      const { response, message, code } = error as AxiosError;
+      errorMessage =
+        (response?.data as any)?.message || message || "Something went wrong";
+      console.error(`Axios error occurred: ${errorMessage} (${code})`);
+    } else {
+      errorMessage = error.message || "Something went wrong";
+      console.error(`An error occurred: ${error.message}`, error.stack);
+    }
+    return errorMessage;
+  }
+
+  static getWiseErrorMessgae(error: any) {
+    const { response, message } = error as AxiosError;
+    return (
+      ((response?.data as any)?.errors || [])[0]?.message ||
+      (response?.data as any)?.message ||
+      message
+    );
   }
 }

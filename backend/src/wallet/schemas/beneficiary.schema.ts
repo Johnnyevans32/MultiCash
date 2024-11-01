@@ -32,6 +32,7 @@ export interface BeneficiaryAddress {
   city: string;
   firstLine: string;
   postCode: string;
+  state: string;
 }
 @BaseSchemaDecorator()
 export class Beneficiary extends BaseSchema {

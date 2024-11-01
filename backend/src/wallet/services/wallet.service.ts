@@ -523,10 +523,13 @@ export class WalletService {
       beneficiaryTag,
       bankCode,
       currency,
+      address,
+      recipientType,
+      accountType,
     } = payload;
 
     let updateQuery: any = { type: beneficiaryType };
-    let searchQuery: any = { user: user.id, isDeleted: false };
+    let searchQuery: any = { user: user.id, isDeleted: false, currency };
 
     if (beneficiaryType === BeneficiaryType.BankAccount) {
       const bank = await this.paymentService.fetchBankById(bankId);
@@ -537,7 +540,9 @@ export class WalletService {
         bank: bank?.id,
         accountName,
         bankCode,
-        currency,
+        address,
+        recipientType,
+        accountType,
       };
     } else {
       const beneficiaryUser = await this.userService.findUser({

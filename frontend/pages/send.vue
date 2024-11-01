@@ -131,12 +131,17 @@
             valueKey="id"
           />
 
-          <CommonFormInput
-            v-model="bankCode"
+          <CommonFormSelect
+            title="Select recipient type"
             v-if="isInternationalCurrency(selectedCurrency)"
-            placeholder="1234567890"
-            :title="`Enter ${bankCodeNamesByCurrency[selectedCurrency]}`"
-            input-type="text"
+            :selected="recipientType"
+            :options="['person', 'business']"
+            @change-option="
+              (newVal) => {
+                recipientType = newVal;
+              }
+            "
+            placeholder="-- Please select the recipient type --"
           />
 
           <CommonFormInput
@@ -147,6 +152,14 @@
             "
             placeholder="Mark Smith"
             title="Enter Beneficiary Name"
+            input-type="text"
+          />
+
+          <CommonFormInput
+            v-model="bankCode"
+            v-if="isInternationalCurrency(selectedCurrency)"
+            placeholder="1234567890"
+            :title="`Enter ${bankCodeNamesByCurrency[selectedCurrency]}`"
             input-type="text"
           />
 
@@ -165,6 +178,53 @@
             "
             :isErrorMessage="false"
           />
+
+          <CommonFormSelect
+            title="Select account type"
+            v-if="selectedCurrency === 'USD'"
+            :selected="accountType"
+            :options="['savings', 'checking']"
+            @change-option="
+              (newVal) => {
+                accountType = newVal;
+              }
+            "
+            placeholder="-- Please select the account type --"
+          />
+
+          <div v-if="selectedCurrency === 'USD'" class="flex flex-col gap-2">
+            <p class="font-bold">Beneficiary address details:</p>
+            <CommonFormInput
+              v-model="address.country"
+              placeholder="US"
+              :title="`Enter Country`"
+              input-type="text"
+            />
+            <CommonFormInput
+              v-model="address.state"
+              placeholder="NY"
+              :title="`Enter State`"
+              input-type="text"
+            />
+            <CommonFormInput
+              v-model="address.city"
+              placeholder="New York NY 10010"
+              :title="`Enter City`"
+              input-type="text"
+            />
+            <CommonFormInput
+              v-model="address.firstLine"
+              placeholder="No 2 Avenue"
+              :title="`Enter address`"
+              input-type="text"
+            />
+            <CommonFormInput
+              v-model="address.postCode"
+              placeholder="100015"
+              :title="`Enter Post code`"
+              input-type="text"
+            />
+          </div>
         </div>
         <CommonFormInput
           v-if="beneficiaryType === 'platform'"
@@ -346,11 +406,20 @@ export default defineComponent({
     const addAccountModal = ref(false);
     const accountNumber = ref("");
     const bankCode = ref("");
+    const recipientType = ref("");
+    const accountType = ref("");
+    const address = ref({
+      city: "",
+      country: "",
+      firstLine: "",
+      postCode: "",
+      state: "",
+    });
 
     const bankCodeNamesByCurrency: Record<string, string> = {
       EUR: "Bank code (BIC/SWIFT)",
-      USD: "Routing Number",
-      GBP: "Sort Code",
+      USD: "ACH Routing Number",
+      GBP: "UK Sort Code",
       AUD: "BSB Code",
       CAD: "Institution Number",
       JPY: "Bank Code",
@@ -390,7 +459,6 @@ export default defineComponent({
     );
 
     const allCurrencies = computed(() => wallets.value.map((i) => i.currency));
-
     const selectedCurrency = ref("");
 
     const isFetchWalletLoading = ref(false);
@@ -423,6 +491,13 @@ export default defineComponent({
           currency: selectedCurrency.value,
           ...(accountName.value && { accountName: accountName.value }),
           ...(bankCode.value && { bankCode: bankCode.value }),
+          address: address.value,
+          ...(recipientType.value && {
+            recipientType: recipientType.value,
+          }),
+          ...(accountType.value && {
+            accountType: accountType.value,
+          }),
         });
         verifiedAccountName.value = resp.accountName;
       } finally {
@@ -444,6 +519,13 @@ export default defineComponent({
                 ...(selectedBankId.value && { bank: selectedBankId.value }),
                 ...(bankCode.value && { bankCode: bankCode.value }),
                 currency: selectedCurrency.value,
+                ...(recipientType.value && {
+                  recipientType: recipientType.value,
+                }),
+                ...(accountType.value && {
+                  accountType: accountType.value,
+                }),
+                address: address.value,
               }
             : {
                 beneficiaryTag: beneficiaryTag.value,
@@ -566,6 +648,9 @@ export default defineComponent({
       searchQuery,
       fetchBeneficiaries,
       verifiedAccountName,
+      recipientType,
+      accountType,
+      address,
     };
   },
 });

@@ -12,7 +12,12 @@ import {
   TransactionPurpose,
   TransactionStatus,
 } from "../schemas/wallet-transaction.schema";
-import { BeneficiaryType } from "../schemas/beneficiary.schema";
+import {
+  AccountType,
+  BeneficiaryAddress,
+  BeneficiaryType,
+  RecipientType,
+} from "../schemas/beneficiary.schema";
 
 export class CreateWalletTxnDTO {
   @IsNumber()
@@ -107,4 +112,14 @@ export class CreateBeneficiaryDTO {
   @IsOptional()
   @IsEnum(SupportedCurrencyEnum)
   currency: SupportedCurrencyEnum;
+
+  @IsEnum(RecipientType)
+  recipientType: RecipientType;
+
+  @IsOptional()
+  @IsEnum(AccountType)
+  accountType?: AccountType;
+
+  @IsOptional()
+  address?: BeneficiaryAddress;
 }

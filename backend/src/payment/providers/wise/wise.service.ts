@@ -23,6 +23,7 @@ import {
   BeneficiaryAddress,
   RecipientType,
 } from "@/wallet/schemas/beneficiary.schema";
+import { UtilityService } from "@/core/services/util.service";
 
 @Injectable()
 export class WiseService extends RequestService implements IPaymentProvider {
@@ -52,15 +53,20 @@ export class WiseService extends RequestService implements IPaymentProvider {
   async checkTransferStatus(
     payload: CheckTransferStatusDTO
   ): Promise<ICheckTransferStatusResponse> {
-    const response = await this.request<any>({
-      method: "get",
-      url: `/v1/transfers/${payload.pspTransactionId}`,
-    });
+    try {
+      const response = await this.request<any>({
+        method: "get",
+        url: `/v1/transfers/${payload.pspTransactionId}`,
+      });
 
-    return {
-      providerResponse: response,
-      status: this.wiseStatusMap[response.status] || TransferStatus.Processing,
-    };
+      return {
+        providerResponse: response,
+        status:
+          this.wiseStatusMap[response.status] || TransferStatus.Processing,
+      };
+    } catch (err) {
+      throw new Error(UtilityService.getWiseErrorMessgae(err));
+    }
   }
   createCheckoutSession?(
     payload: CreatePaymentIntentDTO
@@ -77,89 +83,102 @@ export class WiseService extends RequestService implements IPaymentProvider {
   }
 
   async verifyAccountNumber(payload: VerifyAccountNumbertDTO) {
-    const {
-      accountNumber,
-      accountName,
-      currency,
-      recipientType,
-      accountType,
-      address,
-      bankCode,
-    } = payload;
-    // if (configuration().isDev) {
-    //   return {
-    //     accountName,
-    //     accountNumber,
-    //   };
-    // }
-    await this.getTransferRecipientCode({
-      accountNumber,
-      accountName,
-      currency,
-      recipientType,
-      accountType,
-      address,
-      bankCode,
-    });
+    try {
+      const {
+        accountNumber,
+        accountName,
+        currency,
+        recipientType,
+        accountType,
+        address,
+        bankCode,
+      } = payload;
+      // if (configuration().isDev) {
+      //   return {
+      //     accountName,
+      //     accountNumber,
+      //   };
+      // }
+      await this.getTransferRecipientCode({
+        accountNumber,
+        accountName,
+        currency,
+        recipientType,
+        accountType,
+        address,
+        bankCode,
+      });
 
-    return {
-      accountName,
-      accountNumber,
-    };
+      return {
+        accountName,
+        accountNumber,
+      };
+    } catch (err) {
+      throw new Error(UtilityService.getWiseErrorMessgae(err));
+    }
   }
 
   async transferToAccount(payload: TransferToAccountDTO) {
-    const { amount, currency, reference, description } = payload;
+    try {
+      const { amount, currency, reference, description } = payload;
 
-    // if (configuration().isDev) {
-    //   return {
-    //     providerResponse: payload,
-    //     status: this.wiseStatusMap.outgoing_payment_sent,
-    //   };
-    // }
+      // if (configuration().isDev) {
+      //   return {
+      //     providerResponse: payload,
+      //     status: this.wiseStatusMap.outgoing_payment_sent,
+      //   };
+      // }
 
-    const quoteId = await this.createQuote(amount, currency);
+      const quoteId = await this.createQuote(amount, currency);
 
-    const recipientId = await this.getTransferRecipientCode(payload);
+      const recipientId = await this.getTransferRecipientCode(payload);
 
-    const response = await this.request<any>({
-      method: "post",
-      url: "/v1/transfers",
-      data: {
-        targetAccount: recipientId,
-        quoteUuid: quoteId,
-        customerTransactionId: reference,
-        details: {
-          reference: description,
+      const response = await this.request<any>({
+        method: "post",
+        url: "/v1/transfers",
+        data: {
+          targetAccount: recipientId,
+          quoteUuid: quoteId,
+          customerTransactionId: reference,
+          details: {
+            reference: description,
+          },
         },
-      },
-    });
+      });
 
-    if (configuration().isDev) {
-      this.simulateSuccessfulTransaction(response.id);
+      if (configuration().isDev) {
+        this.simulateSuccessfulTransaction(response.id);
+      }
+
+      return {
+        providerResponse: response,
+        status:
+          this.wiseStatusMap[response.status] || TransferStatus.Processing,
+        pspTransactionId: response.id,
+      };
+    } catch (err) {
+      throw new Error(UtilityService.getWiseErrorMessgae(err));
     }
-
-    return {
-      providerResponse: response,
-      status: this.wiseStatusMap[response.status] || TransferStatus.Processing,
-      pspTransactionId: response.id,
-    };
   }
 
   /**
    * Helper method to create a quote for a transfer.
    */
   private async createQuote(amount: number, currency: SupportedCurrencyEnum) {
-    const response = await this.request<any>({
-      method: "post",
-      url: `/v3/profiles/${configuration().wise.businessId}/quotes`,
-      data: {
-        sourceCurrency: currency,
-        targetCurrency: currency,
-        sourceAmount: amount,
-      },
-    });
-    return response.id;
+    try {
+      const response = await this.request<any>({
+        method: "post",
+        url: `/v3/profiles/${configuration().wise.businessId}/quotes`,
+        data: {
+          sourceCurrency: currency,
+          targetCurrency: currency,
+          sourceAmount: amount,
+        },
+      });
+      return response.id;
+    } catch (err) {
+      throw new Error(UtilityService.getWiseErrorMessgae(err));
+    }
   }
 
   /**
@@ -174,58 +193,62 @@ export class WiseService extends RequestService implements IPaymentProvider {
     accountType?: AccountType;
     address?: BeneficiaryAddress;
   }) {
-    const {
-      accountNumber,
-      accountName,
-      currency,
-      recipientType,
-      accountType,
-      address,
-      bankCode,
-    } = payload;
-
-    const currencyTypeMap = {
-      [SupportedCurrencyEnum.EUR]: "iban",
-      [SupportedCurrencyEnum.GBP]: "sort_code",
-      [SupportedCurrencyEnum.AUD]: "australian",
-      [SupportedCurrencyEnum.MXN]: "mexican",
-      [SupportedCurrencyEnum.USD]: "aba",
-    };
-
-    const currencyDetailsMap = {
-      [SupportedCurrencyEnum.EUR]: { BIC: bankCode, IBAN: accountNumber },
-      [SupportedCurrencyEnum.GBP]: { sortCode: bankCode, accountNumber },
-      [SupportedCurrencyEnum.AUD]: { bsbCode: bankCode, accountNumber },
-      [SupportedCurrencyEnum.MXN]: {
-        clabe: bankCode,
-        identificationNumber: accountNumber,
-      },
-      [SupportedCurrencyEnum.USD]: {
-        abartn: bankCode,
+    try {
+      const {
         accountNumber,
-        accountType:
-          accountType === AccountType.Checking ? "CHECKING" : "SAVINGS",
-        address,
-      },
-    };
-
-    const response = await this.request<any>({
-      method: "post",
-      url: "/v1/accounts",
-      data: {
+        accountName,
         currency,
-        type: currencyTypeMap[currency],
-        profile: configuration().wise.businessId,
-        accountHolderName: accountName,
-        details: {
-          legalType:
-            recipientType === RecipientType.Business ? "BUSINESS" : "PRIVATE",
-          ...(currencyDetailsMap[currency] ?? {}),
-        },
-      },
-    });
+        recipientType,
+        accountType,
+        address,
+        bankCode,
+      } = payload;
 
-    return response.id;
+      const currencyTypeMap = {
+        [SupportedCurrencyEnum.EUR]: "iban",
+        [SupportedCurrencyEnum.GBP]: "sort_code",
+        [SupportedCurrencyEnum.AUD]: "australian",
+        [SupportedCurrencyEnum.MXN]: "mexican",
+        [SupportedCurrencyEnum.USD]: "aba",
+      };
+
+      const currencyDetailsMap = {
+        [SupportedCurrencyEnum.EUR]: { BIC: bankCode, IBAN: accountNumber },
+        [SupportedCurrencyEnum.GBP]: { sortCode: bankCode, accountNumber },
+        [SupportedCurrencyEnum.AUD]: { bsbCode: bankCode, accountNumber },
+        [SupportedCurrencyEnum.MXN]: {
+          clabe: bankCode,
+          identificationNumber: accountNumber,
+        },
+        [SupportedCurrencyEnum.USD]: {
+          abartn: bankCode,
+          accountNumber,
+          accountType:
+            accountType === AccountType.Checking ? "CHECKING" : "SAVINGS",
+          address,
+        },
+      };
+
+      const response = await this.request<any>({
+        method: "post",
+        url: "/v1/accounts",
+        data: {
+          currency,
+          type: currencyTypeMap[currency],
+          profile: configuration().wise.businessId,
+          accountHolderName: accountName,
+          details: {
+            legalType:
+              recipientType === RecipientType.Business ? "BUSINESS" : "PRIVATE",
+            ...(currencyDetailsMap[currency] ?? {}),
+          },
+        },
+      });
+
+      return response.id;
+    } catch (err) {
+      throw new Error(UtilityService.getWiseErrorMessgae(err));
+    }
   }
 
   async simulateSuccessfulTransaction(id: string) {

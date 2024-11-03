@@ -11,7 +11,7 @@ import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 import {
   RecipientType,
   AccountType,
-  BeneficiaryAddress,
+  RecipientAddress,
 } from "@/wallet/schemas/beneficiary.schema";
 
 export enum TransferPurpose {
@@ -99,7 +99,7 @@ export class TransferRecord extends BaseSchema {
   accountType?: AccountType;
 
   @Prop({ type: SchemaTypes.Mixed })
-  address?: BeneficiaryAddress;
+  address?: RecipientAddress;
 }
 
 export const TransferRecordSchema =

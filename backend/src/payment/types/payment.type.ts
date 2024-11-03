@@ -16,12 +16,17 @@ import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 import { BankDocument } from "../schemas/bank.schema";
 import {
   AccountType,
-  BeneficiaryAddress,
+  RecipientAddress,
   RecipientType,
 } from "@/wallet/schemas/beneficiary.schema";
 
 export interface IPaymentProvider {
   name(): PaymentProvider;
+
+  createVirtualAccount(
+    payload: CreateVirtualAccountDTO
+  ): Promise<ICreateVirtualAccountResponse>;
+
   /**
    * For verifying account details
    */
@@ -127,7 +132,7 @@ export class TransferToAccountDTO {
   accountType?: AccountType;
 
   @IsOptional()
-  address?: BeneficiaryAddress;
+  address?: RecipientAddress;
 }
 
 export class VerifyAccountNumbertDTO {
@@ -153,7 +158,7 @@ export class VerifyAccountNumbertDTO {
   accountType?: AccountType;
 
   @IsOptional()
-  address?: BeneficiaryAddress;
+  address?: RecipientAddress;
 
   @IsOptional()
   @IsString()
@@ -203,4 +208,29 @@ export class CreatePaymentIntentDTO {
 
   @IsOptional()
   description: string;
+}
+
+export class CreateVirtualAccountDTO {
+  @IsEnum(SupportedCurrencyEnum)
+  currency: SupportedCurrencyEnum;
+
+  @IsString()
+  email: string;
+
+  @IsString()
+  name: string;
+
+  @IsOptional()
+  phoneNumber?: string;
+}
+
+export interface ICreateVirtualAccountResponse {
+  providerResponse: any;
+  bankName: string;
+  accountName: string;
+  accountNumber: string;
+  currency: SupportedCurrencyEnum;
+  provider: PaymentProvider;
+  bankCode?: string;
+  address?: any;
 }

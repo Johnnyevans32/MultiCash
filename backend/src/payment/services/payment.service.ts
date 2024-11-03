@@ -29,6 +29,7 @@ import {
   VerifyAccountNumbertDTO,
   IWebhookCharge,
   CreatePaymentIntentDTO,
+  CreateVirtualAccountDTO,
 } from "../types/payment.type";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 import { PaystackService } from "../providers/paystack/paystack.service";
@@ -459,5 +460,11 @@ export class PaymentService {
         );
       })
     );
+  }
+
+  async createVirtualAccount(payload: CreateVirtualAccountDTO) {
+    const service = this.getCurrencyService(payload.currency);
+    const resp = await service.createVirtualAccount(payload);
+    return resp;
   }
 }

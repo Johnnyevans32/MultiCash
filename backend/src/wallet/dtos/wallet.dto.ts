@@ -14,7 +14,7 @@ import {
 } from "../schemas/wallet-transaction.schema";
 import {
   AccountType,
-  BeneficiaryAddress,
+  RecipientAddress,
   BeneficiaryType,
   RecipientType,
 } from "../schemas/beneficiary.schema";
@@ -121,5 +121,5 @@ export class CreateBeneficiaryDTO {
   accountType?: AccountType;
 
   @IsOptional()
-  address?: BeneficiaryAddress;
+  address?: RecipientAddress;
 }

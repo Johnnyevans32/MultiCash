@@ -16,6 +16,8 @@ import {
   CheckTransferStatusDTO,
   CreatePaymentIntentDTO,
   IWebhookCharge,
+  CreateVirtualAccountDTO,
+  ICreateVirtualAccountResponse,
 } from "@/payment/types/payment.type";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 
@@ -41,6 +43,11 @@ export class StripeService implements IPaymentProvider {
   constructor() {
     const { secretKey, baseurl } = configuration().stripe;
     this.stripe = new Stripe(secretKey, {});
+  }
+  createVirtualAccount(
+    payload: CreateVirtualAccountDTO
+  ): Promise<ICreateVirtualAccountResponse> {
+    throw new Error("Method not implemented.");
   }
 
   name(): PaymentProvider {

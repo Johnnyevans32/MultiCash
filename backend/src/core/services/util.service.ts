@@ -157,4 +157,44 @@ export class UtilityService {
       message
     );
   }
+
+  static generateRandomPhoneNumber(phoneExt: string) {
+    const randomDigits = (length: number) => {
+      let digits = "";
+      for (let i = 0; i < length; i++) {
+        digits += Math.floor(Math.random() * 10);
+      }
+      return digits;
+    };
+
+    let phoneNumber = phoneExt;
+    switch (phoneExt) {
+      case "+1": // United States / Canada
+        phoneNumber += `${randomDigits(3)}-${randomDigits(3)}-${randomDigits(4)}`;
+        break;
+
+      case "+44": // United Kingdom
+        phoneNumber += ` ${randomDigits(4)} ${randomDigits(6)}`;
+        break;
+
+      case "+234": // Nigeria
+        phoneNumber += ` ${randomDigits(3)} ${randomDigits(3)} ${randomDigits(4)}`;
+        break;
+
+      case "+91": // India
+        phoneNumber += ` ${randomDigits(5)} ${randomDigits(5)}`;
+        break;
+
+      case "+61": // Australia
+        phoneNumber += ` ${randomDigits(4)} ${randomDigits(3)} ${randomDigits(3)}`;
+        break;
+
+      default:
+        // Generic format for unknown country codes
+        phoneNumber += ` ${randomDigits(3)} ${randomDigits(3)} ${randomDigits(4)}`;
+        break;
+    }
+
+    return phoneNumber;
+  }
 }

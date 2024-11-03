@@ -51,3 +51,11 @@ export interface IBeneficiary {
   type: string;
   currency: string;
 }
+
+export interface IWalletAccount {
+  accountNumber: string;
+  accountName: string;
+  bankName: string;
+  bankCode: string;
+  address: any;
+}

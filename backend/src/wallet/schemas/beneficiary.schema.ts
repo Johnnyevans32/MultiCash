@@ -27,7 +27,7 @@ export enum AccountType {
   Checking = "checking",
 }
 
-export interface BeneficiaryAddress {
+export interface RecipientAddress {
   country: string;
   city: string;
   firstLine: string;
@@ -76,7 +76,7 @@ export class Beneficiary extends BaseSchema {
   accountType?: AccountType;
 
   @Prop({ type: SchemaTypes.Mixed })
-  address?: BeneficiaryAddress;
+  address?: RecipientAddress;
 
   @Prop({
     type: SchemaTypes.String,

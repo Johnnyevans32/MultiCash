@@ -7,12 +7,12 @@ import {
 import { InjectConnection, InjectModel } from "@nestjs/mongoose";
 import { Connection, FilterQuery, Model, PaginateModel } from "mongoose";
 import { Mutex, MutexInterface } from "async-mutex";
-import * as QRCode from "qrcode";
 import * as moment from "moment";
 import { v5 as uuidv5 } from "uuid";
 import {
   BENEFICIARY,
   WALLET,
+  WALLET_ACCOUNT,
   WALLET_CURRENCY,
   WALLET_TRANSACTION,
 } from "@/core/constants/schema.constants";
@@ -55,10 +55,10 @@ import { FcmService } from "@/notification/fcm/fcm.service";
 import {
   IWebhookCharge,
   IWebhookResponse,
-  IWebhookTransfer,
   WebhookEventEnum,
 } from "@/payment/types/payment.type";
 import configuration from "@/core/services/configuration";
+import { WalletAccountDocument } from "../schemas/wallet-account.schema";
 
 @Injectable()
 export class WalletService {
@@ -72,6 +72,8 @@ export class WalletService {
     private walletTransactionModel: PaginateModel<WalletTransactionDocument>,
     @InjectModel(WALLET_CURRENCY)
     private walletCurrencyModel: Model<WalletCurrencyDocument>,
+    @InjectModel(WALLET_ACCOUNT)
+    private walletAccountModel: Model<WalletAccountDocument>,
     @InjectConnection() private readonly connection: Connection,
     @Inject(forwardRef(() => PaymentService))
     private readonly paymentService: PaymentService,
@@ -712,5 +714,72 @@ export class WalletService {
       title: "Wallet Funding",
       body: `You have successfully funded your wallet with ${UtilityService.formatMoney(amount, currency)}.`,
     });
+  }
+
+  async createWalletAccounts(
+    user: UserDocument,
+    currencies: SupportedCurrencyEnum[] = []
+  ) {
+    const defaultCurrencies = [
+      SupportedCurrencyEnum.NGN,
+      SupportedCurrencyEnum.KES,
+      SupportedCurrencyEnum.GHS,
+      SupportedCurrencyEnum.ZAR,
+    ];
+    const currenciesToCreate = currencies.length
+      ? currencies
+      : defaultCurrencies;
+
+    try {
+      const existingWallets = await this.walletAccountModel
+        .find({
+          user: user.id,
+          currency: { $in: currenciesToCreate },
+          isDeleted: false,
+        })
+        .select("currency");
+
+      const existingCurrencies = new Set(
+        existingWallets.map((wallet) => wallet.currency)
+      );
+      const currenciesToProcess = currenciesToCreate.filter(
+        (currency) => !existingCurrencies.has(currency)
+      );
+
+      await Promise.all(
+        currenciesToProcess.map(async (currency) => {
+          try {
+            const accountData = await this.paymentService.createVirtualAccount({
+              currency,
+              email: user.email,
+              name: user.name,
+            });
+
+            await this.walletAccountModel.create({
+              user: user.id,
+              currency,
+              ...accountData,
+            });
+          } catch (err) {
+            console.error(
+              `Failed to create ${currency} account for user ${user.email}:`,
+              err
+            );
+          }
+        })
+      );
+    } catch (err) {
+      console.error(
+        `Error initializing wallet accounts for user ${user.email}:`,
+        err
+      );
+    }
+  }
+
+  async fetchWalletAccounts(user: UserDocument) {
+    await this.createWalletAccounts(user);
+    return this.walletAccountModel
+      .find({ user: user.id, isDeleted: false })
+      .select("bankName bankCode accountName accountNumber address");
   }
 }

@@ -12,8 +12,7 @@
   <CommonButton
     text="Coming Soon"
     :disabled="true"
-    custom-css="bg-base w-full
-  text-base"
+    custom-css="bg-base justify-self-center text-base"
   />
 </template>
 

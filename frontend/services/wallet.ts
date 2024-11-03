@@ -1,6 +1,11 @@
 import { useUserStore } from "~/store/user";
 import type { IResponse } from "~/types/user";
-import type { IBeneficiary, IWallet, IWalletTransaction } from "~/types/wallet";
+import type {
+  IBeneficiary,
+  IWallet,
+  IWalletAccount,
+  IWalletTransaction,
+} from "~/types/wallet";
 
 export class WalletService {
   async fetchWallets() {
@@ -113,5 +118,16 @@ export class WalletService {
     return await useCustomFetch(`/api/wallets/beneficiaries/${beneficiaryId}`, {
       method: "delete",
     });
+  }
+
+  async fetchWalletAccounts() {
+    const { useCustomFetch } = useAppVueUtils();
+    const { data } = await useCustomFetch<IResponse<IWalletAccount[]>>(
+      `/api/wallets/accounts`,
+      {
+        method: "get",
+      }
+    );
+    return data;
   }
 }

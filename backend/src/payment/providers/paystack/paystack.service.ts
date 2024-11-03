@@ -15,6 +15,7 @@ import {
   WebhookEventEnum,
   CheckTransferStatusDTO,
   IWebhookCharge,
+  CreateVirtualAccountDTO,
 } from "@/payment/types/payment.type";
 import {
   PaystackWebhookResponse,
@@ -108,6 +109,62 @@ export class PaystackService
     return {
       providerResponse: data,
       status: this.paystackStatusMap[data.status],
+    };
+  }
+
+  async createCustomer(payload: CreateVirtualAccountDTO) {
+    const { email, name, phoneNumber = "2348123456789" } = payload;
+    const { data } = await this.request<any>({
+      method: "post",
+      url: "customer",
+      data: {
+        email,
+        first_name: name.split(" ").at(0),
+        last_name: name.split(" ").at(-1),
+        phone: phoneNumber,
+      },
+    });
+
+    return data;
+  }
+
+  async createVirtualAccount(payload: CreateVirtualAccountDTO) {
+    const { currency } = payload;
+    if (configuration().isDev) {
+      const { name } = payload;
+      const mockResponse = {
+        data: {
+          bank: { name: `${currency} Federal Bank` },
+          account_number: "1234567890",
+        },
+      };
+
+      return {
+        providerResponse: mockResponse.data,
+        bankName: mockResponse.data.bank.name,
+        accountName: name,
+        accountNumber: mockResponse.data.account_number,
+        currency,
+        providerCustomerId: UtilityService.generateRandomHex(6),
+        provider: this.name(),
+      };
+    }
+
+    const customer = await this.createCustomer(payload);
+    const { data } = await this.request<any>({
+      method: "post",
+      url: "dedicated_account",
+      data: { customer: customer.id, preferred_bank: "wema-bank" },
+    });
+
+    return {
+      providerResponse: data,
+      bankName: data.bank.name,
+      accountName: data.account_name,
+      accountNumber: data.account_number,
+      currency,
+      providerCustomerId: customer.id,
+      provider: this.name(),
     };
   }
 

@@ -134,4 +134,19 @@ export class WalletController {
       beneficiaryId
     );
   }
+
+  @Get("accounts")
+  async fetchWalletAccounts(
+    @Res() res: Response,
+    @CurrentUser() user: UserDocument
+  ) {
+    return UtilityService.handleRequest(
+      res,
+      "successful",
+      this.walletService,
+      "fetchWalletAccounts",
+      HttpStatusCode.Ok,
+      user
+    );
+  }
 }

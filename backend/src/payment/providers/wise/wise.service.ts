@@ -15,12 +15,13 @@ import {
   CheckTransferStatusDTO,
   CreatePaymentIntentDTO,
   ICheckTransferStatusResponse,
+  CreateVirtualAccountDTO,
 } from "@/payment/types/payment.type";
 import configuration from "@/core/services/configuration";
 import { SupportedCurrencyEnum } from "@/wallet/schemas/wallet.schema";
 import {
   AccountType,
-  BeneficiaryAddress,
+  RecipientAddress,
   RecipientType,
 } from "@/wallet/schemas/beneficiary.schema";
 import { UtilityService } from "@/core/services/util.service";
@@ -48,6 +49,30 @@ export class WiseService extends RequestService implements IPaymentProvider {
       baseURL: baseurl,
       headers: { Authorization: `Bearer ${apiKey}` },
     });
+  }
+
+  async createVirtualAccount(payload: CreateVirtualAccountDTO) {
+    try {
+      const { currency } = payload;
+      const profileId = await this.createProfile(payload);
+      const details = await this.request<any>({
+        method: "get",
+        url: `/v1/profiles/${profileId}/account-details`,
+      });
+
+      const currencyAccount = details.find((i) => i.currency.code === currency);
+      return {
+        providerResponse: currencyAccount,
+        bankName: "",
+        accountName: "",
+        accountNumber: "",
+        currency,
+        providerCustomerId: profileId,
+        provider: this.name(),
+      };
+    } catch (err) {
+      throw new Error(UtilityService.getWiseErrorMessgae(err));
+    }
   }
 
   async checkTransferStatus(
@@ -191,7 +216,7 @@ export class WiseService extends RequestService implements IPaymentProvider {
     currency: SupportedCurrencyEnum;
     recipientType?: RecipientType;
     accountType?: AccountType;
-    address?: BeneficiaryAddress;
+    address?: RecipientAddress;
   }) {
     try {
       const {
@@ -240,8 +265,53 @@ export class WiseService extends RequestService implements IPaymentProvider {
           details: {
             legalType:
               recipientType === RecipientType.Business ? "BUSINESS" : "PRIVATE",
-            ...(currencyDetailsMap[currency] ?? {}),
+            ...(currencyDetailsMap[currency] || {}),
           },
+        },
+      });
+
+      return response.id;
+    } catch (err) {
+      throw new Error(UtilityService.getWiseErrorMessgae(err));
+    }
+  }
+
+  private async createProfile(payload: CreateVirtualAccountDTO) {
+    try {
+      const {
+        email,
+        name,
+        phoneNumber = UtilityService.generateRandomPhoneNumber("+1"),
+      } = payload;
+
+      const response = await this.request<any>({
+        method: "post",
+        url: "/v2/profiles/personal-profile",
+        data: {
+          firstName: name.split(" ").at(0),
+          lastName: name.split(" ").at(-1),
+          preferredName: name.split(" ")[0],
+          firstNameInKana: null,
+          lastNameInKana: null,
+          address: {
+            addressFirstLine: "50 Sunflower Ave",
+            city: "Phoenix",
+            countryIso3Code: "usa",
+            postCode: "10025",
+            stateCode: "AZ",
+          },
+          nationality: "usa",
+          dateOfBirth: "1977-07-01",
+          contactDetails: {
+            email,
+            phoneNumber,
+          },
+          occupations: [
+            {
+              code: "Software Engineer",
+              format: "FREE_FORM",
+            },
+          ],
         },
       });
 

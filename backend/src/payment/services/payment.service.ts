@@ -219,7 +219,7 @@ export class PaymentService {
       transferRecord.status = TransferStatus.Failed;
     } finally {
       transferRecord.markModified("providerResponse");
-      await transferRecord.save();
+      await transferRecord.save({ validateBeforeSave: false });
     }
     if (
       [TransferStatus.Failed, TransferStatus.Successful].includes(

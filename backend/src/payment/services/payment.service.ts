@@ -437,8 +437,7 @@ export class PaymentService {
     user: UserDocument,
     payload: CreatePaymentIntentDTO
   ) {
-    const service = this.getCurrencyService(payload.currency);
-    const resp = await service.createCheckoutSession({
+    const resp = await this.stripeService.createCheckoutSession({
       ...payload,
       meta: { user: user.id },
       email: user.email,

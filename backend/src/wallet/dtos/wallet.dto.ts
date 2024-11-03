@@ -113,6 +113,7 @@ export class CreateBeneficiaryDTO {
   @IsEnum(SupportedCurrencyEnum)
   currency: SupportedCurrencyEnum;
 
+  @IsOptional()
   @IsEnum(RecipientType)
   recipientType: RecipientType;
 

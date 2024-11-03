@@ -780,6 +780,6 @@ export class WalletService {
     await this.createWalletAccounts(user);
     return this.walletAccountModel
       .find({ user: user.id, isDeleted: false })
-      .select("bankName bankCode accountName accountNumber address");
+      .select("bankName bankCode accountName accountNumber currency address");
   }
 }

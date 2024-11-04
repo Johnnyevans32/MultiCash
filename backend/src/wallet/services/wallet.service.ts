@@ -644,7 +644,13 @@ export class WalletService {
     if (!walletTransactionId) return;
 
     const walletTransaction = await this.walletTransactionModel
-      .findById(walletTransactionId)
+      .findOne({
+        _id: walletTransactionId,
+        status: {
+          $in: [TransactionStatus.Processing, TransactionStatus.Pending],
+        },
+        purpose: TransactionPurpose.WITHDRAWAL,
+      })
       .populate("user");
     if (!walletTransaction) return;
 

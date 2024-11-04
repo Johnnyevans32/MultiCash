@@ -61,7 +61,6 @@ export class Beneficiary extends BaseSchema {
   @Prop({
     type: SchemaTypes.String,
     enum: Object.values(RecipientType),
-    default: RecipientType.Person,
   })
   recipientType: RecipientType;
 
@@ -71,7 +70,6 @@ export class Beneficiary extends BaseSchema {
   @Prop({
     type: SchemaTypes.String,
     enum: Object.values(AccountType),
-    default: AccountType.Savings,
   })
   accountType?: AccountType;
 

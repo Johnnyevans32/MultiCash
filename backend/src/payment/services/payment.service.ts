@@ -196,7 +196,7 @@ export class PaymentService {
         new: true,
       }
     );
-    const updatedFields = {};
+    const updatedFields: any = {};
 
     try {
       const transferResponse = await service.transferToAccount({

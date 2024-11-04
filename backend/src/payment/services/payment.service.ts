@@ -196,6 +196,8 @@ export class PaymentService {
         new: true,
       }
     );
+    const updatedFields = {};
+
     try {
       const transferResponse = await service.transferToAccount({
         ...payload,
@@ -204,22 +206,31 @@ export class PaymentService {
         reference,
       });
 
-      transferRecord.status = transferResponse.status;
+      updatedFields.status = transferResponse.status;
       if (transferResponse.pspTransactionId) {
-        transferRecord.pspTransactionId = transferResponse.pspTransactionId;
+        updatedFields.pspTransactionId = transferResponse.pspTransactionId;
       }
-      transferRecord.providerResponse.push(transferResponse);
+      updatedFields.providerResponse = [
+        ...transferRecord.providerResponse,
+        transferResponse,
+      ];
     } catch (error) {
       const errorContent =
         typeof error === "string"
           ? error
           : error.message || JSON.stringify(error);
 
-      transferRecord.providerResponse.push(errorContent);
-      transferRecord.status = TransferStatus.Failed;
+      updatedFields.providerResponse = [
+        ...transferRecord.providerResponse,
+        errorContent,
+      ];
+      updatedFields.status = TransferStatus.Failed;
     } finally {
-      transferRecord.markModified("providerResponse");
-      await transferRecord.save({ validateBeforeSave: false });
+      transferRecord = await this.transferRecordModel.findByIdAndUpdate(
+        transferRecord.id,
+        { $set: updatedFields },
+        { new: true }
+      );
     }
     if (
       [TransferStatus.Failed, TransferStatus.Successful].includes(
@@ -292,8 +303,11 @@ export class PaymentService {
           address,
         });
 
-        transferRecord.status = transferResponse.status;
-        await transferRecord.save();
+        transferRecord = await this.transferRecordModel.findByIdAndUpdate(
+          transferRecord.id,
+          { $set: { status: transferResponse.status } },
+          { new: true }
+        );
       })
     );
 
@@ -338,7 +352,7 @@ export class PaymentService {
 
   async handleTransferHook(payload: IWebhookResponse<IWebhookTransfer>) {
     const { data, provider } = payload;
-    const transferRecord = await this.transferRecordModel
+    let transferRecord = await this.transferRecordModel
       .findOne({
         paymentProvider: provider,
         isDeleted: false,
@@ -354,10 +368,11 @@ export class PaymentService {
       throw new Error(`transfer record not found`);
     }
 
-    transferRecord.webhookResponse.push(payload);
-    transferRecord.status = data.status;
-    transferRecord.markModified("webhookResponse");
-    await transferRecord.save();
+    transferRecord = await this.transferRecordModel.findByIdAndUpdate(
+      transferRecord.id,
+      { $set: { status: data.status }, $push: { webhookResponse: payload } },
+      { new: true }
+    );
 
     switch (transferRecord.purpose) {
       case TransferPurpose.WALLET_WITHDRAWAL:
@@ -411,22 +426,30 @@ export class PaymentService {
           reference: transferRecord.reference,
           pspTransactionId: transferRecord.pspTransactionId,
         });
-        await this.handleTransferHook({
-          event:
-            status === TransferStatus.Failed
-              ? WebhookEventEnum.TransferFailed
-              : WebhookEventEnum.TransferSuccess,
-          data: {
-            status,
-            amount: transferRecord.amount,
-            meta: transferRecord.meta,
-            reference: transferRecord.reference,
-          },
-          provider: transferRecord.paymentProvider,
-          originalPayload: providerResponse,
-        });
-        transferRecord.status = status;
-        await transferRecord.save();
+        if (
+          [TransferStatus.Failed, TransferStatus.Successful].includes(status)
+        ) {
+          await this.handleTransferHook({
+            event:
+              status === TransferStatus.Failed
+                ? WebhookEventEnum.TransferFailed
+                : WebhookEventEnum.TransferSuccess,
+            data: {
+              status,
+              amount: transferRecord.amount,
+              meta: transferRecord.meta,
+              reference: transferRecord.reference,
+            },
+            provider: transferRecord.paymentProvider,
+            originalPayload: providerResponse,
+          });
+        } else {
+          transferRecord = await this.transferRecordModel.findByIdAndUpdate(
+            transferRecord.id,
+            { $set: { status } },
+            { new: true }
+          );
+        }
       })
     );
 
